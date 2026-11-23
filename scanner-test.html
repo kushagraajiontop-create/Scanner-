@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scanner Test</title>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+<style>
+:root{--bg:#F2F5F8;--s:#fff;--ink:#13202B;--mut:#586977;--line:#D9E1E8;--acc:#1550D6;--good:#0B7A48;--bad:#BC2430}
+@media (prefers-color-scheme:dark){:root{--bg:#0D141A;--s:#151E26;--ink:#E7EEF4;--mut:#93A3B1;--line:#27333E;--acc:#7AA7FF;--good:#4FD18F;--bad:#FF8A92}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px;max-width:560px;margin-inline:auto}
+h1{font-size:20px;margin:4px 0 12px}
+.p{background:var(--s);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+video{width:100%;border-radius:8px;background:#000;max-height:46vh;object-fit:cover}
+button{font:inherit;border:0;border-radius:8px;padding:11px 16px;font-weight:600;background:var(--acc);color:#fff;cursor:pointer}
+button.l{background:none;border:1px solid var(--line);color:var(--ink)}
+button.g{background:var(--good)} button.b{background:var(--bad)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.big{font:600 24px ui-monospace,Menlo,Consolas,monospace;word-break:break-all}
+.mut{color:var(--mut);font-size:13px}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.tally b{display:block;font-size:22px}
+.log div{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);font-family:ui-monospace,Menlo,monospace;font-size:13px}
+</style>
+</head>
+<body>
+<h1>Barcode scanner test</h1>
+<div class="p">
+  <video id="v" playsinline muted></video>
+  <div class="row"><button id="start">Start camera</button><button class="l" id="stop" hidden>Stop</button></div>
+  <div class="mut" id="msg">Tap Start camera and allow access. Hold the barcode steady, 10 to 20 cm away.</div>
+</div>
+<div class="p" id="res" hidden>
+  <div class="mut">Last scan</div>
+  <div class="big" id="code"></div>
+  <div class="mut">Compare it with the number printed under the barcode.</div>
+  <div class="row"><button class="g" id="ok">Sahi</button><button class="b" id="bad">Galat</button></div>
+</div>
+<div class="p">
+  <div class="tally"><div><b id="tS">0</b><span class="mut">Scans</span></div><div><b id="tR">0</b><span class="mut">Sahi</span></div><div><b id="tW">0</b><span class="mut">Galat</span></div><div><b id="tP">-</b><span class="mut">Accuracy</span></div></div>
+  <div class="row"><button class="l" id="reset">Reset</button></div>
+</div>
+<div class="p log" id="log"></div>
+<script>
+(function(){
+var v=document.getElementById('v'),msg=document.getElementById('msg'),reader=null,pending=null,lastCode='',lastAt=0;
+var n={s:0,r:0,w:0},rows=[];
+function $(i){return document.getElementById(i)}
+function tally(){$('tS').textContent=n.s;$('tR').textContent=n.r;$('tW').textContent=n.w;var j=n.r+n.w;$('tP').textContent=j?Math.round(n.r/j*100)+'%':'-';
+  $('log').innerHTML=rows.slice().reverse().map(function(r){return '<div><span>'+r.c+'</span><span style="color:var(--'+(r.ok?'good':'bad')+')">'+(r.ok?'Sahi':'Galat')+'</span></div>'}).join('')}
+function onCode(c){
+  var now=Date.now(); if(pending) return; if(c===lastCode&&now-lastAt<2500) return;
+  lastCode=c;lastAt=now;pending=c;n.s++;$('code').textContent=c;$('res').hidden=false;
+  if(navigator.vibrate)navigator.vibrate(60); tally();
+}
+function judge(ok){ if(!pending) return; rows.push({c:pending,ok:ok}); if(ok)n.r++; else n.w++; pending=null; $('res').hidden=true; tally(); }
+$('ok').onclick=function(){judge(true)}; $('bad').onclick=function(){judge(false)};
+$('reset').onclick=function(){n={s:0,r:0,w:0};rows=[];pending=null;$('res').hidden=true;tally()};
+$('start').onclick=function(){
+  if(!window.isSecureContext){msg.textContent='Camera needs a secure (https) page. Open this from your hosted link, not from a saved file.';return}
+  if(!window.ZXing){msg.textContent='Scanner library did not load. Check the internet and reload.';return}
+  var H=ZXing.BarcodeFormat,hints=new Map();
+  hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[H.EAN_13,H.EAN_8,H.UPC_A,H.UPC_E,H.CODE_128,H.CODE_39]);
+  hints.set(ZXing.DecodeHintType.TRY_HARDER,true);
+  reader=new ZXing.BrowserMultiFormatReader(hints);
+  msg.textContent='Starting camera...';
+  reader.decodeFromConstraints({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}}},v,function(r){ if(r) onCode(r.getText()); })
+    .then(function(){msg.textContent='Scanning. Point at a barcode.';$('start').hidden=true;$('stop').hidden=false})
+    .catch(function(e){msg.textContent='Camera did not start: '+(e&&e.name||'error')+'. Allow camera access in the browser and try again.'});
+};
+$('stop').onclick=function(){ if(reader)reader.reset(); $('stop').hidden=true;$('start').hidden=false;msg.textContent='Stopped.' };
+tally();
+})();
+</script>
+</body>
+</html>
