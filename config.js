@@ -1,1 +1,1 @@
-window.KHATA_CONFIG={url:"PASTE_SUPABASE_URL_HERE",key:"PASTE_SUPABASE_ANON_KEY_HERE"};
+window.KHATA_CONFIG={url:"https://ykogtqupewhnabuyfzfh.supabase.co/rest/v1/",key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlrb2d0cXVwZXdobmFidXlmemZoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTU1MjExNjAsImV4cCI6MjExMTA5NzE2MH0.fTSzc_d8JP6Nebpc5VcACmHuBG-fZec0x_rYrwf88E0"};
