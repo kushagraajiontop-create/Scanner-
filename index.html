@@ -1,0 +1,1720 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1550D6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Stock Khata</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<style>
+/* Layout: phone-first single column, bottom tab bar on phones, top tab bar on wide screens. */
+:root{
+  --bg:#F2F5F8; --surface:#FFFFFF; --ink:#13202B; --muted:#586977; --line:#D9E1E8;
+  --accent:#1550D6; --on-accent:#FFFFFF; --tint:#E6EEFD;
+  --good:#0B7A48; --good-tint:#E1F4EA; --warn:#9A5A00; --warn-tint:#FFF1D6; --bad:#BC2430; --bad-tint:#FCE7E8;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-head:'Space Grotesk','Inter',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D141A; --surface:#151E26; --ink:#E7EEF4; --muted:#93A3B1; --line:#27333E;
+    --accent:#7AA7FF; --on-accent:#0A1220; --tint:#1A2A47;
+    --good:#4FD18F; --good-tint:#12301F; --warn:#F0B454; --warn-tint:#3A2C10; --bad:#FF8A92; --bad-tint:#3C1A1E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D141A; --surface:#151E26; --ink:#E7EEF4; --muted:#93A3B1; --line:#27333E;
+  --accent:#7AA7FF; --on-accent:#0A1220; --tint:#1A2A47;
+  --good:#4FD18F; --good-tint:#12301F; --warn:#F0B454; --warn-tint:#3A2C10; --bad:#FF8A92; --bad-tint:#3C1A1E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.code{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+.app{max-width:760px;margin:0 auto;display:flex;flex-direction:column;min-height:100%}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 6px}
+.brand{font-family:var(--f-head);font-weight:700;font-size:22px;letter-spacing:-.01em}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync i{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block}
+.sync.ok i{background:var(--good)} .sync.bad i{background:var(--bad)}
+
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:2px;
+  padding:6px max(10px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+.nav button{background:none;border:0;border-radius:8px;padding:8px 2px;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:11px;font-weight:500}
+.nav button b{font-family:var(--f-head);font-size:12px;font-weight:700;color:inherit}
+.nav button[aria-selected="true"]{background:var(--tint);color:var(--accent)}
+main{padding:10px 0 96px;display:flex;flex-direction:column;gap:14px;min-width:0}
+@media (min-width:820px){
+  .app{min-height:0}
+  .nav{position:static;order:1;border:1px solid var(--line);border-radius:10px;padding:5px;margin-bottom:6px}
+  main{padding-bottom:48px}
+}
+
+.tab{display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel h2{margin:0;font-family:var(--f-head);font-size:16px;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1 1 140px;min-width:0}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+input,select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0;color:var(--ink)}
+input::placeholder{color:var(--muted)}
+.btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:8px;padding:11px 16px;font-weight:600;white-space:nowrap}
+.btn.ghost{background:var(--tint);color:var(--accent)}
+.btn.line{background:none;border:1px solid var(--line);color:var(--ink)}
+.btn.sm{padding:7px 11px;font-size:13px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.danger{background:var(--bad-tint);color:var(--bad)}
+
+.scanbar{display:flex;gap:8px;position:relative}
+.scanbar input{flex:1;font-family:var(--f-mono);font-size:15px}
+.scanbar .cam{display:inline-flex;align-items:center;justify-content:center;cursor:pointer;position:relative;overflow:hidden}
+.scanbar .cam input{position:absolute;inset:0;width:100%;height:100%;opacity:0;padding:0;border:0;cursor:pointer;font-size:0}
+.sug{position:absolute;left:0;right:0;top:100%;margin-top:4px;background:var(--surface);border:1px solid var(--line);border-radius:8px;z-index:4;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.sug button{display:flex;justify-content:space-between;gap:10px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:10px 12px}
+.sug button:last-child{border-bottom:0}
+.sug button:hover{background:var(--tint)}
+.hint{font-size:12px;color:var(--muted)}
+
+.line{display:grid;grid-template-columns:1fr auto;gap:8px 10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:0}
+.line-name{font-weight:600}
+.line-sub{font-size:12px;color:var(--muted)}
+.line-sub.warn{color:var(--warn)}
+.x{background:none;border:0;color:var(--muted);font-size:22px;line-height:1;padding:0 4px}
+.line-ctl{grid-column:1/-1;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:4px}
+.step button{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font-size:18px;line-height:1}
+.step input{width:64px;text-align:center;padding:7px 4px}
+.rate{display:flex;align-items:center;gap:4px;color:var(--muted)}
+.rate input{width:86px;padding:7px 8px}
+.amt{margin-left:auto;font-weight:600}
+.empty{color:var(--muted);text-align:center;padding:18px 8px;font-size:14px}
+
+.totalbar{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.totalbar .big{font-family:var(--f-head);font-size:28px;font-weight:700}
+.seg{display:flex;gap:6px}
+.seg label{flex:1;position:relative}
+.seg input{position:absolute;opacity:0;inset:0;width:100%;height:100%;cursor:pointer;margin:0}
+.seg span{display:block;text-align:center;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-weight:500}
+.seg input:checked+span{background:var(--tint);border-color:var(--accent);color:var(--accent);font-weight:600}
+.seg input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.tile small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.tile b{font-family:var(--f-head);font-size:22px}
+.prow{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.prow:last-child{border-bottom:0}
+.pname{font-weight:600}
+.pmeta{font-size:12px;color:var(--muted)}
+.pqty{text-align:right;font-weight:600}
+.pqty small{color:var(--muted);font-weight:400}
+.pqty.low{color:var(--warn)} .pqty.out{color:var(--bad)}
+.pval{font-size:12px;color:var(--muted);text-align:right}
+.pbtns{grid-column:1/-1;display:flex;gap:8px}
+
+.chip{display:inline-block;border-radius:6px;padding:2px 8px;font-size:12px;font-weight:600;background:var(--bg);color:var(--muted)}
+.chip.late{background:var(--bad-tint);color:var(--bad)}
+.chip.ok{background:var(--good-tint);color:var(--good)}
+.due{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.due:last-child{border-bottom:0}
+.due .who{font-weight:600}
+.due .sub{font-size:12px;color:var(--muted)}
+.due .amtc{text-align:right;font-weight:700}
+.due .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+a.btn{text-decoration:none;display:inline-block}
+.bill{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.bill:last-child{border-bottom:0}
+.banner{background:var(--warn-tint);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+
+.subseg{display:flex;gap:6px}
+.subseg button{flex:1 1 0;padding:9px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:500;color:var(--muted)}
+.subseg button[aria-pressed="true"]{background:var(--tint);border-color:var(--accent);color:var(--accent);font-weight:600}
+.stmt{width:100%;border-collapse:collapse;font-size:14px}
+.stmt td{padding:6px 2px;vertical-align:top}
+.stmt td.r{text-align:right;white-space:nowrap}
+.stmt .h td{padding-top:16px;font-family:var(--f-head);font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.stmt .i td:first-child{padding-left:14px}
+.stmt .t td{border-top:1px solid var(--ink);font-weight:700;padding-top:8px}
+.stmt .gt td{border-top:1px solid var(--ink);border-bottom:3px double var(--ink);font-weight:700;padding:8px 2px}
+.stmt .sm td{color:var(--muted);font-size:12px}
+.stmthead{text-align:center;display:flex;flex-direction:column;gap:2px;padding-bottom:4px}
+.stmthead b{font-family:var(--f-head);font-size:17px}
+.exprow{display:grid;grid-template-columns:1fr 104px auto;gap:8px;align-items:center}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chipbtn{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;font-size:13px}
+.stepind{font-size:12px;color:var(--muted)}
+.chartwrap{position:relative;min-width:0}
+.chartwrap svg{display:block;max-width:100%;touch-action:manipulation}
+.chartwrap text{font-family:var(--f-body);font-size:11px;fill:var(--muted)}
+.chartwrap text.sel{fill:var(--ink);font-weight:600}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);padding:6px 9px;border-radius:6px;font-size:12px;line-height:1.35;white-space:nowrap;z-index:3;transform:translate(-50%,-100%)}
+table.sumtab{width:100%;border-collapse:collapse;font-size:14px}
+table.sumtab th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:6px 4px;border-bottom:1px solid var(--line)}
+table.sumtab td{padding:9px 4px;border-bottom:1px solid var(--line)}
+table.sumtab .r{text-align:right}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(10,16,22,.55);display:flex;align-items:flex-end;justify-content:center;
+  padding:0 max(0px,env(safe-area-inset-left,0px)) 0 max(0px,env(safe-area-inset-right,0px))}
+.sheet{background:var(--surface);width:100%;max-width:520px;border-radius:14px 14px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));max-height:92%;overflow:auto;display:flex;flex-direction:column;gap:12px}
+@media (min-width:820px){.modal{align-items:center}.sheet{border-radius:14px}}
+.sheet h3{margin:0;font-family:var(--f-head);font-size:18px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:30;max-width:86%;text-align:center}
+@media (min-width:820px){.toast{bottom:28px}}
+@media (prefers-reduced-motion:no-preference){.toast{animation:pop .18s ease-out}@keyframes pop{from{opacity:0;transform:translate(-50%,6px)}}}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+.gate{min-height:100vh;display:flex;align-items:center;justify-content:center;padding-block:24px}
+.gatebox{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.gatebox form{display:flex;flex-direction:column;gap:12px}
+.gatebox h2{margin:0;font-family:var(--f-head);font-size:20px}
+.gmsg{font-size:13px;color:var(--bad);min-height:1.2em;white-space:pre-line}
+.gmsg.ok{color:var(--good)}
+.linkbtn{background:none;border:0;color:var(--accent);padding:4px 0;font-weight:500;text-align:left}
+.brand{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.topr{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.rolechip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--tint);color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.iconbtn{background:none;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;font-size:18px;line-height:1;padding:0;color:var(--ink)}
+.sums{display:flex;flex-direction:column;gap:4px}
+.trow{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.admin-only{display:none!important}
+body[data-admin="1"] .admin-only{display:flex!important}
+body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display:none!important}
+.camphoto{position:relative;overflow:hidden}
+.camphoto input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:0;cursor:pointer;padding:0;border:0}
+.btn.dis{opacity:.45;pointer-events:none}
+.codebox{background:var(--tint);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.codebox .bigcode{font:600 24px var(--f-mono);letter-spacing:.08em}
+.sheet pre{white-space:pre-wrap;word-break:break-word;margin:0;font:13px/1.45 var(--f-body)}
+
+</style>
+</head>
+<body>
+<div class="gate" id="gate">
+  <div class="gatebox">
+    <div class="brand">Stock Khata</div>
+    <div id="gLoading" class="hint">Loading...</div>
+
+    <form id="gLogin" hidden>
+      <h2>Login</h2>
+      <label class="f">Email<input id="liEmail" type="email" autocomplete="username" autocapitalize="off" inputmode="email"></label>
+      <label class="f">Password<input id="liPw" type="password" autocomplete="current-password"></label>
+      <button class="btn" type="submit">Login</button>
+      <button type="button" class="linkbtn" id="toSignup">Naya account banana hai (code ke saath)</button>
+      <button type="button" class="linkbtn" id="toForgot">Password bhool gaye?</button>
+    </form>
+
+    <form id="gSignup" hidden>
+      <h2>Naya account</h2>
+      <label class="f">Code (jo aapko bheja gaya)<input id="suCode" type="text" autocomplete="off" autocapitalize="characters"></label>
+      <label class="f">Business ka naam (sirf naye vendor ke liye)<input id="suName" type="text" autocomplete="organization"></label>
+      <label class="f">Apna email<input id="suEmail" type="email" autocomplete="username" autocapitalize="off" inputmode="email"></label>
+      <label class="f">Password (kam se kam 6 akshar)<input id="suPw" type="password" autocomplete="new-password"></label>
+      <button class="btn" type="submit">Account banao</button>
+      <button type="button" class="linkbtn" id="toLogin1">Wapas login</button>
+    </form>
+
+    <form id="gForgot" hidden>
+      <h2>Password reset</h2>
+      <div class="hint">Email daalo. Reset ka link us par aayega.</div>
+      <label class="f">Email<input id="fgEmail" type="email" autocomplete="username" autocapitalize="off" inputmode="email"></label>
+      <button class="btn" type="submit">Link bhejo</button>
+      <button type="button" class="linkbtn" id="toLogin2">Wapas login</button>
+    </form>
+
+    <form id="gRecover" hidden>
+      <h2>Naya password</h2>
+      <label class="f">Naya password<input id="rcPw" type="password" autocomplete="new-password"></label>
+      <button class="btn" type="submit">Password badlo</button>
+    </form>
+
+    <form id="gClaim" hidden>
+      <h2>Code daalo</h2>
+      <div class="hint">Aapka account ban gaya hai. Ab wo code daalo jo aapko mila tha.</div>
+      <label class="f">Code<input id="clCode" type="text" autocomplete="off" autocapitalize="characters"></label>
+      <label class="f">Business ka naam (sirf naye vendor ke liye)<input id="clName" type="text" autocomplete="organization"></label>
+      <button class="btn" type="submit">Aage badho</button>
+      <button type="button" class="linkbtn" data-logout>Logout</button>
+    </form>
+
+    <div id="gBlocked" hidden>
+      <h2 style="margin:0 0 8px;font-family:var(--f-head)">Account band hai</h2>
+      <div class="hint">Is account ko abhi band kiya gaya hai. Jisne aapko ye app di hai unse baat karein.</div>
+      <button type="button" class="linkbtn" data-logout>Logout</button>
+    </div>
+
+    <div class="gmsg" id="gMsg" role="status"></div>
+  </div>
+</div>
+
+<div id="appRoot" hidden>
+
+<div class="app">
+  <header class="top">
+    <div class="brand" id="brandName">Stock Khata</div>
+    <div class="topr">
+      <span class="rolechip" id="roleChip"></span>
+      <span class="sync" id="sync"><i></i><span>Connecting</span></span>
+      <button type="button" class="iconbtn" id="menuBtn" aria-label="Account">&#8942;</button>
+    </div>
+  </header>
+
+  <nav class="nav" id="navBar" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="sale" aria-selected="true"><b>Sale</b><span>Bikri</span></button>
+    <button role="tab" data-tab="purchase" aria-selected="false" class="owner-only"><b>Buy</b><span>Kharidi</span></button>
+    <button role="tab" data-tab="stock" aria-selected="false" class="owner-only"><b>Stock</b><span>Maal</span></button>
+    <button role="tab" data-tab="baaki" aria-selected="false" class="owner-only"><b>Baaki</b><span>Pending</span></button>
+    <button role="tab" data-tab="today" aria-selected="false" class="owner-only"><b>Reports</b><span>Hisaab</span></button>
+    <button role="tab" data-tab="setup" aria-selected="false" class="setup-tab"><b>Setup</b><span>Settings</span></button>
+  </nav>
+
+
+  <main>
+    <div class="banner" id="demoBanner" hidden>
+      <span>Example data is loaded so you can try everything. Remove it before real use.</span>
+      <button class="btn sm line" id="clearDemo">Remove example data</button>
+    </div>
+    
+
+    <!-- SALE -->
+    <section class="tab" id="tab-sale">
+      <div class="panel">
+        <h2>New sale</h2>
+        <div class="scanbar">
+          <input id="saleScan" type="text" autocomplete="off" autocapitalize="off" placeholder="Scan barcode or type item name" aria-label="Scan barcode or search item">
+          <button type="button" class="btn ghost cam" data-cam="sale">Camera</button>
+          <div class="sug" id="saleSug" hidden></div>
+        </div>
+        <div class="hint">Scanner machine ho to bas scan karo. Wo number type karke Enter dabata hai.</div>
+        <div id="saleCart"></div>
+        <div class="row">
+          <label class="f">Customer WhatsApp number (optional)<input id="salPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="10 digits"></label>
+          <label class="f">Customer name (optional)<input id="salParty" type="text" autocomplete="off"></label>
+        </div>
+        <div class="row">
+          <label class="f">GST
+            <select id="saleGst">
+              <option value="none">Nahi lagana</option>
+              <option value="incl">Total ke andar shamil hai</option>
+              <option value="excl">Total ke upar jodna hai</option>
+            </select></label>
+          <label class="f" id="gstRateRow" hidden>GST rate (%)<input id="saleGstRate" type="number" inputmode="decimal" min="0" step="any" value="18"></label>
+          <label class="f">Discount (₹)<input id="saleDisc" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></label>
+        </div>
+        <div class="sums">
+          <div class="trow"><span class="hint">Items total</span><b class="num" id="saleSub">₹0</b></div>
+          <div class="trow" id="rowDisc" hidden><span class="hint">Discount</span><b class="num" id="saleDiscV"></b></div>
+          <div class="trow" id="rowGst" hidden><span class="hint" id="gstLbl">GST</span><b class="num" id="saleGstV"></b></div>
+        </div>
+        <div class="totalbar"><span class="hint">Total</span><span class="big num" id="saleTotal">₹0</span></div>
+        <div class="seg" role="group" aria-label="Payment">
+          <label><input type="radio" name="salepay" value="paid" checked><span>Paid now</span></label>
+          <label><input type="radio" name="salepay" value="credit"><span>Udhaar (credit)</span></label>
+        </div>
+        <button class="btn" id="saveSale">Save and make bill</button>
+      </div>
+      <div class="panel"><h2>Recent sales</h2><div id="recentSales"></div></div>
+    </section>
+
+
+    <!-- PURCHASE -->
+    <section class="tab" id="tab-purchase" hidden>
+      <div class="panel">
+        <h2>New purchase</h2>
+        <div class="row">
+          <label class="f">Supplier<input id="purSupplier" type="text" autocomplete="off"></label>
+          <label class="f">Supplier WhatsApp<input id="purPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="10 digits"></label>
+        </div>
+        <div class="row">
+          <label class="f">Bill number<input id="purBill" type="text" autocomplete="off"></label>
+          <label class="f">Bill date<input id="purDate" type="date"></label>
+        </div>
+        <div class="scanbar">
+          <input id="purScan" type="text" autocomplete="off" autocapitalize="off" placeholder="Scan barcode or type item name" aria-label="Scan barcode or search item">
+          <button type="button" class="btn ghost cam" data-cam="purchase">Camera</button>
+          <div class="sug" id="purSug" hidden></div>
+        </div>
+        <div id="purCart"></div>
+        <div class="totalbar"><span class="hint">Bill total</span><span class="big num" id="purTotal">₹0</span></div>
+        <div class="seg" role="group" aria-label="Payment">
+          <label><input type="radio" name="purpay" value="paid"><span>Paid</span></label>
+          <label><input type="radio" name="purpay" value="unpaid" checked><span>Not paid yet</span></label>
+        </div>
+        <button class="btn" id="savePur">Save purchase</button>
+      </div>
+      <div class="panel"><h2>Recent purchases</h2><div id="recentPur"></div></div>
+    </section>
+
+    <!-- STOCK -->
+    <section class="tab" id="tab-stock" hidden>
+      <div class="tiles" id="tiles"></div>
+      <div class="panel" id="lowPanel" hidden>
+        <h2>Low stock list</h2>
+        <div class="hint">Suggested quantity brings each item back up to twice its low level.</div>
+        <div id="lowList"></div>
+        <div class="row"><button class="btn sm" id="copyOrder" style="flex:0 0 auto">Copy order list</button><a class="btn sm ghost" id="waOrder" target="_blank" rel="noopener" style="flex:0 0 auto">Send on WhatsApp</a></div>
+      </div>
+      <div class="panel">
+        <div class="row" style="align-items:flex-end">
+          <label class="f" style="flex:2 1 200px">Find item<input id="stockFind" type="search" placeholder="Name or barcode" autocomplete="off"></label>
+          <button class="btn" id="addProduct" style="flex:0 0 auto">Add item</button>
+        </div>
+        <div class="scanbar">
+          <input id="stockScan" type="text" autocomplete="off" placeholder="Scan to open or add an item" aria-label="Scan barcode">
+          <button type="button" class="btn ghost cam" data-cam="stock">Camera</button>
+        </div>
+        <div id="stockList"></div>
+      </div>
+    </section>
+
+    <!-- BAAKI -->
+    <section class="tab" id="tab-baaki" hidden>
+      <div class="tiles" id="dueTiles"></div>
+      <div class="panel">
+        <h2>Customers who owe you</h2>
+        <div class="hint">Bills older than 3 days are marked late. Tap Remind to open WhatsApp with the message ready. Sending it automatically is the next step.</div>
+        <div id="owedList"></div>
+      </div>
+      <div class="panel">
+        <h2>You owe suppliers</h2>
+        <div id="payList"></div>
+      </div>
+    </section>
+
+    <!-- TODAY -->
+    <section class="tab" id="tab-today" hidden>
+      <div class="subseg" id="repSeg" role="group" aria-label="Report type">
+        <button type="button" data-v="daily" aria-pressed="true">Daily</button>
+        <button type="button" data-v="export" aria-pressed="false">Excel report</button>
+        <button type="button" data-v="fin" aria-pressed="false">Financials</button>
+      </div>
+      <div class="tab" id="rep-daily">
+      <div class="panel">
+        <h2>Daily summary</h2>
+        <label class="f">Day<input id="sumDate" type="date"></label>
+        <div class="tiles" id="sumTiles"></div>
+        <div class="hint">Profit is an estimate: selling rate minus average buying cost of each item.</div>
+      </div>
+      <div class="panel">
+        <div class="row" style="align-items:center;justify-content:space-between;flex-wrap:nowrap">
+          <h2 style="flex:1 1 auto">Sales, last 7 days</h2>
+          <button class="btn sm line" id="chartToggle" style="flex:0 0 auto">Show table</button>
+        </div>
+        <div class="chartwrap" id="chartWrap"></div>
+      </div>
+      <div class="panel"><h2>Top items</h2><div id="sumTop"></div></div>
+      <div class="panel"><h2>Needs attention</h2><div id="sumAttn"></div>
+        <div class="row"><button class="btn sm" id="copySum" style="flex:0 0 auto">Copy summary</button><a class="btn sm ghost" id="waSum" target="_blank" rel="noopener" style="flex:0 0 auto">Send on WhatsApp</a></div>
+      </div>
+      </div>
+
+      <div class="tab" id="rep-export" hidden>
+        <div class="panel">
+          <h2>Sales and purchase report</h2>
+          <div class="hint">Pick any start and end date. You get an Excel file with a summary, every bill and every item sold or bought.</div>
+          <div class="row"><label class="f">From<input id="expFrom" type="date"></label><label class="f">To<input id="expTo" type="date"></label></div>
+          <div class="tiles" id="expPreview"></div>
+          <button class="btn" id="expDownload">Download Excel</button>
+        </div>
+      </div>
+
+      <div class="tab" id="rep-fin" hidden>
+        <div class="panel">
+          <h2>Profit and loss, balance sheet</h2>
+          <div class="hint">Made month by month, in the usual format for a proprietorship shop. Pick the month and tap Make financials. It asks for your other expenses first.</div>
+          <div class="row" style="align-items:flex-end"><label class="f">Month<input id="finMonth" type="month"></label><button class="btn" id="makeFin" style="flex:0 0 auto">Make financials</button></div>
+        </div>
+        <div id="finOut"></div>
+      </div>
+    </section>
+
+    <!-- SETUP -->
+    <section class="tab" id="tab-setup" hidden>
+      <div class="panel owner-only">
+        <h2>Business details</h2>
+        <div class="hint">Ye naam app ke upar aur har PDF bill par aata hai. PDF bill mein Hindi akshar nahi aate, isliye naam aur address English mein rakho.</div>
+        <label class="f">Business name<input id="bizName" type="text" autocomplete="off"></label>
+        <label class="f">Address (bill par)<input id="bizAddr" type="text" autocomplete="off"></label>
+        <div class="row">
+          <label class="f">Phone<input id="bizPhone" type="tel" autocomplete="off"></label>
+          <label class="f">GSTIN (agar hai)<input id="bizGstin" type="text" autocomplete="off" autocapitalize="characters"></label>
+        </div>
+        <button class="btn" id="bizSave">Save</button>
+      </div>
+      <div class="panel owner-only">
+        <h2>Cashier</h2>
+        <div class="hint">Cashier sirf bill bana sakta hai. Kharidi, hisaab aur profit uski screen par nahi aate.</div>
+        <div id="staffList"></div>
+        <button class="btn" id="staffInvite">Cashier ka code banao</button>
+        <div id="staffCode"></div>
+      </div>
+      <div class="panel admin-only">
+        <h2>Naya vendor (sirf aapke liye)</h2>
+        <label class="f">Vendor ka naam (apni yaad ke liye)<input id="admLabel" type="text" autocomplete="off"></label>
+        <button class="btn" id="admInvite">Vendor ka code banao</button>
+        <div id="admCode"></div>
+      </div>
+      <div class="panel admin-only">
+        <h2>Abhi tak use na hue code</h2>
+        <div id="admInvites"></div>
+      </div>
+      <div class="panel admin-only">
+        <h2>Saare vendors</h2>
+        <div id="admBiz"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+<div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+'use strict';
+const LATE_AFTER = 3;
+const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
+const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],fin:{}};
+let db = null, STOCK = new Map();
+let BIZ={name:'',address:'',phone:'',gstin:''}, ROLE='', CTX=null;
+
+const $ = (s,el)=> (el||document).querySelector(s);
+const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
+const esc = v => String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const r3 = n => Math.round(n*1000)/1000;
+const r2 = n => Math.round(n*100)/100;
+const money = n => '₹' + (Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const qtyFmt = n => (Math.round(n*100)/100).toLocaleString('en-IN');
+const todayStr = () => new Date().toLocaleDateString('en-CA');
+function daysAgo(ds){
+  const [y,m,d] = String(ds).split('-').map(Number); if(!y) return 0;
+  const t = new Date(); const a = new Date(t.getFullYear(),t.getMonth(),t.getDate()); const b = new Date(y,m-1,d);
+  return Math.max(0,Math.round((a-b)/864e5));
+}
+function shortDate(ds){ const [y,m,d]=String(ds).split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}); }
+
+let toastT;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{t.hidden=true},2600); }
+function confirmTap(btn, label, fn){
+  if(btn.dataset.armed){ fn(); return; }
+  const old = btn.textContent; btn.dataset.armed='1'; btn.textContent = label;
+  setTimeout(()=>{ delete btn.dataset.armed; if(btn.isConnected) btn.textContent = old; },3000);
+}
+
+/* ---------- sync status ---------- */
+let syncTimer;
+function setSync(kind,text){ const s=$('#sync'); s.className='sync '+kind; $('span',s).textContent=text; }
+function markLive(snap){ if(!snap.metadata.fromCache){ clearTimeout(syncTimer); setSync('ok','Live'); } }
+
+/* ---------- stock maths ---------- */
+function stockCalc(endDs){
+  const ok = d => !endDs || String(d)<=endDs;
+  const m = new Map();
+  for(const p of S.products){
+    const q = +p.openQty||0, c = +(p.openRate!=null?p.openRate:p.buyRate)||0;
+    m.set(p.id,{p,inQty:q,inCost:q*c,out:0,adj:0});
+  }
+  for(const b of S.purchases) if(ok(b.date)) for(const it of (b.items||[])){ const r=m.get(it.pid); if(r){ r.inQty+=+it.qty||0; r.inCost+=(+it.qty||0)*(+it.rate||0); } }
+  for(const s of S.sales) if(ok(s.date)) for(const it of (s.items||[])){ const r=m.get(it.pid); if(r) r.out+=+it.qty||0; }
+  for(const a of S.adjustments) if(ok(a.date)){ const r=m.get(a.pid); if(r) r.adj+=+a.diff||0; }
+  for(const r of m.values()){
+    r.qty = r3(r.inQty - r.out + r.adj);
+    r.avg = r.inQty>0 ? r.inCost/r.inQty : (+r.p.buyRate||0);
+    r.value = Math.max(r.qty,0)*r.avg;
+  }
+  return m;
+}
+function compute(){ STOCK = stockCalc(null); }
+
+/* ---------- product lookup / suggestions ---------- */
+function findProducts(q){
+  q = q.trim().toLowerCase(); if(!q) return [];
+  return S.products.filter(p=> (p.name||'').toLowerCase().includes(q) || (p.barcode||'').includes(q)).slice(0,6);
+}
+function bindScan(ctx,input,sug,onPickCtx){
+  const hide=()=>{ if(sug){ sug.hidden=true; sug.innerHTML=''; } };
+  input.addEventListener('input',()=>{
+    if(!sug) return;
+    const list = findProducts(input.value);
+    if(!list.length){ hide(); return; }
+    sug.innerHTML = list.map(p=>`<button type="button" data-id="${esc(p.id)}"><span>${esc(p.name)}</span><span class="code">${esc(p.barcode||'')}</span></button>`).join('');
+    sug.hidden=false;
+  });
+  if(sug) sug.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b) return;
+    const p=S.products.find(x=>x.id===b.dataset.id); input.value=''; hide(); if(p) pick(ctx,p); input.focus();
+  });
+  input.addEventListener('keydown',e=>{
+    if(e.key!=='Enter') return; e.preventDefault();
+    const v=input.value.trim(); if(!v) return;
+    const exact=S.products.find(p=>p.barcode===v);
+    if(exact){ input.value=''; hide(); pick(ctx,exact); return; }
+    const list=findProducts(v);
+    if(list.length===1){ input.value=''; hide(); pick(ctx,list[0]); return; }
+    if(/^\d{6,}$/.test(v)){ input.value=''; hide(); handleCode(ctx,v); return; }
+    if(!list.length) toast('No item found. Use Add item to create it.');
+  });
+  input.addEventListener('blur',()=>setTimeout(hide,150));
+}
+function pick(ctx,p){
+  if(ctx==='sale') saleCart.add(p);
+  else if(ctx==='purchase') purCart.add(p);
+  else openProduct(p);
+}
+/* ---------- sound ---------- */
+let actx=null;
+function ensureAudio(){
+  try{
+    if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) actx=new AC(); }
+    if(actx&&actx.state==='suspended') actx.resume();
+  }catch(e){}
+}
+function beep(ok){
+  try{
+    ensureAudio(); if(!actx) return;
+    const o=actx.createOscillator(), g=actx.createGain(), t=actx.currentTime;
+    o.type='square'; o.frequency.value=ok?1800:420; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.18,t+0.008); g.gain.exponentialRampToValueAtTime(0.0001,t+(ok?0.1:0.28));
+    o.connect(g); g.connect(actx.destination); o.start(t); o.stop(t+(ok?0.11:0.3));
+    if(navigator.vibrate) navigator.vibrate(ok?30:[60,40,60]);
+  }catch(e){}
+}
+document.addEventListener('pointerdown',ensureAudio,{once:true});
+
+/* ---------- barcode found ---------- */
+async function handleCode(ctx,raw){
+  const code=String(raw).trim(); if(!code) return;
+  const p=S.products.find(x=>x.barcode===code);
+  if(p){ beep(true); pick(ctx,p); return; }
+  beep(false);
+  if(ROLE!=='owner'){ toast('Ye item list mein nahi hai. Owner se jodne ko kaho.'); return; }
+  let cat=null;
+  try{ const r=await sb.from('catalogue').select('name,unit').eq('barcode',code).maybeSingle(); cat=r.data||null; }catch(e){}
+  openProduct(null,{barcode:code,name:cat?cat.name:'',unit:cat?cat.unit:'pcs',
+    hint:cat?'Naam sabke catalogue se mila. Check karke MRP aur rate daalo.':'Ye barcode pehli baar aaya hai. Naam aur MRP daalo.',
+    after:np=>{ if(ctx==='sale') saleCart.add(np); else if(ctx==='purchase') purCart.add(np); }});
+}
+
+/* ---------- photo of a barcode (backup when live camera does not work) ---------- */
+async function decodePhoto(file){
+  const url = URL.createObjectURL(file);
+  try{
+    if('BarcodeDetector' in window){
+      try{
+        const det = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
+        const bmp = await createImageBitmap(file);
+        const res = await det.detect(bmp);
+        if(res.length) return res[0].rawValue;
+      }catch(e){}
+    }
+    if(window.ZXing){
+      try{
+        const H=ZXing.BarcodeFormat,hints=new Map();
+        hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[H.EAN_13,H.EAN_8,H.UPC_A,H.UPC_E,H.CODE_128,H.CODE_39]);
+        hints.set(ZXing.DecodeHintType.TRY_HARDER,true);
+        const rd = new ZXing.BrowserMultiFormatReader(hints); const r = await rd.decodeFromImageUrl(url); return r.getText();
+      }catch(e){}
+    }
+  } finally { URL.revokeObjectURL(url); }
+  return null;
+}
+
+/* ---------- live camera scanner ---------- */
+let camStream=null, camOn=false, camZx=null, camSeen={};
+function stopCam(){
+  camOn=false;
+  if(camZx){ try{camZx.reset()}catch(e){} camZx=null; }
+  if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
+}
+function onCamCode(ctx,code){
+  const now=Date.now(); if(camSeen[code]&&now-camSeen[code]<2500) return; camSeen[code]=now;
+  const p=S.products.find(x=>x.barcode===code);
+  if(p){
+    beep(true);
+    if(ctx==='stock'){ stopCam(); closeModal(); openProduct(p); } else pick(ctx,p);
+    return;
+  }
+  stopCam(); closeModal(); handleCode(ctx,code);
+}
+async function openScanner(ctx){
+  ensureAudio(); camSeen={};
+  openModal(`<h3>Barcode scan</h3>
+    <video id="camV" playsinline muted style="width:100%;border-radius:8px;background:#000;max-height:46vh;object-fit:cover"></video>
+    <div class="hint" id="camMsg">Camera khul raha hai...</div>
+    <div class="row"><button type="button" class="btn line" id="camClose">Band karo</button><button type="button" class="btn line" id="camTorch" hidden>Light</button>
+      <label class="btn ghost camphoto">Photo se scan<input id="camPhoto" type="file" accept="image/*" capture="environment"></label></div>
+    ${ctx==='stock'?'':'<div class="hint">Ek ke baad ek scan karte jao. Ho jaye to Band karo.</div>'}`);
+  const msg=t=>{ const m=$('#camMsg'); if(m) m.textContent=t; };
+  $('#camClose').onclick=closeModal;
+  $('#camPhoto').addEventListener('change',async e=>{
+    const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+    msg('Photo padh rahe hain...');
+    const code=await decodePhoto(f);
+    if(code) onCamCode(ctx,code); else msg('Photo se barcode nahi padha. Sirf barcode ko poora bhar ke, seedhi photo lo.');
+  });
+  if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ msg('Is browser mein live camera nahi chal raha. Photo se scan karo.'); return; }
+  try{
+    let det=null;
+    if('BarcodeDetector' in window){ try{ det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']}); }catch(e){ det=null; } }
+    if(det){
+      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+      const v=$('#camV');
+      if(!v){ stream.getTracks().forEach(t=>t.stop()); return; }
+      camStream=stream;
+      const tr=stream.getVideoTracks()[0];
+      try{
+        const caps=tr.getCapabilities?tr.getCapabilities():{};
+        if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0) await tr.applyConstraints({advanced:[{focusMode:'continuous'}]});
+        if(caps.torch){ const tb=$('#camTorch'); tb.hidden=false; let on=false; tb.onclick=async()=>{ on=!on; try{ await tr.applyConstraints({advanced:[{torch:on}]}); }catch(e){} }; }
+      }catch(e){}
+      v.srcObject=stream; await v.play(); camOn=true;
+      msg('Barcode ko screen mein bhar ke seedha pakdo.');
+      (async()=>{
+        while(camOn){
+          try{ if(v.readyState>=2){ const r=await det.detect(v); if(r&&r.length) onCamCode(ctx,r[0].rawValue); } }catch(e){}
+          await new Promise(r=>setTimeout(r,90));
+        }
+      })();
+    } else if(window.ZXing){
+      const H=ZXing.BarcodeFormat,hints=new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[H.EAN_13,H.EAN_8,H.UPC_A,H.UPC_E,H.CODE_128,H.CODE_39]);
+      hints.set(ZXing.DecodeHintType.TRY_HARDER,true);
+      camZx=new ZXing.BrowserMultiFormatReader(hints); camOn=true;
+      await camZx.decodeFromConstraints({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}},$('#camV'),r=>{ if(r) onCamCode(ctx,r.getText()); });
+      msg('Barcode ko screen mein bhar ke seedha pakdo.');
+    } else msg('Scanner load nahi hua. Internet check karo, ya photo se scan karo.');
+  }catch(e){ msg('Camera nahi khula ('+((e&&e.name)||'error')+'). Permission allow karo, ya photo se scan karo.'); }
+}
+$$('[data-cam]').forEach(b=>b.addEventListener('click',()=>openScanner(b.dataset.cam)));
+
+
+/* ---------- carts ---------- */
+function Cart(kind,listEl,totalEl){
+  const c={kind,items:[]};
+  const lineHtml=(it,i)=>{
+    let sub = `MRP ${money(it.mrp)} · ${esc(it.unit)}`, warn=false;
+    if(kind==='sale' && ROLE!=='cashier'){ const st=STOCK.get(it.pid); if(st && it.qty>st.qty){ sub=`Only ${qtyFmt(st.qty)} ${esc(it.unit)} in stock`; warn=true; } }
+    return `<div class="line" data-i="${i}">
+      <div><div class="line-name">${esc(it.name)}</div><div class="line-sub${warn?' warn':''}" data-sub>${sub}</div></div>
+      <button class="x" data-act="del" aria-label="Remove ${esc(it.name)}">×</button>
+      <div class="line-ctl">
+        <div class="step"><button type="button" data-act="dec" aria-label="Less">−</button>
+          <input data-f="qty" type="number" inputmode="decimal" min="0" step="any" value="${it.qty}" aria-label="Quantity">
+          <button type="button" data-act="inc" aria-label="More">+</button></div>
+        <label class="rate">${kind==='sale'?'Rate':'Cost'} ₹<input data-f="rate" type="number" inputmode="decimal" min="0" step="any" value="${it.rate}" aria-label="Rate"></label>
+        <div class="amt num" data-amt>${money(it.qty*it.rate)}</div>
+      </div></div>`;
+  };
+  c.total=()=>c.items.reduce((s,i)=>s+i.qty*i.rate,0);
+  c.render=()=>{
+    listEl.innerHTML = c.items.length ? c.items.map(lineHtml).join('') : `<div class="empty">${kind==='sale'?'Scan an item to start the bill.':'Scan the items on the supplier bill.'}</div>`;
+    totalEl.textContent = money(c.total()); if(c.onChange) c.onChange();
+  };
+  c.add=p=>{
+    const ex=c.items.find(i=>i.pid===p.id);
+    if(ex) ex.qty=r3(ex.qty+1);
+    else c.items.push({pid:p.id,name:p.name,unit:p.unit||'pcs',qty:1,mrp:+p.mrp||0,rate: kind==='sale' ? (+p.mrp||0) : (+p.buyRate||0)});
+    c.render(); toast('Added: '+p.name);
+  };
+  c.clear=()=>{ c.items=[]; c.render(); };
+  listEl.addEventListener('click',e=>{
+    const b=e.target.closest('[data-act]'); if(!b) return;
+    const i=+b.closest('.line').dataset.i, it=c.items[i]; if(!it) return;
+    if(b.dataset.act==='inc') it.qty=r3(it.qty+1);
+    else if(b.dataset.act==='dec'){ it.qty=r3(it.qty-1); if(it.qty<=0) c.items.splice(i,1); }
+    else c.items.splice(i,1);
+    c.render();
+  });
+  listEl.addEventListener('input',e=>{
+    const f=e.target.dataset.f; if(!f) return;
+    const line=e.target.closest('.line'), it=c.items[+line.dataset.i]; if(!it) return;
+    const v=parseFloat(e.target.value); it[f]=isNaN(v)?0:v;
+    $('[data-amt]',line).textContent=money(it.qty*it.rate);
+    if(kind==='sale' && ROLE!=='cashier'){
+      const st=STOCK.get(it.pid), sub=$('[data-sub]',line); const warn=st&&it.qty>st.qty;
+      sub.className='line-sub'+(warn?' warn':''); sub.textContent = warn?`Only ${qtyFmt(st.qty)} ${it.unit} in stock`:`MRP ${money(it.mrp)} · ${it.unit}`;
+    }
+    totalEl.textContent=money(c.total()); if(c.onChange) c.onChange();
+  });
+  return c;
+}
+const saleCart = Cart('sale',$('#saleCart'),$('#saleSub'));
+const purCart = Cart('purchase',$('#purCart'),$('#purTotal'));
+
+/* ---------- product modal ---------- */
+function openModal(html){ $('#sheet').innerHTML=html; $('#modal').hidden=false; const f=$('#sheet input,#sheet select'); if(f && matchMedia('(pointer:fine)').matches) f.focus(); }
+function closeModal(){ if(typeof stopCam==='function') stopCam(); $('#modal').hidden=true; $('#sheet').innerHTML=''; }
+$('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('#modal').hidden) closeModal(); });
+
+function openProduct(p,opts){
+  opts=opts||{}; const edit=!!p; const v=p||{barcode:opts.barcode||'',name:opts.name||'',unit:opts.unit||'pcs',reorder:5};
+  openModal(`<h3>${edit?'Edit item':'New item'}</h3>${opts.hint?`<div class="hint">${esc(opts.hint)}</div>`:''}
+    <label class="f">Item name<input id="pm_name" type="text" autocomplete="off" value="${esc(v.name||'')}"></label>
+    <label class="f">Barcode<input id="pm_code" type="text" autocomplete="off" inputmode="numeric" value="${esc(v.barcode||'')}" placeholder="Scan or type. Leave empty for loose items"></label>
+    <div class="row">
+      <label class="f">MRP (₹)<input id="pm_mrp" type="number" inputmode="decimal" step="any" min="0" value="${v.mrp??''}"></label>
+      <label class="f">Unit<select id="pm_unit">${UNITS.map(u=>`<option${u===v.unit?' selected':''}>${u}</option>`).join('')}</select></label>
+    </div>
+    <div class="row">
+      <label class="f">Usual buying rate (₹)<input id="pm_buy" type="number" inputmode="decimal" step="any" min="0" value="${v.buyRate??''}"></label>
+      <label class="f">${edit?'Opening stock':'Stock you have now'}<input id="pm_open" type="number" inputmode="decimal" step="any" value="${v.openQty??''}"></label>
+    </div>
+    <label class="f">Mark low when stock is at or below<input id="pm_reorder" type="number" inputmode="decimal" step="any" min="0" value="${v.reorder??5}"></label>
+    <div class="row"><button class="btn" id="pm_save">Save item</button><button class="btn line" id="pm_cancel">Cancel</button></div>
+    ${edit?'<button class="btn danger sm" id="pm_del">Delete item</button>':''}`);
+  $('#pm_cancel').onclick=closeModal;
+  if(edit) $('#pm_del').onclick=function(){ confirmTap(this,'Tap again to delete',async()=>{ try{ await db.doc('products/'+p.id).delete(); closeModal(); toast('Item deleted'); }catch(e){ toast('Could not delete'); } }); };
+  $('#pm_save').onclick=async()=>{
+    if(!db){ toast('Sync not available'); return; }
+    const name=$('#pm_name').value.trim(), code=$('#pm_code').value.trim(), mrp=parseFloat($('#pm_mrp').value);
+    if(!name){ toast('Enter the item name'); return; }
+    if(isNaN(mrp)){ toast('Enter the MRP'); return; }
+    if(code && S.products.some(x=>x.barcode===code && (!edit || x.id!==p.id))){ toast('Another item already has this barcode'); return; }
+    let id = edit ? p.id : (code.replace(/[^A-Za-z0-9_\-.~:@+]/g,'') || 'p'+Date.now().toString(36));
+    if(!edit && S.products.some(x=>x.id===id)) id = 'p'+Date.now().toString(36);
+    const doc={name,barcode:code,mrp,unit:$('#pm_unit').value,buyRate:parseFloat($('#pm_buy').value)||0,openQty:parseFloat($('#pm_open').value)||0,reorder:parseFloat($('#pm_reorder').value)||0};
+    doc.openRate = edit ? (p.openRate!=null ? p.openRate : (+p.buyRate||0)) : doc.buyRate;
+    if(edit && p.demo) doc.demo=true;
+    const btn=$('#pm_save'); btn.disabled=true;
+    try{
+      await db.doc('products/'+id).set(doc);
+      if(code && ROLE==='owner'){ try{ await sb.from('catalogue').upsert({barcode:code,name,unit:doc.unit},{onConflict:'barcode',ignoreDuplicates:true}); }catch(e){} }
+      closeModal(); toast('Item saved');
+      if(opts.after) opts.after({id,...doc});
+    }catch(e){ toast('Could not save ('+(e.code||'error')+')'); btn.disabled=false; }
+  };
+}
+function openCount(p){
+  const st=STOCK.get(p.id); const sys=st?st.qty:0;
+  openModal(`<h3>Count: ${esc(p.name)}</h3>
+    <div class="hint">System shows <b class="num">${qtyFmt(sys)} ${esc(p.unit||'pcs')}</b>. Enter what is on the shelf.</div>
+    <label class="f">Counted quantity<input id="ct_qty" type="number" inputmode="decimal" step="any" min="0"></label>
+    <div class="row"><button class="btn" id="ct_save">Update stock</button><button class="btn line" id="ct_cancel">Cancel</button></div>`);
+  $('#ct_cancel').onclick=closeModal;
+  $('#ct_save').onclick=async()=>{
+    const q=parseFloat($('#ct_qty').value); if(isNaN(q)){ toast('Enter the counted quantity'); return; }
+    const diff=r3(q-sys); if(diff===0){ closeModal(); toast('Stock already matches'); return; }
+    try{ await db.collection('adjustments').doc().set({pid:p.id,diff,date:todayStr(),ts:Date.now(),note:'Physical count',...(p.demo?{demo:true}:{})}); closeModal(); toast('Stock updated ('+(diff>0?'+':'')+qtyFmt(diff)+')'); }
+    catch(e){ toast('Could not save'); }
+  };
+}
+
+/* ---------- saving bills ---------- */
+/* ---------- sale totals, saving and bill ---------- */
+const billLabel=n=>'INV-'+String(n).padStart(4,'0');
+const asciiPdf=s=>String(s==null?'':s).replace(/[^\x20-\x7E]/g,'');
+function saleCalc(){
+  const sub=saleCart.total();
+  const disc=Math.min(Math.max(parseFloat($('#saleDisc').value)||0,0),sub);
+  const mode=$('#saleGst').value, rate=Math.max(parseFloat($('#saleGstRate').value)||0,0);
+  const after=sub-disc;
+  let taxable=after, gst=0, total=after;
+  if(mode!=='none'&&rate>0){
+    if(mode==='incl'){ gst=r2(after-after*100/(100+rate)); taxable=r2(after-gst); total=r2(after); }
+    else { gst=r2(after*rate/100); taxable=r2(after); total=r2(taxable+gst); }
+  } else { taxable=r2(after); total=r2(after); }
+  return {sub:r2(sub),disc:r2(disc),mode:rate>0?mode:'none',rate:rate,taxable:taxable,gst:gst,total:total};
+}
+function renderSaleTotals(){
+  const c=saleCalc();
+  $('#gstRateRow').hidden=$('#saleGst').value==='none';
+  $('#saleTotal').textContent=money(c.total);
+  $('#rowDisc').hidden=!(c.disc>0); $('#saleDiscV').textContent='-'+money(c.disc);
+  const g=c.mode!=='none'; $('#rowGst').hidden=!g;
+  $('#gstLbl').textContent=c.mode==='incl'?`GST ${c.rate}% (total mein shamil)`:`GST ${c.rate}% (upar se joda)`;
+  $('#saleGstV').textContent=money(c.gst);
+}
+saleCart.onChange=renderSaleTotals;
+['#saleDisc','#saleGstRate'].forEach(s=>$(s).addEventListener('input',renderSaleTotals));
+$('#saleGst').addEventListener('change',renderSaleTotals);
+
+const phone10=p=>{ const d=String(p||'').replace(/\D/g,''); return d.length>=10?d.slice(-10):''; };
+function waLinkAny(phone,text){
+  const d=phone10(phone);
+  return 'https://wa.me/'+(d?'91'+d:'')+'?text='+encodeURIComponent(text);
+}
+function billMessage(s){
+  const nm=(s.party||'').trim();
+  return `Namaste${nm?' '+nm:''}! ${BIZ.name} se aapka bill ${billLabel(s.billNo||0)}: Rs ${(+s.total||0).toFixed(2)}.`
+    +(s.billUrl?`\nBill dekhein: ${s.billUrl}`:'')
+    +(s.paid?'':`\nBaaki raashi: Rs ${(+s.total||0).toFixed(2)}`)
+    +`\nDhanyavaad! Phir padhariye.`;
+}
+function makeBillPdf(s){
+  const {jsPDF}=window.jspdf, d=new jsPDF({unit:'mm',format:'a5'});
+  const W=148,L=10,R=W-10; let y=14;
+  const f=n=>'Rs '+(+n||0).toFixed(2);
+  d.setFont('helvetica','bold'); d.setFontSize(16);
+  const nameLines=d.splitTextToSize(asciiPdf(BIZ.name)||'Shop',W-20); d.text(nameLines,W/2,y,{align:'center'}); y+=nameLines.length*6.5;
+  d.setFont('helvetica','normal'); d.setFontSize(9);
+  if(BIZ.address){ const al=d.splitTextToSize(asciiPdf(BIZ.address),W-24); d.text(al,W/2,y,{align:'center'}); y+=al.length*4; }
+  const meta=[BIZ.phone?'Ph: '+asciiPdf(BIZ.phone):'',BIZ.gstin?'GSTIN: '+asciiPdf(BIZ.gstin):''].filter(Boolean).join('    ');
+  if(meta){ d.text(meta,W/2,y,{align:'center'}); y+=4.5; }
+  y+=1; d.line(L,y,R,y); y+=5;
+  d.text('Bill No: '+billLabel(s.billNo||0),L,y); d.text('Date: '+asciiPdf(shortDate(s.date)+' '+String(s.date).slice(0,4)),R,y,{align:'right'}); y+=5;
+  const cust=[asciiPdf(s.party),asciiPdf(s.phone)].filter(Boolean).join('  /  ');
+  if(cust){ d.text('Customer: '+cust,L,y); y+=5; }
+  y+=1; d.setFont('helvetica','bold'); d.text('Item',L,y); d.text('Qty',92,y,{align:'right'}); d.text('Rate',114,y,{align:'right'}); d.text('Amount',R,y,{align:'right'});
+  y+=2; d.line(L,y,R,y); y+=5; d.setFont('helvetica','normal');
+  for(const it of (s.items||[])){
+    const lines=d.splitTextToSize(asciiPdf(it.name)||'Item',66);
+    if(y+lines.length*4.2>186){ d.addPage(); y=14; }
+    d.text(lines,L,y); d.text(String(+it.qty||0)+' '+asciiPdf(it.unit||''),92,y,{align:'right'});
+    d.text((+it.rate||0).toFixed(2),114,y,{align:'right'}); d.text(((+it.qty||0)*(+it.rate||0)).toFixed(2),R,y,{align:'right'});
+    y+=lines.length*4.2+1.5;
+  }
+  if(y>160){ d.addPage(); y=14; }
+  d.line(L,y,R,y); y+=5;
+  const row=(a,b,bold)=>{ d.setFont('helvetica',bold?'bold':'normal'); d.text(a,R-46,y); d.text(b,R,y,{align:'right'}); y+=5; };
+  const sub=(s.subtotal!=null?s.subtotal:s.total);
+  if((+s.discount||0)>0||s.gstMode&&s.gstMode!=='none') row('Items total',f(sub));
+  if((+s.discount||0)>0) row('Discount','- '+f(s.discount));
+  if(s.gstMode&&s.gstMode!=='none'){
+    row('Taxable value',f(s.taxable));
+    row('GST @ '+(+s.gstRate||0)+'%'+(s.gstMode==='incl'?' (incl.)':''),f(s.gstAmt));
+  }
+  d.setFontSize(12); row('TOTAL',f(s.total),true); d.setFontSize(9);
+  y+=1; d.setFont('helvetica','normal');
+  d.text(s.paid?'Payment: Paid':'Payment: UDHAAR (pending '+f(s.total)+')',L,y); y+=9;
+  d.setFont('helvetica','bold'); d.setFontSize(10); d.text('Dhanyavaad! Phir padhariye.',W/2,y,{align:'center'}); y+=4.5;
+  d.setFont('helvetica','normal'); d.setFontSize(8); d.text('Thank you, please visit again.',W/2,y,{align:'center'});
+  return d.output('blob');
+}
+function downloadBlob(blob,name){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },4000);
+}
+async function showBill(s0){
+  let s=s0; const label=billLabel(s.billNo||0);
+  openModal(`<h3>Bill ${esc(label)}</h3>
+    <div class="hint">${esc(BIZ.name)} · ${esc(shortDate(s.date))}${s.party?' · '+esc(s.party):''}</div>
+    <div class="big num">${money(s.total)}</div>
+    <div class="hint" id="bl_stat">Bill ban raha hai...</div>
+    <label class="f">Customer WhatsApp number<input id="bl_phone" type="tel" inputmode="tel" value="${esc(s.phone||'')}" placeholder="10 digits"></label>
+    <div class="row"><a class="btn dis" id="bl_wa" target="_blank" rel="noopener">WhatsApp pe bhejo</a><button type="button" class="btn ghost" id="bl_share" hidden>PDF share karo</button></div>
+    <div class="row"><button type="button" class="btn line" id="bl_dl">PDF download</button><button type="button" class="btn line" id="bl_close">Band karo</button></div>`);
+  const st=t=>{ const e=$('#bl_stat'); if(e) e.textContent=t; };
+  const upd=()=>{ const a=$('#bl_wa'); if(a) a.href=waLinkAny($('#bl_phone').value,billMessage(s)); };
+  upd(); $('#bl_phone').addEventListener('input',upd); $('#bl_close').onclick=closeModal;
+  let blob=null;
+  try{ if(!window.jspdf) throw new Error('pdf'); blob=makeBillPdf(s); }catch(e){ console.error(e); }
+  if(!blob){
+    st('PDF nahi ban paya. Internet check karke dobara kholo. Message phir bhi bheja ja sakta hai.');
+    const b=$('#bl_dl'); if(b) b.hidden=true; const a=$('#bl_wa'); if(a) a.classList.remove('dis'); s={...s,billUrl:''}; upd(); return;
+  }
+  const dl=$('#bl_dl'); if(dl) dl.onclick=()=>downloadBlob(blob,label+'.pdf');
+  try{
+    const file=new File([blob],label+'.pdf',{type:'application/pdf'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){ const b=$('#bl_share'); if(b){ b.hidden=false; b.onclick=()=>navigator.share({files:[file],text:billMessage(s)}).catch(()=>{}); } }
+  }catch(e){}
+  let ok=false;
+  if(s.billPath&&sb){
+    try{
+      const r=await sb.storage.from('bills').upload(s.billPath,blob,{contentType:'application/pdf',upsert:false});
+      ok=!r.error||/exist|duplicate/i.test((r.error&&r.error.message)||'');
+    }catch(e){ ok=false; }
+  }
+  if(!ok) s={...s,billUrl:''};
+  st(ok?'Bill taiyar hai. WhatsApp wala button dabao, phir WhatsApp mein Send dabao.':'Bill ki link nahi ban payi. PDF download ya share karke bhej sakte ho.');
+  upd(); const a=$('#bl_wa'); if(a) a.classList.remove('dis');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-bill]'); if(!b) return;
+  const s=S.sales.find(x=>x.id===b.dataset.bill); if(s) showBill(s);
+});
+
+$$('input[name=salepay]').forEach(r=>r.addEventListener('change',()=>{}));
+$('#saveSale').onclick=async function(){
+  if(!db){ toast('Sync not available'); return; }
+  const items=saleCart.items.filter(i=>i.qty>0);
+  if(!items.length){ toast('Add at least one item'); return; }
+  const credit=$('input[name=salepay]:checked').value==='credit';
+  const party=$('#salParty').value.trim(), rawPhone=$('#salPhone').value.trim();
+  if(credit && !party){ toast('Udhaar ke liye customer ka naam daalo'); return; }
+  if(rawPhone && !phone10(rawPhone)){ toast('WhatsApp number 10 digit ka hona chahiye'); return; }
+  const c=saleCalc(); if(c.total<=0){ toast('Total zero hai. Discount check karo.'); return; }
+  this.disabled=true;
+  try{
+    const r=await sb.rpc('next_bill_no'); if(r.error) throw r.error;
+    const billNo=r.data;
+    const tok=Array.from(crypto.getRandomValues(new Uint8Array(9)),b=>b.toString(16).padStart(2,'0')).join('');
+    const path=CTX.member.business_id+'/'+billNo+'-'+tok+'.pdf';
+    const billUrl=sb.storage.from('bills').getPublicUrl(path).data.publicUrl;
+    const doc={billNo,date:todayStr(),ts:Date.now(),items:items.map(({pid,name,unit,qty,rate})=>({pid,name,unit,qty,rate})),
+      subtotal:c.sub,discount:c.disc,gstMode:c.mode,gstRate:c.mode==='none'?0:c.rate,gstAmt:c.gst,taxable:c.taxable,total:c.total,
+      paid:!credit,party,phone:phone10(rawPhone),billPath:path,billUrl,by:CTX.member.login_id||''};
+    const ref=db.collection('sales').doc(); await ref.set(doc);
+    saleCart.clear(); $('#salParty').value=''; $('#salPhone').value=''; $('#saleDisc').value=''; $('#saleGst').value='none';
+    renderSaleTotals();
+    showBill({id:ref.id,...doc});
+  }catch(e){ toast('Could not save ('+((e&&(e.code||e.message))||'error')+')'); }
+  finally{ this.disabled=false; }
+};
+
+$('#savePur').onclick=async function(){
+  if(!db){ toast('Sync not available'); return; }
+  const items=purCart.items.filter(i=>i.qty>0);
+  const supplier=$('#purSupplier').value.trim();
+  if(!supplier){ toast('Enter the supplier name'); return; }
+  if(!items.length){ toast('Add at least one item'); return; }
+  const doc={date:$('#purDate').value||todayStr(),ts:Date.now(),supplier,phone:$('#purPhone').value.trim(),bill:$('#purBill').value.trim(),
+    items:items.map(({pid,name,unit,qty,rate})=>({pid,name,unit,qty,rate})),total:r2(purCart.total()),paid:$('input[name=purpay]:checked').value==='paid'};
+  this.disabled=true;
+  try{
+    await db.collection('purchases').doc().set(doc);
+    // remember the latest buying rate on each item for next time
+    for(const it of items){ const p=S.products.find(x=>x.id===it.pid); if(p && +p.buyRate!==+it.rate) { try{ await db.doc('products/'+p.id).update(p.openRate==null?{buyRate:it.rate,openRate:+p.buyRate||0}:{buyRate:it.rate}); }catch(e){} } }
+    purCart.clear(); $('#purBill').value=''; toast('Purchase saved: '+money(doc.total));
+  }catch(e){ toast('Could not save ('+(e.code||'error')+')'); }
+  finally{ this.disabled=false; }
+};
+
+/* ---------- renderers for data-driven parts ---------- */
+function billRow(kind,b){
+  const who = kind==='sale' ? ((b.billNo?billLabel(b.billNo)+' · ':'')+(b.party||'Walk-in')) : b.supplier;
+  const tag = b.paid ? '<span class="chip ok">Paid</span>' : '<span class="chip late">Not paid</span>';
+  return `<div class="bill"><div><div><b>${esc(who)}</b> ${tag}</div><div class="hint">${shortDate(b.date)} · ${(b.items||[]).length} item${(b.items||[]).length===1?'':'s'}</div></div>
+    <div style="display:flex;align-items:center;gap:8px"><b class="num">${money(b.total)}</b>${kind==='sale'?`<button class="btn sm" data-bill="${esc(b.id)}">Bill</button>`:''}<button class="btn sm line owner-only" data-del="${kind}" data-id="${esc(b.id)}">Delete</button></div></div>`;
+}
+function renderRecent(){
+  const rs=[...S.sales].sort((a,b)=>b.ts-a.ts).slice(0,5);
+  $('#recentSales').innerHTML = rs.length ? rs.map(b=>billRow('sale',b)).join('') : '<div class="empty">No sales yet.</div>';
+  const rp=[...S.purchases].sort((a,b)=>b.ts-a.ts).slice(0,5);
+  $('#recentPur').innerHTML = rp.length ? rp.map(b=>billRow('purchase',b)).join('') : '<div class="empty">No purchases yet.</div>';
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-del]'); if(!b) return;
+  const col=b.dataset.del==='sale'?'sales':'purchases';
+  confirmTap(b,'Sure?',async()=>{ try{ await db.doc(col+'/'+b.dataset.id).delete(); toast('Deleted'); }catch(err){ toast('Could not delete'); } });
+});
+
+function renderStock(){
+  const q=$('#stockFind').value.trim().toLowerCase();
+  const rows=[...STOCK.values()].sort((a,b)=>(a.p.name||'').localeCompare(b.p.name||''));
+  let total=0,low=0;
+  for(const r of rows){ total+=r.value; if(r.qty<=(+r.p.reorder||0)) low++; }
+  $('#tiles').innerHTML = `<div class="tile"><small>Items</small><b class="num">${rows.length}</b></div>
+    <div class="tile"><small>Stock value (at cost)</small><b class="num">${money(r2(total))}</b></div>
+    <div class="tile"><small>Low or out</small><b class="num" style="color:${low?'var(--warn)':'inherit'}">${low}</b></div>`;
+  const view=rows.filter(r=>!q || (r.p.name||'').toLowerCase().includes(q) || (r.p.barcode||'').includes(q));
+  $('#stockList').innerHTML = view.length ? view.map(r=>{
+    const p=r.p, cls = r.qty<=0?'out':(r.qty<=(+p.reorder||0)?'low':'');
+    return `<div class="prow"><div><div class="pname">${esc(p.name)}</div>
+      <div class="pmeta">${p.barcode?`<span class="code">${esc(p.barcode)}</span> · `:''}MRP ${money(p.mrp)} · Avg cost ${money(r2(r.avg))}</div></div>
+      <div><div class="pqty num ${cls}">${qtyFmt(r.qty)} <small>${esc(p.unit||'pcs')}</small></div><div class="pval num">${money(r2(r.value))}</div></div>
+      <div class="pbtns"><button class="btn sm ghost" data-pc="${esc(p.id)}">Count stock</button><button class="btn sm line" data-pe="${esc(p.id)}">Edit</button></div></div>`;
+  }).join('') : `<div class="empty">${rows.length?'No item matches.':'No items yet. Tap Add item or scan a barcode.'}</div>`;
+}
+$('#stockList').addEventListener('click',e=>{
+  const c=e.target.closest('[data-pc]'), ed=e.target.closest('[data-pe]');
+  if(c){ const p=S.products.find(x=>x.id===c.dataset.pc); if(p) openCount(p); }
+  if(ed){ const p=S.products.find(x=>x.id===ed.dataset.pe); if(p) openProduct(p); }
+});
+$('#stockFind').addEventListener('input',renderStock);
+$('#addProduct').onclick=()=>openProduct(null);
+
+function waLink(phone,text){ let d=(phone||'').replace(/\D/g,''); if(d.length===10) d='91'+d; return d?('https://wa.me/'+d+'?text='+encodeURIComponent(text)):''; }
+function remindText(b){
+  const shop=(BIZ.name||'').trim()||'hamari dukaan';
+  return `Namaste ${b.party||''} ji, ${shop} se ${shortDate(b.date)} ka ${money(b.total)} baaki hai. Kripya jald bhugtan kar dein. Dhanyavaad.`;
+}
+function ageChip(d){ return d>LATE_AFTER ? `<span class="chip late">${d} days, late</span>` : `<span class="chip">${d===0?'Today':d+' day'+(d===1?'':'s')}</span>`; }
+function renderDue(){
+  const owed=S.sales.filter(s=>!s.paid).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const pay=S.purchases.filter(p=>!p.paid).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const sum=l=>l.reduce((s,x)=>s+(+x.total||0),0);
+  const lateOwed=owed.filter(b=>daysAgo(b.date)>LATE_AFTER).length;
+  $('#dueTiles').innerHTML = `<div class="tile"><small>Customers owe you</small><b class="num">${money(r2(sum(owed)))}</b></div>
+    <div class="tile"><small>Late bills (over ${LATE_AFTER} days)</small><b class="num" style="color:${lateOwed?'var(--bad)':'inherit'}">${lateOwed}</b></div>
+    <div class="tile"><small>You owe suppliers</small><b class="num">${money(r2(sum(pay)))}</b></div>`;
+  $('#owedList').innerHTML = owed.length ? owed.map(b=>{
+    const d=daysAgo(b.date), link=waLink(b.phone,remindText(b));
+    return `<div class="due"><div><div class="who">${esc(b.party||'Customer')}</div><div class="sub">${shortDate(b.date)} · ${ageChip(d)}</div></div>
+      <div class="amtc num">${money(b.total)}</div>
+      <div class="acts">${link?`<a class="btn sm" href="${link}" target="_blank" rel="noopener">Remind on WhatsApp</a>`:'<span class="hint">Add a phone number to send a reminder</span>'}
+        <button class="btn sm ghost" data-copy="${esc(b.id)}">Copy message</button>
+        <button class="btn sm line" data-paid="sales" data-id="${esc(b.id)}">Mark paid</button></div></div>`;
+  }).join('') : '<div class="empty">Nobody owes you anything right now.</div>';
+  $('#payList').innerHTML = pay.length ? pay.map(b=>{
+    const d=daysAgo(b.date);
+    return `<div class="due"><div><div class="who">${esc(b.supplier)}</div><div class="sub">${b.bill?'Bill '+esc(b.bill)+' · ':''}${shortDate(b.date)} · ${ageChip(d)}</div></div>
+      <div class="amtc num">${money(b.total)}</div>
+      <div class="acts"><button class="btn sm line" data-paid="purchases" data-id="${esc(b.id)}">Mark paid</button></div></div>`;
+  }).join('') : '<div class="empty">No supplier bills pending.</div>';
+}
+$('#tab-baaki').addEventListener('click',async e=>{
+  const pd=e.target.closest('[data-paid]'), cp=e.target.closest('[data-copy]');
+  if(pd){ try{ await db.doc(pd.dataset.paid+'/'+pd.dataset.id).update({paid:true,paidAt:Date.now()}); toast('Marked as paid'); }catch(err){ toast('Could not update'); } }
+  if(cp){ const b=S.sales.find(x=>x.id===cp.dataset.copy); if(!b) return;
+    try{ await navigator.clipboard.writeText(remindText(b)); toast('Message copied'); }catch(err){ toast(remindText(b)); } }
+});
+function renderDemo(){
+  const any=[...S.products,...S.sales,...S.purchases,...S.adjustments,...S.expenses].some(x=>x.demo);
+  $('#demoBanner').hidden=!any;
+}
+$('#clearDemo').onclick=async function(){
+  confirmTap(this,'Tap again to remove',async()=>{
+    this.disabled=true;
+    try{
+      for(const [col,arr] of [['products',S.products],['sales',S.sales],['purchases',S.purchases],['adjustments',S.adjustments],['expenses',S.expenses]])
+        for(const d of arr.filter(x=>x.demo)) await db.doc(col+'/'+d.id).delete();
+      toast('Example data removed');
+    }catch(e){ toast('Could not remove all example data'); }
+    this.disabled=false;
+  });
+};
+
+/* ---------- low stock list ---------- */
+function lowItems(){
+  return [...STOCK.values()].filter(r=>r.qty<=(+r.p.reorder||0)).map(r=>{
+    const target=Math.max((+r.p.reorder||0)*2,1);
+    return {r,need:Math.max(Math.ceil(target-Math.max(r.qty,0)),1)};
+  }).sort((a,b)=>a.r.qty-b.r.qty);
+}
+function shopLabel(){ return (BIZ.name||'').trim(); }
+function orderText(list){
+  const shop=shopLabel();
+  return (shop?shop+' - ':'')+'Order list ('+shortDate(todayStr())+'):\n'+list.map(x=>`- ${x.r.p.name}: ${x.need} ${x.r.p.unit||'pcs'}`).join('\n');
+}
+function renderLow(){
+  const list=lowItems(), panel=$('#lowPanel');
+  panel.hidden=!list.length; if(!list.length) return;
+  $('#lowList').innerHTML=list.map(x=>{
+    const out=x.r.qty<=0;
+    return `<div class="bill"><div><div><b>${esc(x.r.p.name)}</b> <span class="chip ${out?'late':''}">${out?'Out of stock':'Low'}</span></div>
+      <div class="hint">Have ${qtyFmt(x.r.qty)} ${esc(x.r.p.unit||'pcs')}</div></div>
+      <div style="text-align:right"><div class="hint">Order</div><b class="num">${qtyFmt(x.need)} ${esc(x.r.p.unit||'pcs')}</b></div></div>`;
+  }).join('');
+  $('#waOrder').href='https://wa.me/?text='+encodeURIComponent(orderText(list));
+}
+$('#copyOrder').onclick=async()=>{
+  const list=lowItems(); if(!list.length) return;
+  try{ await navigator.clipboard.writeText(orderText(list)); toast('Order list copied'); }catch(e){ toast('Could not copy. Use Send on WhatsApp.'); }
+};
+
+/* ---------- daily summary ---------- */
+function summaryData(){
+  const d=$('#sumDate').value||todayStr();
+  const sales=S.sales.filter(s=>s.date===d), purs=S.purchases.filter(p=>p.date===d);
+  const sum=l=>l.reduce((a,x)=>a+(+x.total||0),0);
+  const total=sum(sales), paid=sum(sales.filter(s=>s.paid)), credit=total-paid, buy=sum(purs);
+  const collected=sum(S.sales.filter(s=>s.paid && s.paidAt && new Date(s.paidAt).toLocaleDateString('en-CA')===d && s.date!==d));
+  let profit=0; const by=new Map();
+  for(const s of sales) for(const it of (s.items||[])){
+    const st=STOCK.get(it.pid), cost=st?st.avg:0, q=+it.qty||0, rt=+it.rate||0, ratio=(s.taxable!=null&&+s.subtotal>0)?s.taxable/s.subtotal:1;
+    profit+=q*(rt*ratio-cost);
+    const e=by.get(it.pid)||{name:it.name,unit:it.unit,qty:0,amt:0}; e.qty+=q; e.amt+=q*rt; by.set(it.pid,e);
+  }
+  const owed=S.sales.filter(s=>!s.paid);
+  return {d,sales,purs,total,paid,credit,buy,collected,profit,top:[...by.values()].sort((a,b)=>b.amt-a.amt).slice(0,5),
+    owedSum:sum(owed),lateCount:owed.filter(b=>daysAgo(b.date)>LATE_AFTER).length,lowCount:lowItems().length};
+}
+function summaryText(s){
+  return `${shopLabel()||'Dukaan'} - ${shortDate(s.d)} summary\nSales: ${money(r2(s.total))} (${s.sales.length} bills)\nPaid now: ${money(r2(s.paid))}\nUdhaar given: ${money(r2(s.credit))}\nUdhaar collected: ${money(r2(s.collected))}\nPurchases: ${money(r2(s.buy))}\nEstimated profit: ${money(r2(s.profit))}\nCustomers owe in total: ${money(r2(s.owedSum))} (${s.lateCount} late)\nLow stock items: ${s.lowCount}`;
+}
+function renderToday(){
+  const s=summaryData();
+  $('#sumTiles').innerHTML=`<div class="tile"><small>Sales (${s.sales.length} bills)</small><b class="num">${money(r2(s.total))}</b></div>
+    <div class="tile"><small>Paid now</small><b class="num">${money(r2(s.paid))}</b></div>
+    <div class="tile"><small>Udhaar given</small><b class="num">${money(r2(s.credit))}</b></div>
+    <div class="tile"><small>Udhaar collected</small><b class="num">${money(r2(s.collected))}</b></div>
+    <div class="tile"><small>Purchases</small><b class="num">${money(r2(s.buy))}</b></div>
+    <div class="tile"><small>Estimated profit</small><b class="num">${money(r2(s.profit))}</b></div>`;
+  $('#sumTop').innerHTML=s.top.length?s.top.map(t=>`<div class="bill"><div><b>${esc(t.name)}</b><div class="hint">${qtyFmt(t.qty)} ${esc(t.unit||'pcs')} sold</div></div><b class="num">${money(r2(t.amt))}</b></div>`).join(''):'<div class="empty">No sales on this day.</div>';
+  $('#sumAttn').innerHTML=`<div class="bill"><span>Customers owe you</span><b class="num">${money(r2(s.owedSum))}</b></div>
+    <div class="bill"><span>Bills late by more than ${LATE_AFTER} days</span><b class="num" style="color:${s.lateCount?'var(--bad)':'inherit'}">${s.lateCount}</b></div>
+    <div class="bill"><span>Items low or out of stock</span><b class="num" style="color:${s.lowCount?'var(--warn)':'inherit'}">${s.lowCount}</b></div>`;
+  $('#waSum').href='https://wa.me/?text='+encodeURIComponent(summaryText(s));
+  renderChart(s.d);
+}
+/* ---------- 7-day sales chart ---------- */
+let chartTable=false, chartW=0;
+function weekData(endStr){
+  const [y,m,d]=endStr.split('-').map(Number), out=[];
+  for(let i=6;i>=0;i--){
+    const dt=new Date(y,m-1,d-i), ds=dt.toLocaleDateString('en-CA'), day=S.sales.filter(s=>s.date===ds);
+    out.push({ds,dt,total:day.reduce((a,x)=>a+(+x.total||0),0),bills:day.length});
+  }
+  return out;
+}
+function niceMax(v){ if(v<=0) return 100; const p=Math.pow(10,Math.floor(Math.log10(v))), f=v/p; return (f<=1?1:f<=2?2:f<=5?5:10)*p; }
+function compact(n){ return '₹'+(n>=100000?(n/100000)+'L':n>=1000?(n/1000)+'k':n); }
+function barPath(x,y,w,h){
+  const r=Math.min(4,h,w/2);
+  return `M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`;
+}
+function renderChart(endStr){
+  const wrap=$('#chartWrap'); if(!wrap) return;
+  const data=weekData(endStr), total=data.reduce((a,x)=>a+x.total,0);
+  $('#chartToggle').textContent=chartTable?'Show chart':'Show table';
+  if(chartTable){
+    wrap.innerHTML=`<table class="sumtab"><thead><tr><th>Day</th><th class="r">Bills</th><th class="r">Sales</th></tr></thead><tbody>`+
+      data.map(x=>`<tr><td>${x.dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</td><td class="r num">${x.bills}</td><td class="r num">${money(r2(x.total))}</td></tr>`).join('')+`</tbody></table>`;
+    return;
+  }
+  const W=Math.max(260,Math.floor(wrap.clientWidth)||320), H=220, L=46, R=6, T=18, B=36;
+  chartW=W;
+  const max=niceMax(Math.max(...data.map(x=>x.total))), pw=W-L-R, ph=H-T-B, slot=pw/7, bw=Math.min(34,slot*.56);
+  const y=v=>T+ph-(v/max)*ph;
+  let g='';
+  for(const t of [0,.5,1]){ const v=max*t, yy=y(v); g+=`<line x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${yy+4}" text-anchor="end">${compact(v)}</text>`; }
+  let bars='', labels='', hits='';
+  data.forEach((x,i)=>{
+    const cx=L+slot*i+slot/2, bx=cx-bw/2, h=ph*(x.total/max), sel=i===6;
+    if(x.total>0) bars+=`<path d="${barPath(bx,T+ph-h,bw,h)}" fill="url(#barGrad)" opacity="${sel?1:.62}"/>`;
+    if(sel && x.total>0) labels+=`<text class="sel" x="${cx}" y="${T+ph-h-6}" text-anchor="middle">${compact(r2(x.total))}</text>`;
+    labels+=`<text class="${sel?'sel':''}" x="${cx}" y="${H-18}" text-anchor="middle">${x.dt.toLocaleDateString('en-IN',{weekday:'short'})}</text><text class="${sel?'sel':''}" x="${cx}" y="${H-5}" text-anchor="middle">${x.dt.getDate()}</text>`;
+    hits+=`<rect data-i="${i}" x="${L+slot*i}" y="${T}" width="${slot}" height="${ph+B-4}" fill="transparent"/>`;
+  });
+  wrap.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales for the 7 days ending ${shortDate(endStr)}, total ${money(r2(total))}">
+    <defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.3"/></linearGradient></defs>
+    ${g}${bars}${labels}${hits}</svg><div class="tip" hidden></div>`;
+  const svg=$('svg',wrap), tip=$('.tip',wrap);
+  const show=e=>{
+    const r=e.target.closest&&e.target.closest('[data-i]'); if(!r){ tip.hidden=true; return; }
+    const x=data[+r.dataset.i], cx=L+slot*(+r.dataset.i)+slot/2;
+    tip.innerHTML=`<b>${x.dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</b><br>${money(r2(x.total))} · ${x.bills} bill${x.bills===1?'':'s'}`;
+    tip.hidden=false; tip.style.left=Math.min(Math.max(cx,56),W-56)+'px'; tip.style.top=Math.max(y(x.total)-6,40)+'px';
+  };
+  svg.addEventListener('pointermove',show); svg.addEventListener('pointerdown',show);
+  svg.addEventListener('pointerleave',()=>{ tip.hidden=true; });
+}
+$('#chartToggle').onclick=()=>{ chartTable=!chartTable; renderChart($('#sumDate').value||todayStr()); };
+if('ResizeObserver' in window) new ResizeObserver(()=>{
+  const w=Math.floor($('#chartWrap').clientWidth); if(w && w!==chartW && !chartTable && !$('#tab-today').hidden) renderChart($('#sumDate').value||todayStr());
+}).observe($('#chartWrap'));
+
+$('#sumDate').addEventListener('change',renderToday);
+$('#copySum').onclick=async()=>{ try{ await navigator.clipboard.writeText(summaryText(summaryData())); toast('Summary copied'); }catch(e){ toast('Could not copy. Use Send on WhatsApp.'); } };
+
+/* ---------- reports: sub-tabs ---------- */
+let repView='daily';
+function setRep(v){
+  repView=v;
+  $$('#repSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)));
+  for(const k of ['daily','export','fin']) $('#rep-'+k).hidden = k!==v;
+  if(v==='daily') renderToday(); else if(v==='export') renderExpPreview(); else renderFin();
+}
+$$('#repSeg button').forEach(b=>b.addEventListener('click',()=>setRep(b.dataset.v)));
+
+/* ---------- shared helpers for accounts ---------- */
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const fm=n=>{ n=r2(n); return n<0?'('+money(-n)+')':money(n); };
+const sumBy=(l,f)=>l.reduce((a,x)=>a+(+f(x)||0),0);
+const stockValue=m=>[...m.values()].reduce((a,r)=>a+r.value,0);
+const slug=h=>String(h).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'x';
+const monthLabel=ym=>{ const [y,m]=ym.split('-').map(Number); return MONTHS[m-1]+' '+y; };
+const inRange=(d,f,t)=>(!f||d>=f)&&(!t||d<=t);
+const itemsText=b=>(b.items||[]).map(i=>i.name+' x '+qtyFmt(+i.qty)).join(', ');
+function monthBounds(ym){
+  const [y,m]=ym.split('-').map(Number), last=new Date(y,m,0).getDate();
+  return {start:ym+'-01',end:ym+'-'+String(last).padStart(2,'0'),prevEnd:new Date(y,m-1,0).toLocaleDateString('en-CA'),lastDay:last,monthName:MONTHS[m-1],year:y};
+}
+const endLabel=b=>b.lastDay+' '+b.monthName+' '+b.year;
+const prevYm=ym=>{ const [y,m]=ym.split('-').map(Number); return new Date(y,m-2,1).toLocaleDateString('en-CA').slice(0,7); };
+function unpaidAt(b,endDs){
+  if(!b.paid) return true;
+  if(!b.paidAt) return false;
+  return new Date(b.paidAt).toLocaleDateString('en-CA')>endDs;
+}
+function sheetFrom(rows,widths,moneyCols){
+  const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=widths.map(w=>({wch:w}));
+  rows.forEach((row,ri)=>(moneyCols||[]).forEach(ci=>{ const a=ws[XLSX.utils.encode_cell({r:ri,c:ci})]; if(a&&typeof a.v==='number') a.z='#,##0.00'; }));
+  return ws;
+}
+async function saveBook(wb,filename){
+  if(!window.XLSX){ toast('Excel tool did not load. Check the internet and reload.'); return; }
+  try{
+    const out=XLSX.write(wb,{type:'array',bookType:'xlsx'});
+    downloadBlob(new Blob([out],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),filename);
+    toast('File ready');
+  }catch(e){ toast('Could not save the file'); }
+}
+
+/* ---------- excel: sales and purchase report ---------- */
+function expData(){
+  const from=$('#expFrom').value, to=$('#expTo').value;
+  const sales=S.sales.filter(s=>inRange(s.date,from,to)).sort((a,b)=>String(a.date).localeCompare(String(b.date))||(a.ts-b.ts));
+  const purs=S.purchases.filter(p=>inRange(p.date,from,to)).sort((a,b)=>String(a.date).localeCompare(String(b.date))||(a.ts-b.ts));
+  return {from,to,sales,purs,st:sumBy(sales,s=>s.total),pt:sumBy(purs,p=>p.total)};
+}
+function renderExpPreview(){
+  const d=expData();
+  $('#expPreview').innerHTML=`<div class="tile"><small>Sales (${d.sales.length} bills)</small><b class="num">${money(r2(d.st))}</b></div>
+    <div class="tile"><small>Purchases (${d.purs.length} bills)</small><b class="num">${money(r2(d.pt))}</b></div>`;
+}
+function downloadReport(){
+  const d=expData();
+  if(!d.from||!d.to){ toast('Pick both dates'); return; }
+  if(d.from>d.to){ toast('The start date is after the end date'); return; }
+  if(!window.XLSX){ toast('Excel tool did not load. Check the internet and reload.'); return; }
+  const sp=sumBy(d.sales.filter(s=>s.paid),s=>s.total), pp=sumBy(d.purs.filter(p=>p.paid),p=>p.total);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,sheetFrom([
+    [shopLabel()||'Shop'],['Sales and purchase report'],['From '+d.from+' to '+d.to],[],
+    ['Sales','Amount (Rs)'],['Number of bills',String(d.sales.length)],['Total sales',r2(d.st)],['Received (paid now or collected)',r2(sp)],['Udhaar still pending',r2(d.st-sp)],[],
+    ['Purchases','Amount (Rs)'],['Number of bills',String(d.purs.length)],['Total purchases',r2(d.pt)],['Paid',r2(pp)],['Still to pay',r2(d.pt-pp)]
+  ],[36,18],[1]),'Summary');
+  XLSX.utils.book_append_sheet(wb,sheetFrom([['Date','Bill no','Customer','Items','Discount (Rs)','GST (Rs)','Total (Rs)','Status']].concat(
+    d.sales.map(s=>[s.date,s.billNo?billLabel(s.billNo):'',s.party||'Walk-in',itemsText(s),+s.discount||0,+s.gstAmt||0,+s.total||0,s.paid?'Paid':'Udhaar pending'])),[12,10,22,60,13,11,14,16],[4,5,6]),'Sales');
+  const sItems=[['Date','Bill no','Customer','Item','Qty','Unit','Rate (Rs)','Amount (Rs)']];
+  d.sales.forEach(s=>(s.items||[]).forEach(i=>sItems.push([s.date,s.billNo?billLabel(s.billNo):'',s.party||'Walk-in',i.name,+i.qty||0,i.unit||'',+i.rate||0,r2((+i.qty||0)*(+i.rate||0))])));
+  XLSX.utils.book_append_sheet(wb,sheetFrom(sItems,[12,10,22,34,8,8,12,14],[6,7]),'Sale items');
+  XLSX.utils.book_append_sheet(wb,sheetFrom([['Date','Supplier','Bill no','Items','Total (Rs)','Status']].concat(
+    d.purs.map(p=>[p.date,p.supplier||'',p.bill||'',itemsText(p),+p.total||0,p.paid?'Paid':'Not paid'])),[12,24,12,60,14,12],[4]),'Purchases');
+  const pItems=[['Date','Supplier','Bill no','Item','Qty','Unit','Rate (Rs)','Amount (Rs)']];
+  d.purs.forEach(p=>(p.items||[]).forEach(i=>pItems.push([p.date,p.supplier||'',p.bill||'',i.name,+i.qty||0,i.unit||'',+i.rate||0,r2((+i.qty||0)*(+i.rate||0))])));
+  XLSX.utils.book_append_sheet(wb,sheetFrom(pItems,[12,24,12,34,8,8,12,14],[6,7]),'Purchase items');
+  saveBook(wb,'Sales-Purchases_'+d.from+'_to_'+d.to+'.xlsx');
+}
+
+/* ---------- financials: trading, profit and loss, balance sheet ---------- */
+function finCalc(ym){
+  const b=monthBounds(ym);
+  const sales=S.sales.filter(s=>s.date>=b.start&&s.date<=b.end), purs=S.purchases.filter(p=>p.date>=b.start&&p.date<=b.end);
+  const salesT=sumBy(sales,s=>s.taxable!=null?s.taxable:s.total), gstPay=sumBy(sales,s=>s.gstAmt), purT=sumBy(purs,p=>p.total);
+  const openStock=stockValue(stockCalc(b.prevEnd)), closeStock=stockValue(stockCalc(b.end));
+  const cogs=openStock+purT-closeStock, gross=salesT-cogs;
+  const exps=S.expenses.filter(e=>e.month===ym).sort((a,c)=>(+c.amount||0)-(+a.amount||0));
+  const expT=sumBy(exps,e=>e.amount), net=gross-expT;
+  const fin=S.fin[ym]||{};
+  const debtors=sumBy(S.sales.filter(s=>s.date<=b.end&&unpaidAt(s,b.end)),s=>s.total);
+  const creditors=sumBy(S.purchases.filter(p=>p.date<=b.end&&unpaidAt(p,b.end)),p=>p.total);
+  const openCap=+fin.openCapital||0, draw=+fin.drawings||0, loans=+fin.loans||0, cash=+fin.cash||0, fixed=+fin.fixed||0;
+  const closeCap=openCap+net-draw, liab=closeCap+loans+creditors+gstPay, assets=closeStock+debtors+cash+fixed;
+  return {ym,b,sales,purs,salesT,gstPay,purT,openStock,closeStock,cogs,gross,exps,expT,net,debtors,creditors,openCap,draw,loans,cash,fixed,closeCap,liab,assets,diff:r2(assets-liab)};
+}
+function stmtRow(label,amt,cls){ return `<tr class="${cls||''}"><td>${label}</td><td class="r num">${amt===null?'':fm(amt)}</td></tr>`; }
+function statementsHtml(f){
+  const shop=esc(shopLabel()||'Your shop'), gm=f.salesT? Math.round(f.gross/f.salesT*1000)/10 : 0, nm=f.salesT? Math.round(f.net/f.salesT*1000)/10 : 0;
+  const pl=`<div class="panel"><div class="stmthead"><b>${shop}</b><span>Trading and Profit and Loss Account</span><span class="hint">For the month ended ${endLabel(f.b)}</span></div>
+    <table class="stmt"><tbody>
+    <tr class="h"><td colspan="2">Trading account</td></tr>
+    ${stmtRow('Sales ('+f.sales.length+' bills)',f.salesT)}
+    ${stmtRow('Less: Cost of goods sold',null)}
+    ${stmtRow('Opening stock',f.openStock,'i')}
+    ${stmtRow('Add: Purchases ('+f.purs.length+' bills)',f.purT,'i')}
+    ${stmtRow('Less: Closing stock',f.closeStock,'i')}
+    ${stmtRow('Cost of goods sold',f.cogs,'t')}
+    ${stmtRow('Gross profit',f.gross,'gt')}
+    <tr class="sm"><td>Gross profit margin</td><td class="r num">${gm}%</td></tr>
+    <tr class="h"><td colspan="2">Profit and loss account</td></tr>
+    ${stmtRow('Gross profit',f.gross)}
+    ${stmtRow('Less: Expenses',null)}
+    ${f.exps.length?f.exps.map(e=>stmtRow(esc(e.head),+e.amount||0,'i')).join(''):'<tr class="i"><td>No other expenses entered</td><td></td></tr>'}
+    ${stmtRow('Total expenses',f.expT,'t')}
+    ${stmtRow(f.net<0?'Net loss':'Net profit',f.net,'gt')}
+    <tr class="sm"><td>Net profit margin</td><td class="r num">${nm}%</td></tr>
+    </tbody></table></div>`;
+  const bs=`<div class="panel"><div class="stmthead"><b>${shop}</b><span>Balance Sheet</span><span class="hint">As at ${endLabel(f.b)}</span></div>
+    <table class="stmt"><tbody>
+    <tr class="h"><td colspan="2">Capital and liabilities</td></tr>
+    ${stmtRow('Capital at start of month',f.openCap)}
+    ${stmtRow(f.net<0?'Less: Net loss':'Add: Net profit',Math.abs(f.net),'i')}
+    ${stmtRow('Less: Drawings',f.draw,'i')}
+    ${stmtRow('Closing capital',f.closeCap,'t')}
+    ${stmtRow('Loans and other dues',f.loans)}
+    ${stmtRow('Sundry creditors (suppliers to be paid)',f.creditors)}
+    ${f.gstPay?stmtRow('GST collected (to be paid to govt)',f.gstPay):''}
+    ${stmtRow('Total',f.liab,'gt')}
+    <tr class="h"><td colspan="2">Assets</td></tr>
+    ${stmtRow('Closing stock',f.closeStock)}
+    ${stmtRow('Sundry debtors (customers who owe you)',f.debtors)}
+    ${stmtRow('Cash and bank',f.cash)}
+    ${stmtRow('Fixed assets',f.fixed)}
+    ${stmtRow('Total',f.assets,'gt')}
+    </tbody></table>
+    ${Math.abs(f.diff)>0.5?`<div class="banner">The balance sheet does not tally. Assets are ${fm(Math.abs(f.diff))} ${f.diff>0?'more':'less'} than capital and liabilities. Check the capital, cash and bank, assets and loans you entered, then tap Edit details.</div>`:'<div class="hint">The balance sheet tallies.</div>'}
+    </div>`;
+  return pl+bs+`<div class="panel"><div class="row"><button class="btn" data-fin-dl style="flex:0 0 auto">Download Excel</button><button class="btn line" data-fin-edit style="flex:0 0 auto">Edit details</button></div>
+    <div class="hint">Prepared from the bills you recorded and the figures you entered, on the accrual basis. Stock is valued at average cost. Have your accountant review it before using it for tax or a bank loan.</div></div>`;
+}
+function renderFin(){
+  const out=$('#finOut'); if(!out) return;
+  const ym=$('#finMonth').value;
+  if(!ym){ out.innerHTML=''; return; }
+  if(!S.fin[ym]){ out.innerHTML=`<div class="panel"><div class="empty">No financials for ${monthLabel(ym)} yet. Tap Make financials, enter your expenses, and the statements appear here.</div></div>`; return; }
+  out.innerHTML=statementsHtml(finCalc(ym));
+}
+function downloadFinancials(ym){
+  if(!ym||!S.fin[ym]) return;
+  if(!window.XLSX){ toast('Excel tool did not load. Check the internet and reload.'); return; }
+  const f=finCalc(ym), head=[[shopLabel()||'Your shop']];
+  const wb=XLSX.utils.book_new();
+  const plRows=head.concat([['Trading and Profit and Loss Account'],['For the month ended '+endLabel(f.b)],[],['Particulars','Amount (Rs)'],
+    ['Sales',r2(f.salesT)],['Opening stock',r2(f.openStock)],['Add: Purchases',r2(f.purT)],['Less: Closing stock',r2(f.closeStock)],['Cost of goods sold',r2(f.cogs)],['Gross profit',r2(f.gross)],[],
+    ['Expenses']],f.exps.map(e=>[e.head,r2(+e.amount||0)]),[['Total expenses',r2(f.expT)],[],[f.net<0?'Net loss':'Net profit',r2(f.net)]]);
+  XLSX.utils.book_append_sheet(wb,sheetFrom(plRows,[44,18],[1]),'Profit and Loss');
+  const bsRows=head.concat([['Balance Sheet'],['As at '+endLabel(f.b)],[],['Capital and liabilities','Amount (Rs)'],
+    ['Capital at start of month',r2(f.openCap)],[f.net<0?'Less: Net loss':'Add: Net profit',r2(Math.abs(f.net))],['Less: Drawings',r2(f.draw)],['Closing capital',r2(f.closeCap)],
+    ['Loans and other dues',r2(f.loans)],['Sundry creditors',r2(f.creditors)],['GST collected (payable)',r2(f.gstPay)],['Total',r2(f.liab)],[],
+    ['Assets','Amount (Rs)'],['Closing stock',r2(f.closeStock)],['Sundry debtors',r2(f.debtors)],['Cash and bank',r2(f.cash)],['Fixed assets',r2(f.fixed)],['Total',r2(f.assets)]]);
+  XLSX.utils.book_append_sheet(wb,sheetFrom(bsRows,[44,18],[1]),'Balance Sheet');
+  saveBook(wb,'Financials_'+ym+'.xlsx');
+}
+
+/* guided entry: expenses first, then the few balance sheet figures */
+function openFinWizard(ym){
+  if(!db){ toast('Sync not available'); return; }
+  const fin=S.fin[ym]||{};
+  let rows=S.expenses.filter(e=>e.month===ym).map(e=>({head:e.head,amount:e.amount}));
+  const hist=new Map();
+  [...S.expenses].filter(e=>e.month!==ym).sort((a,c)=>String(c.month).localeCompare(String(a.month))).forEach(e=>{ if(!hist.has(e.head)) hist.set(e.head,e.amount); });
+  ['Rent','Salary','Electricity','Transport','Phone and internet','Other'].forEach(h=>{ if(![...hist.keys()].some(k=>k.toLowerCase()===h.toLowerCase())) hist.set(h,null); });
+  const pym=prevYm(ym), carried=S.fin[pym]?r2(finCalc(pym).closeCap):null;
+  const v={cap:fin.openCapital!=null?fin.openCapital:(carried!=null?carried:''),draw:fin.drawings??'',cash:fin.cash??'',fixed:fin.fixed??'',loans:fin.loans??''};
+  let step=1;
+  const b=monthBounds(ym);
+  const readRows=()=>{ rows=$$('#wzRows .exprow').map(r=>({head:$('.wzHead',r).value.trim(),amount:$('.wzAmt',r).value===''?'':parseFloat($('.wzAmt',r).value)})); };
+  const has=h=>rows.some(r=>r.head.toLowerCase()===h.toLowerCase());
+  const readVals=()=>{ for(const [k,id] of [['cap','#wzCap'],['draw','#wzDraw'],['cash','#wzCash'],['fixed','#wzFixed'],['loans','#wzLoans']]) v[k]=$(id).value; };
+  const draw=()=>{
+    if(step===1){
+      if(!rows.length) rows=[{head:'',amount:''}];
+      const chips=[...hist.entries()].filter(([h])=>!has(h));
+      openModal(`<h3>Expenses for ${monthLabel(ym)}</h3>
+        <div class="stepind">Step 1 of 2 · other than purchases</div>
+        <div class="hint">Add rent, salary, electricity and anything else you paid this month. Tap a name to add it with the amount from last time. You can change the amount.</div>
+        ${chips.length?`<div class="chips">${chips.map(([h,a])=>`<button type="button" class="chipbtn" data-h="${esc(h)}" data-a="${a==null?'':a}">${esc(h)}${a!=null?' · '+money(a):''}</button>`).join('')}</div>`:''}
+        <div id="wzRows" style="display:flex;flex-direction:column;gap:8px">${rows.map((r,i)=>`<div class="exprow" data-i="${i}"><input class="wzHead" list="wzHeads" placeholder="e.g. Rent" value="${esc(r.head)}" aria-label="Expense name"><input class="wzAmt" type="number" inputmode="decimal" min="0" step="any" placeholder="Amount" value="${r.amount===''?'':r.amount}" aria-label="Amount"><button type="button" class="x" data-rm="${i}" aria-label="Remove">×</button></div>`).join('')}</div>
+        <datalist id="wzHeads">${[...hist.keys()].map(h=>`<option value="${esc(h)}">`).join('')}</datalist>
+        <button type="button" class="btn sm line" id="wzAdd" style="align-self:flex-start">+ Add another</button>
+        <div class="row"><button class="btn" id="wzNext">Next</button><button class="btn line" id="wzCancel">Cancel</button></div>`);
+      $('#wzCancel').onclick=closeModal;
+      $('#wzAdd').onclick=()=>{ readRows(); rows.push({head:'',amount:''}); draw(); };
+      $$('#sheet [data-rm]').forEach(x=>x.onclick=()=>{ readRows(); rows.splice(+x.dataset.rm,1); draw(); });
+      $$('#sheet .chipbtn').forEach(c=>c.onclick=()=>{ readRows(); rows=rows.filter(r=>r.head||r.amount!==''); rows.push({head:c.dataset.h,amount:c.dataset.a===''?'':+c.dataset.a}); draw(); });
+      $('#wzNext').onclick=()=>{
+        readRows();
+        if(rows.some(r=>r.head && (r.amount===''||isNaN(r.amount)||r.amount<0))){ toast('Enter an amount for each expense'); return; }
+        rows=rows.filter(r=>r.head||r.amount!==''); step=2; draw();
+      };
+    } else {
+      openModal(`<h3>A few more details</h3>
+        <div class="stepind">Step 2 of 2 · for the balance sheet as at ${endLabel(b)}</div>
+        <label class="f">Capital at the start of the month (₹)<input id="wzCap" type="number" inputmode="decimal" step="any" value="${v.cap}"></label>
+        <div class="hint" style="margin-top:-6px">${carried!=null?'Carried over from last month. Change it only if it is wrong.':'Your own money in the business on day 1 of this month. Enter it once, later months carry it forward.'}</div>
+        <label class="f">Money you took out for yourself this month (₹)<input id="wzDraw" type="number" inputmode="decimal" min="0" step="any" value="${v.draw}"></label>
+        <label class="f">Cash in hand plus bank balance on the last day (₹)<input id="wzCash" type="number" inputmode="decimal" step="any" value="${v.cash}"></label>
+        <label class="f">Shop assets: furniture, fridge, counters etc., at current value (₹)<input id="wzFixed" type="number" inputmode="decimal" min="0" step="any" value="${v.fixed}"></label>
+        <label class="f">Loans and other dues, apart from suppliers (₹)<input id="wzLoans" type="number" inputmode="decimal" min="0" step="any" value="${v.loans}"></label>
+        <div class="row"><button class="btn" id="wzGo">Make financials</button><button class="btn line" id="wzBack">Back</button></div>`);
+      $('#wzBack').onclick=()=>{ readVals(); step=1; draw(); };
+      $('#wzGo').onclick=async function(){
+        readVals();
+        const n=k=>{ const x=parseFloat(v[k]); return isNaN(x)?0:x; };
+        const merged=new Map();
+        for(const r of rows){ if(!r.head||!(r.amount>0)) continue; const k=slug(r.head), e=merged.get(k); if(e) e.amount+=r.amount; else merged.set(k,{head:r.head,amount:r.amount}); }
+        this.disabled=true;
+        try{
+          for(const e of S.expenses.filter(x=>x.month===ym)){ if(!merged.has(e.id.slice(ym.length+1))) await db.doc('expenses/'+e.id).delete(); }
+          for(const [k,e] of merged) await db.doc('expenses/'+ym+'_'+k).set({month:ym,head:e.head,amount:r2(e.amount)});
+          await db.doc('fin/'+ym).set({month:ym,openCapital:n('cap'),drawings:n('draw'),cash:n('cash'),fixed:n('fixed'),loans:n('loans'),ts:Date.now()});
+          closeModal(); toast('Financials ready for '+monthLabel(ym));
+        }catch(err){ toast('Could not save ('+((err&&err.code)||'error')+')'); this.disabled=false; }
+      };
+    }
+  };
+  draw();
+}
+
+function renderAll(){ compute(); renderRecent(); renderStock(); renderLow(); renderDue(); renderToday(); if(repView==='export') renderExpPreview(); renderFin(); renderDemo(); }
+
+/* ---------- tabs ---------- */
+function showTab(name){
+  $$('.nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name)));
+  $$('.tab').forEach(t=>t.hidden = t.id!=='tab-'+name);
+  scrollTo(0,0); if(name==='today') setRep(repView); if(name==='setup' && typeof renderSetup==='function') renderSetup();
+  if(matchMedia('(pointer:fine)').matches){ const f={sale:'#saleScan',purchase:'#purScan',stock:'#stockScan'}[name]; if(f) $(f).focus(); }
+}
+$$('.nav button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+bindScan('sale',$('#saleScan'),$('#saleSug'));
+bindScan('purchase',$('#purScan'),$('#purSug'));
+bindScan('stock',$('#stockScan'),null);
+$('#purDate').value=todayStr(); $('#sumDate').value=todayStr();
+$('#expFrom').value=todayStr().slice(0,8)+'01'; $('#expTo').value=todayStr(); $('#finMonth').value=todayStr().slice(0,7);
+$('#expFrom').addEventListener('change',renderExpPreview); $('#expTo').addEventListener('change',renderExpPreview);
+$('#expDownload').onclick=downloadReport;
+$('#finMonth').addEventListener('change',renderFin);
+$('#makeFin').onclick=()=>openFinWizard($('#finMonth').value||todayStr().slice(0,7));
+$('#finOut').addEventListener('click',e=>{
+  if(e.target.closest('[data-fin-edit]')) openFinWizard($('#finMonth').value);
+  if(e.target.closest('[data-fin-dl]')) downloadFinancials($('#finMonth').value);
+});
+saleCart.render(); purCart.render(); renderStock(); renderLow(); renderDue(); renderRecent(); renderToday();
+
+/* ---------- data ---------- */
+/* ---------- database layer: one table of documents per business ---------- */
+function makeStore(client,bid,role){
+  const cols={};
+  const C=n=>cols[n]||(cols[n]={map:new Map(),ls:new Set(),loaded:false});
+  const rid=()=>Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>b.toString(36).padStart(2,'0')).join('').slice(0,16);
+  const snap=c=>{
+    const docs=[...c.map].map(([id,data])=>({id,exists:true,data:()=>data,metadata:{fromCache:false}}));
+    return {docs,size:docs.length,empty:!docs.length,metadata:{fromCache:false}};
+  };
+  const emit=n=>{ const c=C(n); if(!c.loaded) return; const s=snap(c); c.ls.forEach(l=>{ try{ l.next(s); }catch(e){ console.error(e); } }); };
+  const bad=e=>({code:(e&&e.code)||'error',message:(e&&e.message)||'error'});
+  async function load(n){
+    const rows=[]; let from=0;
+    for(;;){
+      const r=await client.from('docs').select('id,data').eq('business_id',bid).eq('col',n).order('id').range(from,from+999);
+      if(r.error) throw bad(r.error);
+      rows.push(...r.data); if(r.data.length<1000) break; from+=1000;
+    }
+    const c=C(n); c.map=new Map(rows.map(r=>[r.id,r.data])); c.loaded=true; emit(n);
+  }
+  let channel=null, poll=null;
+  function watch(){
+    if(channel) return;
+    try{
+      channel=client.channel('docs-'+bid).on('postgres_changes',{event:'*',schema:'public',table:'docs',filter:'business_id=eq.'+bid},p=>{
+        const r=p.eventType==='DELETE'?p.old:p.new; if(!r||!cols[r.col]) return;
+        if(p.eventType==='DELETE') cols[r.col].map.delete(r.id); else cols[r.col].map.set(r.id,r.data);
+        emit(r.col);
+      }).subscribe(st=>{ if(st==='SUBSCRIBED') Object.keys(cols).forEach(n=>load(n).catch(()=>{})); });
+    }catch(e){ console.error(e); }
+    poll=setInterval(()=>{ if(document.visibilityState==='visible') Object.keys(cols).forEach(n=>load(n).catch(()=>{})); },30000);
+  }
+  async function put(n,id,data){
+    const row={business_id:bid,col:n,id,data,updated_at:new Date().toISOString()};
+    const r=await (role==='cashier'?client.from('docs').insert(row):client.from('docs').upsert(row,{onConflict:'business_id,col,id'}));
+    if(r.error) throw bad(r.error);
+    C(n).map.set(id,data); emit(n);
+  }
+  const ref=(n,id)=>({id,
+    set:d=>put(n,id,d),
+    update:async p=>{ const cur=C(n).map.get(id); if(!cur) throw {code:'invalid_argument',message:'not found'}; await put(n,id,{...cur,...p}); },
+    delete:async()=>{ const r=await client.from('docs').delete().eq('business_id',bid).eq('col',n).eq('id',id); if(r.error) throw bad(r.error); C(n).map.delete(id); emit(n); }});
+  return {
+    collection:n=>({
+      onSnapshot(next,err){
+        const c=C(n), l={next,err}; c.ls.add(l); watch();
+        if(c.loaded) next(snap(c)); else load(n).catch(e=>{ if(err) err(e); });
+        return ()=>c.ls.delete(l);
+      },
+      doc:id=>ref(n,id||rid())
+    }),
+    doc:path=>{ const i=path.indexOf('/'); return ref(path.slice(0,i),path.slice(i+1)); },
+    stop(){ if(poll) clearInterval(poll); if(channel){ try{ client.removeChannel(channel); }catch(e){} } }
+  };
+}
+
+/* ---------- sign in, roles, start ---------- */
+let sb=null, recovering=false;
+const gateViews={loading:'gLoading',login:'gLogin',signup:'gSignup',forgot:'gForgot',recover:'gRecover',claim:'gClaim',blocked:'gBlocked'};
+function gateMsg(t,ok){ const m=$('#gMsg'); m.textContent=t||''; m.className='gmsg'+(ok?' ok':''); }
+function showGate(view,msg,ok){
+  $('#appRoot').hidden=true; $('#gate').hidden=false;
+  for(const k in gateViews) $('#'+gateViews[k]).hidden=(k!==view);
+  gateMsg(msg||'',ok);
+}
+const niceErr=m=>{
+  m=String(m||'');
+  if(/invalid login/i.test(m)) return 'Email ya password galat hai.';
+  if(/already registered|already been registered/i.test(m)) return 'Ye email pehle se registered hai. Login karo.';
+  if(/at least 6|weak/i.test(m)) return 'Password kam se kam 6 akshar ka rakho.';
+  if(/valid email|invalid format|is invalid/i.test(m)) return 'Sahi email daalo.';
+  if(/rate limit|too many/i.test(m)) return 'Thodi der baad dobara try karo.';
+  if(/bad_code/.test(m)) return 'Code galat hai ya pehle use ho chuka hai.';
+  if(/name_required/.test(m)) return 'Business ka naam daalo.';
+  if(/already_member/.test(m)) return 'Ye account pehle se kisi business se juda hai.';
+  return m||'Kuch gadbad hui. Dobara try karo.';
+};
+async function enter(){
+  showGate('loading');
+  const r=await sb.rpc('my_context');
+  if(r.error){ showGate('login','Connect nahi ho paya: '+niceErr(r.error.message)); return; }
+  CTX=r.data;
+  if(!CTX||(!CTX.member&&!CTX.is_admin)){ showGate('claim'); return; }
+  if(CTX.member&&(!CTX.member.member_active||!CTX.member.business_active)&&!CTX.is_admin){ showGate('blocked'); return; }
+  startApp();
+}
+let started=false;
+function startApp(){
+  const m=CTX.member&&CTX.member.member_active&&CTX.member.business_active?CTX.member:null;
+  ROLE=m?m.role:'';
+  BIZ=m?{name:m.name,address:m.address,phone:m.phone,gstin:m.gstin}:{name:'',address:'',phone:'',gstin:''};
+  document.body.dataset.role=ROLE||'none'; document.body.dataset.admin=CTX.is_admin?'1':'0';
+  $('#gate').hidden=true; $('#appRoot').hidden=false;
+  $('#brandName').textContent=BIZ.name||'Stock Khata'; document.title=(BIZ.name?BIZ.name+' · ':'')+'Stock Khata';
+  $('#roleChip').textContent=ROLE==='owner'?'Owner':ROLE==='cashier'?'Cashier':'Admin';
+  $('#navBar').hidden=(ROLE==='cashier');
+  $('#navBar [data-tab=sale]').hidden=!ROLE;
+  $('#navBar .setup-tab').hidden=(ROLE==='cashier');
+  showTab(ROLE?'sale':'setup');
+  if(started) return; started=true;
+  setSync('','Connecting');
+  syncTimer=setTimeout(()=>setSync('bad','Cannot reach data yet'),10000);
+  if(!m){ clearTimeout(syncTimer); setSync('ok','Admin'); renderSetup(); return; }
+  db=makeStore(sb,m.business_id,ROLE);
+  const fail=()=>{ clearTimeout(syncTimer); setSync('bad','Sync problem'); };
+  const names=ROLE==='owner'?['products','sales','purchases','adjustments','expenses']:['products','sales'];
+  names.forEach(name=>db.collection(name).onSnapshot(snap=>{ S[name]=snap.docs.map(d=>({id:d.id,...d.data()})); markLive(snap); renderAll(); },fail));
+  if(ROLE==='owner') db.collection('fin').onSnapshot(snap=>{ S.fin={}; snap.docs.forEach(d=>{ S.fin[d.id]=d.data(); }); renderFin(); },()=>{});
+  renderSetup(); renderSaleTotals();
+}
+async function logout(){ try{ await sb.auth.signOut(); }catch(e){} location.reload(); }
+$$('[data-logout]').forEach(b=>b.addEventListener('click',logout));
+const val=id=>$('#'+id).value.trim();
+const goView=(v)=>()=>showGate(v);
+$('#toSignup').onclick=goView('signup'); $('#toForgot').onclick=goView('forgot'); $('#toLogin1').onclick=goView('login'); $('#toLogin2').onclick=goView('login');
+
+$('#gLogin').addEventListener('submit',async e=>{
+  e.preventDefault(); gateMsg('');
+  const email=val('liEmail').toLowerCase(), password=$('#liPw').value;
+  if(!email||!password){ gateMsg('Email aur password daalo.'); return; }
+  const r=await sb.auth.signInWithPassword({email,password});
+  if(r.error){ gateMsg(niceErr(r.error.message)); return; }
+  enter();
+});
+$('#gSignup').addEventListener('submit',async e=>{
+  e.preventDefault(); gateMsg('');
+  const code=val('suCode').toUpperCase(), name=val('suName'), email=val('suEmail').toLowerCase(), password=$('#suPw').value;
+  if(!code||!email||!password){ gateMsg('Code, email aur password daalo.'); return; }
+  const ck=await sb.rpc('check_invite',{p_code:code});
+  if(ck.error||!ck.data){ gateMsg('Code galat hai ya pehle use ho chuka hai.'); return; }
+  if(ck.data==='owner'&&!name){ gateMsg('Naye vendor ke liye business ka naam daalo.'); return; }
+  const r=await sb.auth.signUp({email,password});
+  if(r.error){ gateMsg(niceErr(r.error.message)); return; }
+  if(!r.data.session){ gateMsg('Account ban gaya, par abhi login nahi ho sakta. Supabase mein "Confirm email" band karna hoga (setup steps dekho).'); return; }
+  const c=await sb.rpc('claim_invite',{p_code:code,p_name:name,p_login:email});
+  if(c.error){ showGate('claim',niceErr(c.error.message)); return; }
+  enter();
+});
+$('#gClaim').addEventListener('submit',async e=>{
+  e.preventDefault(); gateMsg('');
+  const code=val('clCode').toUpperCase(), name=val('clName');
+  if(!code){ gateMsg('Code daalo.'); return; }
+  const sess=await sb.auth.getUser(); const email=sess.data&&sess.data.user?sess.data.user.email:'';
+  const c=await sb.rpc('claim_invite',{p_code:code,p_name:name,p_login:email});
+  if(c.error){ gateMsg(niceErr(c.error.message)); return; }
+  enter();
+});
+$('#gForgot').addEventListener('submit',async e=>{
+  e.preventDefault(); gateMsg('');
+  const email=val('fgEmail').toLowerCase(); if(!email){ gateMsg('Email daalo.'); return; }
+  const r=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+  if(r.error){ gateMsg(niceErr(r.error.message)); return; }
+  gateMsg('Agar ye email registered hai to reset ka link bhej diya gaya hai.',true);
+});
+$('#gRecover').addEventListener('submit',async e=>{
+  e.preventDefault(); gateMsg('');
+  const pw=$('#rcPw').value; if(pw.length<6){ gateMsg('Password kam se kam 6 akshar ka rakho.'); return; }
+  const r=await sb.auth.updateUser({password:pw});
+  if(r.error){ gateMsg(niceErr(r.error.message)); return; }
+  history.replaceState(null,'',location.pathname); recovering=false; enter();
+});
+
+/* account menu */
+$('#menuBtn').onclick=async()=>{
+  const u=await sb.auth.getUser(); const email=(u.data&&u.data.user&&u.data.user.email)||'';
+  openModal(`<h3>Account</h3>
+    <div><b>${esc(email)}</b><div class="hint">${esc(BIZ.name||'Admin')} · ${esc(ROLE||'admin')}</div></div>
+    <label class="f">Naya password<input id="ac_pw" type="password" autocomplete="new-password" placeholder="kam se kam 6 akshar"></label>
+    <div class="row"><button type="button" class="btn" id="ac_save">Password badlo</button><button type="button" class="btn line" id="ac_out">Logout</button></div>
+    <button type="button" class="btn line" id="ac_close">Band karo</button>`);
+  $('#ac_close').onclick=closeModal; $('#ac_out').onclick=logout;
+  $('#ac_save').onclick=async()=>{
+    const pw=$('#ac_pw').value; if(pw.length<6){ toast('Password kam se kam 6 akshar ka rakho'); return; }
+    const r=await sb.auth.updateUser({password:pw}); if(r.error){ toast(niceErr(r.error.message)); return; }
+    closeModal(); toast('Password badal gaya');
+  };
+};
+
+/* ---------- setup tab: business, cashier, vendors ---------- */
+const appUrl=()=>location.origin+location.pathname.replace(/index\.html$/,'');
+async function copyText(t,okMsg){ try{ await navigator.clipboard.writeText(t); toast(okMsg||'Copied'); }catch(e){ toast('Copy nahi hua. Text ko dabake select karo.'); } }
+function codeBox(el,code,intro){
+  const text=`${intro}\nLink: ${appUrl()}\nCode: ${code}\nLink kholo, "Naya account banana hai" dabao, code aur apna email daalo.`;
+  el.innerHTML=`<div class="codebox"><div class="hint">Code (ek hi baar chalega)</div><div class="bigcode">${esc(code)}</div><pre>${esc(text)}</pre>
+    <div class="row"><button type="button" class="btn sm" data-copy-text="1">Copy</button><a class="btn sm ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(text)}">WhatsApp pe bhejo</a></div></div>`;
+  $('[data-copy-text]',el).onclick=()=>copyText(text,'Message copy ho gaya');
+}
+async function renderSetup(){
+  if(ROLE==='owner'){
+    $('#bizName').value=BIZ.name; $('#bizAddr').value=BIZ.address; $('#bizPhone').value=BIZ.phone; $('#bizGstin').value=BIZ.gstin;
+    loadStaff();
+  }
+  if(CTX&&CTX.is_admin) loadAdmin();
+}
+$('#bizSave').onclick=async()=>{
+  const name=val('bizName'); if(!name){ toast('Business ka naam daalo'); return; }
+  const r=await sb.rpc('update_business',{p_name:name,p_address:val('bizAddr'),p_phone:val('bizPhone'),p_gstin:val('bizGstin')});
+  if(r.error){ toast(niceErr(r.error.message)); return; }
+  BIZ={name,address:val('bizAddr'),phone:val('bizPhone'),gstin:val('bizGstin').toUpperCase()};
+  $('#brandName').textContent=name; document.title=name+' · Stock Khata'; renderDue(); toast('Save ho gaya');
+};
+async function loadStaff(){
+  const r=await sb.rpc('list_staff'); if(r.error) return;
+  const rows=(r.data||[]).filter(x=>x.role==='cashier');
+  $('#staffList').innerHTML=rows.length?rows.map(x=>`<div class="bill"><div><b>${esc(x.login_id||'Cashier')}</b><div class="hint">${x.active?'Chalu':'Band'}</div></div>
+    <button type="button" class="btn sm line" data-staff="${esc(x.user_id)}" data-on="${x.active?'0':'1'}">${x.active?'Band karo':'Chalu karo'}</button></div>`).join(''):'<div class="empty">Abhi koi cashier nahi hai.</div>';
+}
+$('#staffList').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-staff]'); if(!b) return;
+  const r=await sb.rpc('set_staff_active',{p_user:b.dataset.staff,p_active:b.dataset.on==='1'}); if(r.error){ toast(niceErr(r.error.message)); return; }
+  loadStaff();
+});
+$('#staffInvite').onclick=async()=>{
+  const r=await sb.rpc('create_staff_invite'); if(r.error){ toast(niceErr(r.error.message)); return; }
+  codeBox($('#staffCode'),r.data,`${BIZ.name} mein cashier ke roop mein judne ke liye.`);
+};
+async function loadAdmin(){
+  const [b,i]=await Promise.all([sb.rpc('admin_list_businesses'),sb.rpc('admin_list_invites')]);
+  if(!b.error) $('#admBiz').innerHTML=(b.data||[]).length?b.data.map(x=>`<div class="bill"><div><b>${esc(x.name)}</b> <span class="chip ${x.active?'ok':'late'}">${x.active?'Chalu':'Band'}</span>
+    <div class="hint">${esc(x.owner_login||'')} · cashier: ${x.staff}</div></div>
+    <button type="button" class="btn sm line" data-biz="${esc(x.id)}" data-on="${x.active?'0':'1'}">${x.active?'Band karo':'Chalu karo'}</button></div>`).join(''):'<div class="empty">Abhi koi vendor nahi.</div>';
+  if(!i.error) $('#admInvites').innerHTML=(i.data||[]).length?i.data.map(x=>`<div class="bill"><div><b class="code">${esc(x.code)}</b><div class="hint">${esc(x.label||'')}</div></div></div>`).join(''):'<div class="empty">Koi pending code nahi.</div>';
+}
+$('#admBiz').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-biz]'); if(!b) return;
+  const r=await sb.rpc('admin_set_business_active',{p_id:b.dataset.biz,p_active:b.dataset.on==='1'}); if(r.error){ toast(niceErr(r.error.message)); return; }
+  loadAdmin();
+});
+$('#admInvite').onclick=async()=>{
+  const r=await sb.rpc('admin_create_vendor_invite',{p_label:val('admLabel')}); if(r.error){ toast(niceErr(r.error.message)); return; }
+  codeBox($('#admCode'),r.data,'Aapka Stock Khata account taiyar hai.'); $('#admLabel').value=''; loadAdmin();
+};
+
+/* ---------- start ---------- */
+async function boot(){
+  recovering=/type=recovery/.test(location.hash);
+  const cfg=window.KHATA_CONFIG||{};
+  if(!cfg.url||!cfg.key||/PASTE/.test(cfg.url+cfg.key)){ showGate('loading','config.js mein Supabase ka URL aur key daalna baaki hai.'); return; }
+  if(!window.supabase){ showGate('loading','Internet check karo aur page dobara kholo.'); return; }
+  try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
+  sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  sb.auth.onAuthStateChange(ev=>{ if(ev==='PASSWORD_RECOVERY'){ recovering=true; showGate('recover'); } });
+  let sess=null;
+  try{ const r=await sb.auth.getSession(); sess=r.data&&r.data.session; }catch(e){}
+  if(recovering&&sess){ showGate('recover'); return; }
+  if(!sess){ showGate('login'); return; }
+  enter();
+}
+showGate('loading');
+if(document.readyState==='complete') boot(); else window.addEventListener('load',boot);
+})();
+</script>
+</body>
+</html>
