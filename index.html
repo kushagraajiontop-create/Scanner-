@@ -593,13 +593,13 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.2';
+const APP_V='2026-11-26.4';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
 let db = null, STOCK = new Map();
 let BIZ={name:'',address:'',phone:'',gstin:''}, ROLE='', CTX=null;
-let LANG='en'; try{ const l=localStorage.getItem('khata_lang'); if(l==='en'||l==='hi'||l==='hl') LANG=l; }catch(e){}
+let LANG='en'; try{ const l=localStorage.getItem('khata_lang2'); if(l==='en'||l==='hi'||l==='hl') LANG=l; }catch(e){}
 let started=false;
 
 const $ = (s,el)=> (el||document).querySelector(s);
@@ -804,11 +804,24 @@ async function openScanner(ctx){
         if(caps.torch){ const tb=$('#camTorch'); tb.hidden=false; let on=false; tb.onclick=async()=>{ on=!on; try{ await tr.applyConstraints({advanced:[{torch:on}]}); }catch(e){} }; }
       }catch(e){}
       v.srcObject=stream; await v.play(); camOn=true;
-      msg('Barcode ko screen mein bhar ke seedha pakdo.');
+      msg('Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega.');
       (async()=>{
+        /* also try the frame tilted and upside down, so the barcode can be held at any angle */
+        const cv=document.createElement('canvas'), cx2=cv.getContext('2d'), ANG=[0.35,-0.35,0.7,-0.7,1.5708,3.1416,-1.5708,1.05,-1.05]; let tick=0;
         while(camOn){
-          try{ if(v.readyState>=2){ const r=await det.detect(v); if(r&&r.length) onCamCode(ctx,r[0].rawValue); } }catch(e){}
-          await new Promise(r=>setTimeout(r,90));
+          try{ if(v.readyState>=2){
+            let r=await det.detect(v);
+            if(!(r&&r.length)&&(++tick%2===0)){
+              const w=v.videoWidth,h=v.videoHeight; if(w&&h){
+                const a=ANG[((tick/2)|0)%ANG.length], d=Math.ceil(Math.hypot(w,h)), sc=Math.min(1,1280/d);
+                cv.width=Math.ceil(d*sc); cv.height=cv.width; cx2.setTransform(1,0,0,1,0,0); cx2.fillStyle='#fff'; cx2.fillRect(0,0,cv.width,cv.height);
+                cx2.translate(cv.width/2,cv.height/2); cx2.rotate(a); cx2.scale(sc,sc); cx2.drawImage(v,-w/2,-h/2,w,h);
+                r=await det.detect(cv);
+              }
+            }
+            if(r&&r.length) onCamCode(ctx,r[0].rawValue);
+          } }catch(e){}
+          await new Promise(r=>setTimeout(r,70));
         }
       })();
     } else if(window.ZXing){
@@ -817,7 +830,7 @@ async function openScanner(ctx){
       hints.set(ZXing.DecodeHintType.TRY_HARDER,true);
       camZx=new ZXing.BrowserMultiFormatReader(hints); camOn=true;
       await camZx.decodeFromConstraints({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}},$('#camV'),r=>{ if(r) onCamCode(ctx,r.getText()); });
-      msg('Barcode ko screen mein bhar ke seedha pakdo.');
+      msg('Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega.');
     } else msg('Scanner load nahi hua. Internet check karo, ya photo se scan karo.');
   }catch(e){ msg('Camera nahi khula ('+((e&&e.name)||'error')+'). Permission allow karo, ya photo se scan karo.'); }
 }
@@ -2182,6 +2195,7 @@ Object.assign(D,{
 "Link kholo, \"Naya account banana hai\" dabao, code aur apna email daalo.":["Open the link, tap \"Create a new account\", and enter the code and your email.","लिंक खोलें, \"नया अकाउंट बनाएँ\" दबाएँ, कोड और अपना ईमेल डालें।","Link kholo, \"Naya account banana hai\" dabao, code aur apna email daalo."],
 });
 Object.assign(D,{
+"Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega.":["Fill the screen with the barcode. Tilted or upside down also works.","बारकोड को स्क्रीन में भरकर पकड़ें। टेढ़ा या उल्टा भी चलेगा।","Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega."],
 "Show password":["Show password","पासवर्ड दिखाएँ","Password dikhao"],"Show":["Show","दिखाएँ","Dikhao"],"Hide":["Hide","छिपाएँ","Chhupao"],
 "Email verify karo":["Verify your email","ईमेल सत्यापित करें","Email verify karo"],"Email ka code":["Code from your email","ईमेल वाला कोड","Email ka code"],
 "Verify karo":["Verify","सत्यापित करें","Verify karo"],"Code dobara bhejo":["Send the code again","कोड दोबारा भेजें","Code dobara bhejo"],"Wapas":["Back","वापस","Wapas"],
@@ -2327,7 +2341,7 @@ function trWalk(root){
 let trObs=null;
 function setLang(l){
   if(LIDX[l]===undefined) return; LANG=l;
-  try{ localStorage.setItem('khata_lang',l); }catch(e){}
+  try{ localStorage.setItem('khata_lang2',l); }catch(e){}
   document.documentElement.lang=(l==='en'?'en':l==='hi'?'hi':'hi-Latn');
   $$('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
   trWalk(document.body);
