@@ -8,8 +8,9 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Stock Khata</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap">
 <script src="config.js"></script>
+<script>try{var k=localStorage.getItem("khata_skin");if(k==="ember"||k==="emerald")document.documentElement.dataset.skin=k;}catch(e){}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js" defer></script>
@@ -20,8 +21,8 @@
   --bg:#F2F5F8; --surface:#FFFFFF; --ink:#13202B; --muted:#586977; --line:#D9E1E8;
   --accent:#1550D6; --on-accent:#FFFFFF; --tint:#E6EEFD;
   --good:#0B7A48; --good-tint:#E1F4EA; --warn:#9A5A00; --warn-tint:#FFF1D6; --bad:#BC2430; --bad-tint:#FCE7E8;
-  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --f-head:'Space Grotesk','Inter',system-ui,sans-serif;
+  --f-body:'Inter','Noto Sans Devanagari',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-head:'Space Grotesk','Inter','Noto Sans Devanagari',system-ui,sans-serif;
   --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){
@@ -205,11 +206,83 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
 .codebox .bigcode{font:600 24px var(--f-mono);letter-spacing:.08em}
 .sheet pre{white-space:pre-wrap;word-break:break-word;margin:0;font:13px/1.45 var(--f-body)}
 
+/* language switch */
+.langsw{display:flex;gap:4px;align-self:flex-end;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.langsw button{border:0;background:none;color:var(--muted);font:600 12px var(--f-body);padding:6px 10px;border-radius:999px;cursor:pointer}
+.langsw button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.sheet .langsw{align-self:flex-start;margin-top:6px}
+
+/* polish layer */
+:root{--shadow:0 1px 2px rgba(15,30,50,.06),0 6px 18px rgba(15,30,50,.06);--radius:14px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3)}}
+:root[data-theme="dark"]{--shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3)}
+body{background-image:linear-gradient(180deg,color-mix(in srgb,var(--accent) 7%,var(--bg)) 0,var(--bg) 220px);background-repeat:no-repeat}
+.top{position:sticky;top:0;z-index:6;padding:12px 0 10px;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.top .brand{font-size:20px;display:flex;align-items:center;gap:8px}
+.top .brand::before{content:"";width:8px;height:22px;border-radius:4px;background:linear-gradient(180deg,var(--accent),color-mix(in srgb,var(--accent) 55%,#7aa7ff))}
+.panel{border-radius:var(--radius);box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--line) 70%,transparent);padding:16px}
+.panel h2{font-size:17px;letter-spacing:-.01em}
+.tile{border-radius:12px;box-shadow:var(--shadow);border-color:color-mix(in srgb,var(--line) 70%,transparent);position:relative;overflow:hidden}
+.tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);opacity:.8}
+.tile b{letter-spacing:-.01em}
+.btn{border-radius:10px;min-height:42px;box-shadow:0 1px 2px color-mix(in srgb,var(--accent) 30%,transparent);transition:transform .08s ease,filter .15s}
+.btn:active{transform:scale(.98)}
+.btn:hover{filter:brightness(1.05)}
+.btn.line,.btn.ghost,.btn.danger{box-shadow:none}
+.btn.sm{min-height:34px}
+input:not([type=radio]):not([type=checkbox]),select{border-radius:10px}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.nav{border-top:0;box-shadow:0 -6px 20px rgba(15,30,50,.10);border-radius:18px 18px 0 0}
+.nav button{border-radius:12px;transition:background .15s,color .15s}
+.nav button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--accent)}
+.rolechip{letter-spacing:.04em;text-transform:uppercase;font-size:10.5px}
+.gatebox{border-radius:18px;box-shadow:var(--shadow);padding:26px}
+.sheet{border-radius:20px 20px 0 0}
+.bill,.due,.prow{border-radius:10px}
+@media (min-width:820px){.nav{border-radius:14px;box-shadow:var(--shadow)}}
+
+
+/* skins: Classic (default, above), Ember (charcoal + white + orange), Emerald (deep emerald + cream) */
+:root[data-skin="ember"]{--bg:#F3F2F0;--surface:#FFFFFF;--ink:#202124;--muted:#6A6D73;--line:#E2E0DC;--accent:#E8590C;--on-accent:#FFFFFF;--tint:#FDE9DC;--good:#2B8A3E;--good-tint:#E3F3E6;--warn:#B45309;--warn-tint:#FFF0D9}
+:root[data-skin="emerald"]{--bg:#F5EFDF;--surface:#FFFBF0;--ink:#11291F;--muted:#5B6B61;--line:#E1D8BF;--accent:#0B6B4A;--on-accent:#FFFFFF;--tint:#DDEBD9;--good:#0B6B4A;--good-tint:#DDEBD9;--warn:#9A5A00;--warn-tint:#FBEBC8}
+@media (prefers-color-scheme: dark){
+  :root[data-skin="ember"]:not([data-theme="light"]){--bg:#16171A;--surface:#212327;--ink:#F4F3F1;--muted:#A1A4AA;--line:#34373C;--accent:#FF8A3D;--on-accent:#1A0F05;--tint:#3A2617;--good:#5FD38A;--good-tint:#16301F}
+  :root[data-skin="emerald"]:not([data-theme="light"]){--bg:#0B1913;--surface:#12251C;--ink:#F2EBD6;--muted:#9DB0A4;--line:#24392E;--accent:#44C28F;--on-accent:#04150D;--tint:#14332A;--good:#44C28F;--good-tint:#14332A}
+}
+:root[data-skin="ember"][data-theme="dark"]{--bg:#16171A;--surface:#212327;--ink:#F4F3F1;--muted:#A1A4AA;--line:#34373C;--accent:#FF8A3D;--on-accent:#1A0F05;--tint:#3A2617;--good:#5FD38A;--good-tint:#16301F}
+:root[data-skin="emerald"][data-theme="dark"]{--bg:#0B1913;--surface:#12251C;--ink:#F2EBD6;--muted:#9DB0A4;--line:#24392E;--accent:#44C28F;--on-accent:#04150D;--tint:#14332A;--good:#44C28F;--good-tint:#14332A}
+.skins{display:flex;gap:6px}
+.skins button{flex:1 1 0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 6px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--ink)}
+.skins button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--tint)}
+.skins i{display:block;width:100%;height:18px;border-radius:6px}
+/* saathi */
+.ins{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:12px 14px;margin:0 0 10px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.ins p{margin:0;font-size:13px;line-height:1.5;color:var(--ink)}
+.ins.bad{border-left-color:var(--bad)}.ins.warn{border-left-color:var(--warn)}.ins.good{border-left-color:var(--good)}.ins.info{border-left-color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chipbtn{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:6px 12px;font-size:12px;font-weight:500}
+.chipbtn[aria-pressed="true"]{background:var(--tint);border-color:var(--accent);color:var(--accent);font-weight:600}
+.guides{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.guide{text-align:left;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;padding:11px 12px;font-weight:500}
+.gsteps{margin:8px 0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.5}
+/* ledger */
+.ledrow{width:100%;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;color:inherit;font:inherit;cursor:pointer}
+.ledtbl{width:100%;border-collapse:collapse;font-size:12px;min-width:420px}
+.ledtbl th{text-align:left;color:var(--muted);font-weight:600;padding:6px 4px;border-bottom:1px solid var(--line)}
+.ledtbl td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.ledtbl td.num,.ledtbl th:nth-child(n+3){text-align:right}
+.btn.dis{opacity:.45;pointer-events:none}
+/* show-password eye + otp */
+.pw{position:relative;display:block}
+.pw input{width:100%;padding-right:72px}
+.pw .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--accent);font-size:12px;font-weight:600;padding:8px 10px;cursor:pointer}
+#otpCode{letter-spacing:.35em;font-size:20px;text-align:center;font-family:var(--f-mono,monospace)}
 </style>
 </head>
 <body>
 <div class="gate" id="gate">
   <div class="gatebox">
+    <div class="langsw" id="langSw"><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button><button type="button" data-lang="en" aria-pressed="false">English</button><button type="button" data-lang="hl" aria-pressed="false">Hinglish</button></div>
     <div class="brand">Stock Khata</div>
     <div id="gLoading" class="hint">Loading...</div>
 
@@ -230,6 +303,15 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
       <label class="f">Password (kam se kam 6 akshar)<input id="suPw" type="password" autocomplete="new-password"></label>
       <button class="btn" type="submit">Account banao</button>
       <button type="button" class="linkbtn" id="toLogin1">Wapas login</button>
+    </form>
+
+    <form id="gOtp" hidden>
+      <h2>Email verify karo</h2>
+      <div class="hint" id="otpHint"></div>
+      <label class="f">Email ka code<input id="otpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="------"></label>
+      <button class="btn" type="submit">Verify karo</button>
+      <button type="button" class="linkbtn" id="otpResend">Code dobara bhejo</button>
+      <button type="button" class="linkbtn" id="otpBack">Wapas</button>
     </form>
 
     <form id="gForgot" hidden>
@@ -273,21 +355,25 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
     <div class="topr">
       <span class="rolechip" id="roleChip"></span>
       <span class="sync" id="sync"><i></i><span>Connecting</span></span>
+      <button type="button" class="iconbtn" id="helpBtn" aria-label="Help" hidden>?</button>
       <button type="button" class="iconbtn" id="menuBtn" aria-label="Account">&#8942;</button>
     </div>
   </header>
 
   <nav class="nav" id="navBar" role="tablist" aria-label="Sections">
     <button role="tab" data-tab="sale" aria-selected="true"><b>Sale</b><span>Bikri</span></button>
-    <button role="tab" data-tab="purchase" aria-selected="false" class="owner-only"><b>Buy</b><span>Kharidi</span></button>
-    <button role="tab" data-tab="stock" aria-selected="false" class="owner-only"><b>Stock</b><span>Maal</span></button>
-    <button role="tab" data-tab="baaki" aria-selected="false" class="owner-only"><b>Baaki</b><span>Pending</span></button>
+    <button role="tab" data-tab="purchase" aria-selected="false"><b>Buy</b><span>Kharidi</span></button>
+    <button role="tab" data-tab="stock" aria-selected="false"><b>Stock</b><span>Maal</span></button>
+    <button role="tab" data-tab="baaki" aria-selected="false" class="owner-only"><b>Ledger</b><span>Khata</span></button>
+    <button role="tab" data-tab="saathi" aria-selected="false" class="owner-only"><b>Saathi</b><span>Salah</span></button>
     <button role="tab" data-tab="today" aria-selected="false" class="owner-only"><b>Reports</b><span>Hisaab</span></button>
     <button role="tab" data-tab="setup" aria-selected="false" class="setup-tab"><b>Setup</b><span>Settings</span></button>
   </nav>
 
 
   <main>
+    <div class="banner" id="updBanner" hidden><span>Naya version aaya hai. Update karne par app dobara khulegi.</span><button class="btn sm" id="updBtn">Update karo</button></div>
+    <div class="banner" id="catBanner" hidden><span id="catBannerTxt"></span><button class="btn sm" id="catBtn">Dekho</button></div>
     <div class="banner" id="demoBanner" hidden>
       <span>Example data is loaded so you can try everything. Remove it before real use.</span>
       <button class="btn sm line" id="clearDemo">Remove example data</button>
@@ -307,7 +393,7 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
         <div id="saleCart"></div>
         <div class="row">
           <label class="f">Customer WhatsApp number (optional)<input id="salPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="10 digits"></label>
-          <label class="f">Customer name (optional)<input id="salParty" type="text" autocomplete="off"></label>
+          <label class="f">Customer name (optional)<input id="salParty" type="text" autocomplete="off" list="dlCust"></label>
         </div>
         <div class="row">
           <label class="f">GST
@@ -340,7 +426,7 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
       <div class="panel">
         <h2>New purchase</h2>
         <div class="row">
-          <label class="f">Supplier<input id="purSupplier" type="text" autocomplete="off"></label>
+          <label class="f">Supplier<input id="purSupplier" type="text" autocomplete="off" list="dlSupp"></label>
           <label class="f">Supplier WhatsApp<input id="purPhone" type="tel" inputmode="tel" autocomplete="off" placeholder="10 digits"></label>
         </div>
         <div class="row">
@@ -360,7 +446,7 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
         </div>
         <button class="btn" id="savePur">Save purchase</button>
       </div>
-      <div class="panel"><h2>Recent purchases</h2><div id="recentPur"></div></div>
+      <div class="panel owner-only"><h2>Recent purchases</h2><div id="recentPur"></div></div>
     </section>
 
     <!-- STOCK -->
@@ -385,17 +471,20 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
       </div>
     </section>
 
-    <!-- BAAKI -->
+    <!-- LEDGER -->
     <section class="tab" id="tab-baaki" hidden>
       <div class="tiles" id="dueTiles"></div>
-      <div class="panel">
-        <h2>Customers who owe you</h2>
-        <div class="hint">Bills older than 3 days are marked late. Tap Remind to open WhatsApp with the message ready. Sending it automatically is the next step.</div>
-        <div id="owedList"></div>
+      <div class="subseg" id="ledSeg" role="group" aria-label="Ledger">
+        <button type="button" data-v="customer" aria-pressed="true">Customers</button>
+        <button type="button" data-v="supplier" aria-pressed="false">Suppliers</button>
       </div>
       <div class="panel">
-        <h2>You owe suppliers</h2>
-        <div id="payList"></div>
+        <div class="row" style="align-items:flex-end">
+          <label class="f" style="flex:2 1 160px">Find party<input id="ledFind" type="search" placeholder="Name" autocomplete="off"></label>
+          <button class="btn" id="ledAdd" style="flex:0 0 auto">Add party</button>
+        </div>
+        <label class="f" style="flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="ledAll" style="width:auto"> Show settled parties too</label>
+        <div id="ledList"></div>
       </div>
     </section>
 
@@ -446,6 +535,9 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
       </div>
     </section>
 
+    <!-- SAATHI -->
+    <section class="tab" id="tab-saathi" hidden><div id="saathiBody"></div></section>
+
     <!-- SETUP -->
     <section class="tab" id="tab-setup" hidden>
       <div class="panel owner-only">
@@ -461,7 +553,7 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
       </div>
       <div class="panel owner-only">
         <h2>Cashier</h2>
-        <div class="hint">Cashier sirf bill bana sakta hai. Kharidi, hisaab aur profit uski screen par nahi aate.</div>
+        <div class="hint">Cashier bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte.</div>
         <div id="staffList"></div>
         <button class="btn" id="staffInvite">Cashier ka code banao</button>
         <div id="staffCode"></div>
@@ -471,6 +563,14 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
         <label class="f">Vendor ka naam (apni yaad ke liye)<input id="admLabel" type="text" autocomplete="off"></label>
         <button class="btn" id="admInvite">Vendor ka code banao</button>
         <div id="admCode"></div>
+      </div>
+      <div class="panel admin-only">
+        <h2>Barcode catalogue (sab vendors ke liye)</h2>
+        <div class="hint">Kisi barcode ka galat naam yahan theek karo. Wo sab vendors ke naye scan par aur naam-sudhar suggestion mein dikhega.</div>
+        <div class="row" style="align-items:flex-end"><label class="f" style="flex:2 1 160px">Barcode ya naam<input id="admCatQ" type="search" autocomplete="off"></label><button type="button" class="btn" id="admCatGo" style="flex:0 0 auto">Dhoondo</button></div>
+        <div id="admCatRes"></div>
+        <h2 style="margin-top:14px">Vendors ki reports</h2>
+        <div id="admReports"></div>
       </div>
       <div class="panel admin-only">
         <h2>Abhi tak use na hue code</h2>
@@ -488,15 +588,19 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
 
 <div class="modal" id="modal" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <div class="toast" id="toast" hidden></div>
+<datalist id="dlCust"></datalist><datalist id="dlSupp"></datalist>
 
 <script>
 (function(){
 'use strict';
+const APP_V='2026-11-26.1';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
-const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],fin:{}};
+const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
 let db = null, STOCK = new Map();
 let BIZ={name:'',address:'',phone:'',gstin:''}, ROLE='', CTX=null;
+let LANG='hl'; try{ const l=localStorage.getItem('khata_lang'); if(l==='en'||l==='hi'||l==='hl') LANG=l; }catch(e){}
+let started=false;
 
 const $ = (s,el)=> (el||document).querySelector(s);
 const $$ = (s,el)=> Array.from((el||document).querySelectorAll(s));
@@ -505,13 +609,14 @@ const r3 = n => Math.round(n*1000)/1000;
 const r2 = n => Math.round(n*100)/100;
 const money = n => '₹' + (Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const qtyFmt = n => (Math.round(n*100)/100).toLocaleString('en-IN');
+const T=(en,hi,hl)=>[en,hi,hl][LIDX[LANG]];
 const todayStr = () => new Date().toLocaleDateString('en-CA');
 function daysAgo(ds){
   const [y,m,d] = String(ds).split('-').map(Number); if(!y) return 0;
   const t = new Date(); const a = new Date(t.getFullYear(),t.getMonth(),t.getDate()); const b = new Date(y,m-1,d);
   return Math.max(0,Math.round((a-b)/864e5));
 }
-function shortDate(ds){ const [y,m,d]=String(ds).split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString('en-IN',{day:'numeric',month:'short'}); }
+function shortDate(ds){ const [y,m,d]=String(ds).split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString(LOC(),{day:'numeric',month:'short'}); }
 
 let toastT;
 function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{t.hidden=true},2600); }
@@ -544,7 +649,7 @@ function stockCalc(endDs){
   }
   return m;
 }
-function compute(){ STOCK = stockCalc(null); }
+function compute(){ STOCK = stockCalc(null); buildLedger(); }
 
 /* ---------- product lookup / suggestions ---------- */
 function findProducts(q){
@@ -606,11 +711,23 @@ async function handleCode(ctx,raw){
   const p=S.products.find(x=>x.barcode===code);
   if(p){ beep(true); pick(ctx,p); return; }
   beep(false);
-  if(ROLE!=='owner'){ toast('Ye item list mein nahi hai. Owner se jodne ko kaho.'); return; }
-  let cat=null;
-  try{ const r=await sb.from('catalogue').select('name,unit').eq('barcode',code).maybeSingle(); cat=r.data||null; }catch(e){}
+  toast('Naya barcode. Naam dhoondh raha hoon...');
+  let cat=null, src='';
+  try{ const r=await sb.from('catalogue').select('name,unit').eq('barcode',code).maybeSingle(); if(r.data){ cat=r.data; src='shared'; } }catch(e){}
+  if(!cat){
+    try{
+      const ac=new AbortController(), tm=setTimeout(()=>ac.abort(),4500);
+      const r=await fetch('https://world.openfoodfacts.org/api/v2/product/'+encodeURIComponent(code)+'.json?fields=product_name,brands,quantity',{signal:ac.signal});
+      clearTimeout(tm);
+      const j=await r.json();
+      if(j&&j.status===1&&j.product){
+        const pr=j.product, nm=[pr.brands?String(pr.brands).split(',')[0].trim():'',pr.product_name||'',pr.quantity||''].filter(Boolean).join(' ').trim();
+        if(nm){ cat={name:nm,unit:'pcs'}; src='web'; }
+      }
+    }catch(e){}
+  }
   openProduct(null,{barcode:code,name:cat?cat.name:'',unit:cat?cat.unit:'pcs',
-    hint:cat?'Naam sabke catalogue se mila. Check karke MRP aur rate daalo.':'Ye barcode pehli baar aaya hai. Naam aur MRP daalo.',
+    hint:src==='shared'?'Naam sabke catalogue se mila. Check karke MRP daalo.':src==='web'?'Naam internet se mila. Sahi hai ya nahi check karo, phir MRP daalo.':'Ye barcode pehli baar aaya hai. Naam aur MRP daalo.',
     after:np=>{ if(ctx==='sale') saleCart.add(np); else if(ctx==='purchase') purCart.add(np); }});
 }
 
@@ -712,7 +829,7 @@ function Cart(kind,listEl,totalEl){
   const c={kind,items:[]};
   const lineHtml=(it,i)=>{
     let sub = `MRP ${money(it.mrp)} · ${esc(it.unit)}`, warn=false;
-    if(kind==='sale' && ROLE!=='cashier'){ const st=STOCK.get(it.pid); if(st && it.qty>st.qty){ sub=`Only ${qtyFmt(st.qty)} ${esc(it.unit)} in stock`; warn=true; } }
+    if(kind==='sale'){ const st=STOCK.get(it.pid); if(st && it.qty>st.qty){ sub=`Only ${qtyFmt(st.qty)} ${esc(it.unit)} in stock`; warn=true; } }
     return `<div class="line" data-i="${i}">
       <div><div class="line-name">${esc(it.name)}</div><div class="line-sub${warn?' warn':''}" data-sub>${sub}</div></div>
       <button class="x" data-act="del" aria-label="Remove ${esc(it.name)}">×</button>
@@ -732,7 +849,7 @@ function Cart(kind,listEl,totalEl){
   c.add=p=>{
     const ex=c.items.find(i=>i.pid===p.id);
     if(ex) ex.qty=r3(ex.qty+1);
-    else c.items.push({pid:p.id,name:p.name,unit:p.unit||'pcs',qty:1,mrp:+p.mrp||0,rate: kind==='sale' ? (+p.mrp||0) : (+p.buyRate||0)});
+    else c.items.push({pid:p.id,name:p.name,unit:p.unit||'pcs',qty:1,mrp:+p.mrp||0,rate: kind==='sale' ? (+p.mrp||0) : (ROLE==='cashier'?0:(+p.buyRate||0))});
     c.render(); toast('Added: '+p.name);
   };
   c.clear=()=>{ c.items=[]; c.render(); };
@@ -749,7 +866,7 @@ function Cart(kind,listEl,totalEl){
     const line=e.target.closest('.line'), it=c.items[+line.dataset.i]; if(!it) return;
     const v=parseFloat(e.target.value); it[f]=isNaN(v)?0:v;
     $('[data-amt]',line).textContent=money(it.qty*it.rate);
-    if(kind==='sale' && ROLE!=='cashier'){
+    if(kind==='sale'){
       const st=STOCK.get(it.pid), sub=$('[data-sub]',line); const warn=st&&it.qty>st.qty;
       sub.className='line-sub'+(warn?' warn':''); sub.textContent = warn?`Only ${qtyFmt(st.qty)} ${it.unit} in stock`:`MRP ${money(it.mrp)} · ${it.unit}`;
     }
@@ -761,7 +878,7 @@ const saleCart = Cart('sale',$('#saleCart'),$('#saleSub'));
 const purCart = Cart('purchase',$('#purCart'),$('#purTotal'));
 
 /* ---------- product modal ---------- */
-function openModal(html){ $('#sheet').innerHTML=html; $('#modal').hidden=false; const f=$('#sheet input,#sheet select'); if(f && matchMedia('(pointer:fine)').matches) f.focus(); }
+function openModal(html){ $('#sheet').innerHTML=html; if(typeof eyeify==='function') eyeify($('#sheet')); $('#modal').hidden=false; const f=$('#sheet input,#sheet select'); if(f && matchMedia('(pointer:fine)').matches) f.focus(); }
 function closeModal(){ if(typeof stopCam==='function') stopCam(); $('#modal').hidden=true; $('#sheet').innerHTML=''; }
 $('#modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('#modal').hidden) closeModal(); });
@@ -773,17 +890,21 @@ function openProduct(p,opts){
     <label class="f">Barcode<input id="pm_code" type="text" autocomplete="off" inputmode="numeric" value="${esc(v.barcode||'')}" placeholder="Scan or type. Leave empty for loose items"></label>
     <div class="row">
       <label class="f">MRP (₹)<input id="pm_mrp" type="number" inputmode="decimal" step="any" min="0" value="${v.mrp??''}"></label>
-      <label class="f">Unit<select id="pm_unit">${UNITS.map(u=>`<option${u===v.unit?' selected':''}>${u}</option>`).join('')}</select></label>
+      <label class="f">Unit<select id="pm_unit">${UNITS.map(u=>`<option value="${u}"${u===v.unit?' selected':''}>${u}</option>`).join('')}</select></label>
     </div>
     <div class="row">
-      <label class="f">Usual buying rate (₹)<input id="pm_buy" type="number" inputmode="decimal" step="any" min="0" value="${v.buyRate??''}"></label>
+      <label class="f owner-only">Usual buying rate (₹)<input id="pm_buy" type="number" inputmode="decimal" step="any" min="0" value="${v.buyRate??''}"></label>
       <label class="f">${edit?'Opening stock':'Stock you have now'}<input id="pm_open" type="number" inputmode="decimal" step="any" value="${v.openQty??''}"></label>
     </div>
     <label class="f">Mark low when stock is at or below<input id="pm_reorder" type="number" inputmode="decimal" step="any" min="0" value="${v.reorder??5}"></label>
     <div class="row"><button class="btn" id="pm_save">Save item</button><button class="btn line" id="pm_cancel">Cancel</button></div>
-    ${edit?'<button class="btn danger sm" id="pm_del">Delete item</button>':''}`);
+    ${edit&&v.barcode?'<button type="button" class="linkbtn" id="pm_rep">Is barcode ka naam galat hai? Admin ko batao</button><div id="pm_repbox" hidden><label class="f">Sahi naam<input id="pm_repname" type="text" autocomplete="off"></label><button type="button" class="btn sm" id="pm_repsend">Report bhejo</button></div>':''}
+    ${edit&&ROLE==='owner'?'<button class="btn danger sm" id="pm_del">Delete item</button>':''}`);
+  if($('#pm_rep')){ $('#pm_rep').onclick=()=>{ $('#pm_repbox').hidden=false; $('#pm_repname').focus(); };
+    $('#pm_repsend').onclick=async()=>{ const nn=$('#pm_repname').value.trim(); if(!nn){ toast('Sahi naam likho'); return; }
+      const r=await sb.rpc('report_catalogue',{p_barcode:v.barcode,p_shown:v.name,p_suggested:nn}); if(r.error){ toast(niceErr(r.error.message)); return; } toast('Report bhej di. Shukriya.'); $('#pm_repbox').hidden=true; }; }
   $('#pm_cancel').onclick=closeModal;
-  if(edit) $('#pm_del').onclick=function(){ confirmTap(this,'Tap again to delete',async()=>{ try{ await db.doc('products/'+p.id).delete(); closeModal(); toast('Item deleted'); }catch(e){ toast('Could not delete'); } }); };
+  if(edit&&ROLE==='owner') $('#pm_del').onclick=function(){ confirmTap(this,'Tap again to delete',async()=>{ try{ await db.doc('products/'+p.id).delete(); closeModal(); toast('Item deleted'); }catch(e){ toast('Could not delete'); } }); };
   $('#pm_save').onclick=async()=>{
     if(!db){ toast('Sync not available'); return; }
     const name=$('#pm_name').value.trim(), code=$('#pm_code').value.trim(), mrp=parseFloat($('#pm_mrp').value);
@@ -792,13 +913,13 @@ function openProduct(p,opts){
     if(code && S.products.some(x=>x.barcode===code && (!edit || x.id!==p.id))){ toast('Another item already has this barcode'); return; }
     let id = edit ? p.id : (code.replace(/[^A-Za-z0-9_\-.~:@+]/g,'') || 'p'+Date.now().toString(36));
     if(!edit && S.products.some(x=>x.id===id)) id = 'p'+Date.now().toString(36);
-    const doc={name,barcode:code,mrp,unit:$('#pm_unit').value,buyRate:parseFloat($('#pm_buy').value)||0,openQty:parseFloat($('#pm_open').value)||0,reorder:parseFloat($('#pm_reorder').value)||0};
+    const doc={name,barcode:code,mrp,unit:$('#pm_unit').value,buyRate:parseFloat(($('#pm_buy')||{}).value)||0,openQty:parseFloat($('#pm_open').value)||0,reorder:parseFloat($('#pm_reorder').value)||0};
     doc.openRate = edit ? (p.openRate!=null ? p.openRate : (+p.buyRate||0)) : doc.buyRate;
     if(edit && p.demo) doc.demo=true;
     const btn=$('#pm_save'); btn.disabled=true;
     try{
       await db.doc('products/'+id).set(doc);
-      if(code && ROLE==='owner'){ try{ await sb.from('catalogue').upsert({barcode:code,name,unit:doc.unit},{onConflict:'barcode',ignoreDuplicates:true}); }catch(e){} }
+      if(code){ try{ await sb.from('catalogue').upsert({barcode:code,name,unit:doc.unit},{onConflict:'barcode',ignoreDuplicates:true}); }catch(e){} }
       closeModal(); toast('Item saved');
       if(opts.after) opts.after({id,...doc});
     }catch(e){ toast('Could not save ('+(e.code||'error')+')'); btn.disabled=false; }
@@ -962,7 +1083,7 @@ $('#saveSale').onclick=async function(){
     const billUrl=sb.storage.from('bills').getPublicUrl(path).data.publicUrl;
     const doc={billNo,date:todayStr(),ts:Date.now(),items:items.map(({pid,name,unit,qty,rate})=>({pid,name,unit,qty,rate})),
       subtotal:c.sub,discount:c.disc,gstMode:c.mode,gstRate:c.mode==='none'?0:c.rate,gstAmt:c.gst,taxable:c.taxable,total:c.total,
-      paid:!credit,party,phone:phone10(rawPhone),billPath:path,billUrl,by:CTX.member.login_id||''};
+      paid:!credit,credit,party,phone:phone10(rawPhone),billPath:path,billUrl,by:CTX.member.login_id||''};
     const ref=db.collection('sales').doc(); await ref.set(doc);
     saleCart.clear(); $('#salParty').value=''; $('#salPhone').value=''; $('#saleDisc').value=''; $('#saleGst').value='none';
     renderSaleTotals();
@@ -979,6 +1100,7 @@ $('#savePur').onclick=async function(){
   if(!items.length){ toast('Add at least one item'); return; }
   const doc={date:$('#purDate').value||todayStr(),ts:Date.now(),supplier,phone:$('#purPhone').value.trim(),bill:$('#purBill').value.trim(),
     items:items.map(({pid,name,unit,qty,rate})=>({pid,name,unit,qty,rate})),total:r2(purCart.total()),paid:$('input[name=purpay]:checked').value==='paid'};
+  doc.credit=!doc.paid;
   this.disabled=true;
   try{
     await db.collection('purchases').doc().set(doc);
@@ -992,7 +1114,8 @@ $('#savePur').onclick=async function(){
 /* ---------- renderers for data-driven parts ---------- */
 function billRow(kind,b){
   const who = kind==='sale' ? ((b.billNo?billLabel(b.billNo)+' · ':'')+(b.party||'Walk-in')) : b.supplier;
-  const tag = b.paid ? '<span class="chip ok">Paid</span>' : '<span class="chip late">Not paid</span>';
+  let tag = b.paid ? '<span class="chip ok">Paid</span>' : '<span class="chip late">Not paid</span>';
+  if(isCr(b)&&ROLE==='owner'&&BILLOUT.has(b.id)){ const o=BILLOUT.get(b.id); tag = o<=0.005?'<span class="chip ok">Settled</span>':(o<(+b.total||0)-0.005?'<span class="chip late">Baaki '+money(r2(o))+'</span>':'<span class="chip late">Not paid</span>'); }
   return `<div class="bill"><div><div><b>${esc(who)}</b> ${tag}</div><div class="hint">${shortDate(b.date)} · ${(b.items||[]).length} item${(b.items||[]).length===1?'':'s'}</div></div>
     <div style="display:flex;align-items:center;gap:8px"><b class="num">${money(b.total)}</b>${kind==='sale'?`<button class="btn sm" data-bill="${esc(b.id)}">Bill</button>`:''}<button class="btn sm line owner-only" data-del="${kind}" data-id="${esc(b.id)}">Delete</button></div></div>`;
 }
@@ -1014,15 +1137,15 @@ function renderStock(){
   let total=0,low=0;
   for(const r of rows){ total+=r.value; if(r.qty<=(+r.p.reorder||0)) low++; }
   $('#tiles').innerHTML = `<div class="tile"><small>Items</small><b class="num">${rows.length}</b></div>
-    <div class="tile"><small>Stock value (at cost)</small><b class="num">${money(r2(total))}</b></div>
+    <div class="tile owner-only"><small>Stock value (at cost)</small><b class="num">${money(r2(total))}</b></div>
     <div class="tile"><small>Low or out</small><b class="num" style="color:${low?'var(--warn)':'inherit'}">${low}</b></div>`;
   const view=rows.filter(r=>!q || (r.p.name||'').toLowerCase().includes(q) || (r.p.barcode||'').includes(q));
   $('#stockList').innerHTML = view.length ? view.map(r=>{
     const p=r.p, cls = r.qty<=0?'out':(r.qty<=(+p.reorder||0)?'low':'');
     return `<div class="prow"><div><div class="pname">${esc(p.name)}</div>
-      <div class="pmeta">${p.barcode?`<span class="code">${esc(p.barcode)}</span> · `:''}MRP ${money(p.mrp)} · Avg cost ${money(r2(r.avg))}</div></div>
-      <div><div class="pqty num ${cls}">${qtyFmt(r.qty)} <small>${esc(p.unit||'pcs')}</small></div><div class="pval num">${money(r2(r.value))}</div></div>
-      <div class="pbtns"><button class="btn sm ghost" data-pc="${esc(p.id)}">Count stock</button><button class="btn sm line" data-pe="${esc(p.id)}">Edit</button></div></div>`;
+      <div class="pmeta">${p.barcode?`<span class="code">${esc(p.barcode)}</span> · `:''}MRP ${money(p.mrp)}${ROLE==='cashier'?'':' · Avg cost '+money(r2(r.avg))}</div></div>
+      <div><div class="pqty num ${cls}">${qtyFmt(r.qty)} <small>${esc(p.unit||'pcs')}</small></div><div class="pval num owner-only">${money(r2(r.value))}</div></div>
+      <div class="pbtns"><button class="btn sm ghost" data-pc="${esc(p.id)}">Count stock</button><button class="btn sm line owner-only" data-pe="${esc(p.id)}">Edit</button></div></div>`;
   }).join('') : `<div class="empty">${rows.length?'No item matches.':'No items yet. Tap Add item or scan a barcode.'}</div>`;
 }
 $('#stockList').addEventListener('click',e=>{
@@ -1034,40 +1157,150 @@ $('#stockFind').addEventListener('input',renderStock);
 $('#addProduct').onclick=()=>openProduct(null);
 
 function waLink(phone,text){ let d=(phone||'').replace(/\D/g,''); if(d.length===10) d='91'+d; return d?('https://wa.me/'+d+'?text='+encodeURIComponent(text)):''; }
-function remindText(b){
-  const shop=(BIZ.name||'').trim()||'hamari dukaan';
-  return `Namaste ${b.party||''} ji, ${shop} se ${shortDate(b.date)} ka ${money(b.total)} baaki hai. Kripya jald bhugtan kar dein. Dhanyavaad.`;
-}
 function ageChip(d){ return d>LATE_AFTER ? `<span class="chip late">${d} days, late</span>` : `<span class="chip">${d===0?'Today':d+' day'+(d===1?'':'s')}</span>`; }
-function renderDue(){
-  const owed=S.sales.filter(s=>!s.paid).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-  const pay=S.purchases.filter(p=>!p.paid).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-  const sum=l=>l.reduce((s,x)=>s+(+x.total||0),0);
-  const lateOwed=owed.filter(b=>daysAgo(b.date)>LATE_AFTER).length;
-  $('#dueTiles').innerHTML = `<div class="tile"><small>Customers owe you</small><b class="num">${money(r2(sum(owed)))}</b></div>
-    <div class="tile"><small>Late bills (over ${LATE_AFTER} days)</small><b class="num" style="color:${lateOwed?'var(--bad)':'inherit'}">${lateOwed}</b></div>
-    <div class="tile"><small>You owe suppliers</small><b class="num">${money(r2(sum(pay)))}</b></div>`;
-  $('#owedList').innerHTML = owed.length ? owed.map(b=>{
-    const d=daysAgo(b.date), link=waLink(b.phone,remindText(b));
-    return `<div class="due"><div><div class="who">${esc(b.party||'Customer')}</div><div class="sub">${shortDate(b.date)} · ${ageChip(d)}</div></div>
-      <div class="amtc num">${money(b.total)}</div>
-      <div class="acts">${link?`<a class="btn sm" href="${link}" target="_blank" rel="noopener">Remind on WhatsApp</a>`:'<span class="hint">Add a phone number to send a reminder</span>'}
-        <button class="btn sm ghost" data-copy="${esc(b.id)}">Copy message</button>
-        <button class="btn sm line" data-paid="sales" data-id="${esc(b.id)}">Mark paid</button></div></div>`;
-  }).join('') : '<div class="empty">Nobody owes you anything right now.</div>';
-  $('#payList').innerHTML = pay.length ? pay.map(b=>{
-    const d=daysAgo(b.date);
-    return `<div class="due"><div><div class="who">${esc(b.supplier)}</div><div class="sub">${b.bill?'Bill '+esc(b.bill)+' · ':''}${shortDate(b.date)} · ${ageChip(d)}</div></div>
-      <div class="amtc num">${money(b.total)}</div>
-      <div class="acts"><button class="btn sm line" data-paid="purchases" data-id="${esc(b.id)}">Mark paid</button></div></div>`;
-  }).join('') : '<div class="empty">No supplier bills pending.</div>';
+
+/* ---------- ledger: customers and suppliers ---------- */
+const pkey=n=>String(n||'').trim().toLowerCase().replace(/\s+/g,' ');
+const dkey=ts=>new Date(ts).toLocaleDateString('en-CA');
+const isCr=b=>b.credit===true||!b.paid||!!b.paidAt;
+let LED={customer:new Map(),supplier:new Map()}, BILLOUT=new Map(), ledKind='customer';
+function buildLedger(){
+  const out={customer:new Map(),supplier:new Map()}; BILLOUT=new Map();
+  const get=(kind,name,phone)=>{
+    const k=pkey(name)||'~'; let p=out[kind].get(k);
+    if(!p){ p={key:k,kind,name:'',phone:'',entries:[]}; out[kind].set(k,p); }
+    if(name&&String(name).trim()) p.name=String(name).trim(); if(phone) p.phone=phone; return p;
+  };
+  for(const s of S.sales) if(isCr(s)){
+    const p=get('customer',s.party,s.phone), tx=(s.billNo?billLabel(s.billNo):'Bill');
+    p.entries.push({d:s.date,ts:s.ts||0,t:'bill',id:s.id,amt:+s.total||0,txt:tx});
+    if(s.paid&&s.paidAt&&!s.credit) p.entries.push({d:dkey(s.paidAt),ts:s.paidAt,t:'pay',legacy:1,amt:-(+s.total||0),txt:'Payment received'});
+  }
+  for(const b of S.purchases) if(isCr(b)){
+    const p=get('supplier',b.supplier,b.phone);
+    p.entries.push({d:b.date,ts:b.ts||0,t:'bill',id:b.id,amt:+b.total||0,txt:b.bill?'Bill '+b.bill:'Purchase'});
+    if(b.paid&&b.paidAt&&!b.credit) p.entries.push({d:dkey(b.paidAt),ts:b.paidAt,t:'pay',legacy:1,amt:-(+b.total||0),txt:'Payment made'});
+  }
+  for(const o of S.opening) get(o.kind==='supplier'?'supplier':'customer',o.party,o.phone).entries.push({d:o.date||'0000-00-00',ts:o.ts||0,t:'open',id:o.id,amt:+o.amount||0,txt:'Opening balance'});
+  for(const x of S.payments) get(x.kind==='supplier'?'supplier':'customer',x.party,x.phone).entries.push({d:x.date||dkey(x.ts||Date.now()),ts:x.ts||0,t:'pay',id:x.id,amt:-(+x.amount||0),txt:x.note||(x.kind==='supplier'?'Payment made':'Payment received'),mode:x.mode||''});
+  for(const kind of ['customer','supplier']) for(const p of out[kind].values()){
+    p.entries.sort((a,b)=>String(a.d).localeCompare(String(b.d))||(a.ts-b.ts));
+    let bal=0; const open=[];
+    for(const e of p.entries){
+      bal=r2(bal+e.amt); e.bal=bal;
+      if(e.amt>0) open.push({id:e.id,t:e.t,d:e.d,rem:e.amt});
+      else { let pay=-e.amt; while(pay>0.004&&open.length){ const o=open[0]; const u=Math.min(o.rem,pay); o.rem=r2(o.rem-u); pay=r2(pay-u); if(o.rem<=0.004) open.shift(); } }
+    }
+    p.bal=bal; p.last=p.entries.length?p.entries[p.entries.length-1].d:'';
+    const oldest=open.find(o=>o.rem>0.004&&o.d!=='0000-00-00'); p.oldest=oldest?oldest.d:'';
+    for(const o of open) if(o.t==='bill') BILLOUT.set(o.id,o.rem);
+    for(const e of p.entries) if(e.t==='bill'&&!BILLOUT.has(e.id)) BILLOUT.set(e.id,0);
+    if(!p.name) p.name=kind==='supplier'?'Supplier':'Customer';
+  }
+  LED=out;
 }
-$('#tab-baaki').addEventListener('click',async e=>{
-  const pd=e.target.closest('[data-paid]'), cp=e.target.closest('[data-copy]');
-  if(pd){ try{ await db.doc(pd.dataset.paid+'/'+pd.dataset.id).update({paid:true,paidAt:Date.now()}); toast('Marked as paid'); }catch(err){ toast('Could not update'); } }
-  if(cp){ const b=S.sales.find(x=>x.id===cp.dataset.copy); if(!b) return;
-    try{ await navigator.clipboard.writeText(remindText(b)); toast('Message copied'); }catch(err){ toast(remindText(b)); } }
-});
+function ledgerTotal(kind,endDs){
+  let t=0; for(const p of LED[kind].values()){ let b=0; for(const e of p.entries) if(String(e.d)<=endDs) b+=e.amt; if(b>0.004) t+=b; } return r2(t);
+}
+function ledgerStats(){
+  let recv=0,pay=0,late=0;
+  for(const p of LED.customer.values()) if(p.bal>0.004){ recv+=p.bal; if(p.oldest&&daysAgo(p.oldest)>LATE_AFTER) late++; }
+  for(const p of LED.supplier.values()) if(p.bal>0.004) pay+=p.bal;
+  return {recv:r2(recv),pay:r2(pay),late};
+}
+function fillPartyLists(){
+  const f=(id,m)=>{ $('#'+id).innerHTML=[...m.values()].filter(p=>p.key!=='~').map(p=>`<option value="${esc(p.name)}"></option>`).join(''); };
+  f('dlCust',LED.customer); f('dlSupp',LED.supplier);
+}
+function remindFor(p){
+  const shop=(BIZ.name||'').trim()||'hamari dukaan';
+  return `Namaste ${p.name} ji, ${shop} mein aapka ${money(p.bal)} baaki hai. Kripya jald bhugtan kar dein. Dhanyavaad.`;
+}
+function statementText(p){
+  const shop=(BIZ.name||'').trim()||'Dukaan', rows=p.entries.slice(-12);
+  return `${shop} - khata: ${p.name}\n`+rows.map(e=>`${shortDate(e.d)}  ${e.amt>0?'+':'-'}${money(Math.abs(e.amt))}  ${e.txt}`).join('\n')+`\n\nKul baaki: ${money(p.bal)}`;
+}
+function renderDue(){
+  if(ROLE!=='owner') return;
+  const st=ledgerStats();
+  $('#dueTiles').innerHTML = `<div class="tile"><small>Customers owe you</small><b class="num">${money(st.recv)}</b></div>
+    <div class="tile"><small>Late customers (over ${LATE_AFTER} days)</small><b class="num" style="color:${st.late?'var(--bad)':'inherit'}">${st.late}</b></div>
+    <div class="tile"><small>You owe suppliers</small><b class="num">${money(st.pay)}</b></div>`;
+  $$('#ledSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===ledKind)));
+  const q=$('#ledFind').value.trim().toLowerCase(), all=$('#ledAll').checked, isC=ledKind==='customer';
+  const rows=[...LED[ledKind].values()].filter(p=>(all||Math.abs(p.bal)>0.004)&&(!q||p.name.toLowerCase().includes(q))).sort((a,b)=>b.bal-a.bal||a.name.localeCompare(b.name));
+  $('#ledList').innerHTML = rows.length ? rows.map(p=>{
+    const d=p.oldest?daysAgo(p.oldest):0, adv=p.bal<-0.004;
+    const chip = p.bal>0.004 ? (isC?ageChip(d):'<span class="chip">'+(d===0?'Today':d+' day'+(d===1?'':'s'))+'</span>') : (adv?'<span class="chip ok">Advance</span>':'<span class="chip ok">Settled</span>');
+    return `<button type="button" class="due ledrow" data-party="${esc(p.key)}"><div><div class="who">${esc(p.name)}</div><div class="sub">${p.last?shortDate(p.last)+' · ':''}${chip}</div></div>
+      <div class="amtc num" style="color:${p.bal>0.004?(isC?'var(--bad)':'var(--warn)'):'var(--good)'}">${money(Math.abs(p.bal))}</div></button>`;
+  }).join('') : `<div class="empty">${isC?'No customers to show. Udhaar bills and added parties appear here.':'No suppliers to show. Unpaid purchases and added parties appear here.'}</div>`;
+  fillPartyLists();
+}
+function ledgerDetailHtml(p){
+  const isC=p.kind==='customer', link=isC?waLink(p.phone,remindFor(p)):'';
+  const label = p.bal>0.004 ? (isC?'You will receive':'You have to pay') : (p.bal<-0.004?'Advance':'Settled');
+  const rows=p.entries.map(e=>`<tr><td>${shortDate(e.d==='0000-00-00'?todayStr():e.d)}</td><td>${esc(e.txt)}${e.mode?' <small>('+esc(e.mode)+')</small>':''}${e.t==='bill'&&BILLOUT.get(e.id)>0.004&&BILLOUT.get(e.id)<e.amt-0.004?' <small>· baaki '+money(BILLOUT.get(e.id))+'</small>':''}</td>
+    <td class="num">${e.amt>0?money(e.amt):''}</td><td class="num">${e.amt<0?money(-e.amt):''}</td><td class="num"><b>${money(e.bal)}</b>${(e.t==='pay'&&!e.legacy)||e.t==='open'?` <button type="button" class="btn sm line" data-led-del="${esc(e.t)}" data-id="${esc(e.id)}">×</button>`:''}</td></tr>`).join('');
+  return `<h3>${esc(p.name)}</h3><div class="hint">${p.phone?esc(p.phone):'Phone number not added'}</div>
+    <div class="tile"><small>${label}</small><b class="num">${money(Math.abs(p.bal))}</b></div>
+    <div class="row"><button type="button" class="btn" id="pd_pay">${isC?'Payment received':'Payment made'}</button><button type="button" class="btn line" id="pd_open">Add old balance</button></div>
+    <div class="row">${link?`<a class="btn sm ghost" target="_blank" rel="noopener" href="${link}">Remind on WhatsApp</a>`:''}<a class="btn sm ghost${p.phone?'':' dis'}" target="_blank" rel="noopener" href="${waLink(p.phone,statementText(p))||'#'}">Send statement</a></div>
+    <div style="overflow-x:auto"><table class="ledtbl"><thead><tr><th>Date</th><th>Details</th><th>Udhaar (+)</th><th>Payment (−)</th><th>Balance</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="empty">Nothing yet.</td></tr>'}</tbody></table></div>
+    <button type="button" class="btn line" id="pd_close">Band karo</button>`;
+}
+function openParty(kind,key){
+  buildLedger(); const p=LED[kind].get(key); if(!p){ closeModal(); return; }
+  openModal(ledgerDetailHtml(p));
+  $('#pd_close').onclick=closeModal;
+  $('#pd_pay').onclick=()=>openPayment(p);
+  $('#pd_open').onclick=()=>openOpening(p.kind,p.name,p.phone,p.key);
+  $('#sheet').querySelectorAll('[data-led-del]').forEach(b=>b.onclick=()=>confirmTap(b,'Sure?',async()=>{
+    try{ await db.doc((b.dataset.ledDel==='open'?'opening/':'payments/')+b.dataset.id).delete(); toast('Deleted'); openParty(kind,key); }catch(e){ toast('Could not delete'); }
+  }));
+}
+function openPayment(p){
+  const isC=p.kind==='customer';
+  openModal(`<h3>${isC?'Payment received':'Payment made'}</h3><div class="hint">${esc(p.name)}</div>
+    <label class="f">Amount (₹)<input id="py_amt" type="number" inputmode="decimal" min="0" step="any" value="${p.bal>0.004?p.bal:''}"></label>
+    <div class="row"><label class="f">Date<input id="py_date" type="date" value="${todayStr()}"></label>
+    <label class="f">How<select id="py_mode"><option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Bank">Bank</option></select></label></div>
+    <label class="f">Note (optional)<input id="py_note" type="text" autocomplete="off"></label>
+    <div class="row"><button type="button" class="btn" id="py_save">Save</button><button type="button" class="btn line" id="py_cancel">Cancel</button></div>`);
+  $('#py_cancel').onclick=()=>openParty(p.kind,p.key);
+  $('#py_save').onclick=async function(){
+    const amt=r2(+$('#py_amt').value); if(!(amt>0)){ toast('Amount daalo'); return; }
+    this.disabled=true;
+    try{ await db.collection('payments').doc().set({kind:p.kind,party:p.name,phone:p.phone||'',amount:amt,date:$('#py_date').value||todayStr(),ts:Date.now(),mode:$('#py_mode').value,note:$('#py_note').value.trim(),by:CTX.member.login_id||''});
+      toast('Saved'); openParty(p.kind,p.key); }
+    catch(e){ toast('Could not save ('+((e&&(e.code||e.message))||'error')+')'); this.disabled=false; }
+  };
+}
+function openOpening(kind,name,phone,key){
+  const isC=kind==='customer', isNew=!name;
+  openModal(`<h3>${isNew?'Add party':'Add old balance'}</h3>
+    <div class="hint">${isC?'Customer ka purana baaki jo app se pehle ka hai.':'Supplier ko dena baaki jo app se pehle ka hai.'}</div>
+    <label class="f">Name<input id="op_name" type="text" autocomplete="off" value="${esc(name||'')}" ${isNew?'':'readonly'}></label>
+    <label class="f">Phone (optional)<input id="op_phone" type="tel" inputmode="tel" autocomplete="off" value="${esc(phone||'')}"></label>
+    <label class="f">Old balance (₹)<input id="op_amt" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></label>
+    <div class="row"><button type="button" class="btn" id="op_save">Save</button><button type="button" class="btn line" id="op_cancel">Cancel</button></div>`);
+  $('#op_cancel').onclick=()=>{ if(isNew) closeModal(); else openParty(kind,key); };
+  $('#op_save').onclick=async function(){
+    const nm=$('#op_name').value.trim(), amt=r2(+$('#op_amt').value), ph=phone10($('#op_phone').value.trim());
+    if(!nm){ toast('Naam daalo'); return; }
+    if(!(amt>0)){ toast('Amount daalo'); return; }
+    this.disabled=true;
+    try{ await db.collection('opening').doc().set({kind,party:nm,phone:ph,amount:amt,date:todayStr(),ts:Date.now()}); toast('Saved'); openParty(kind,pkey(nm)); }
+    catch(e){ toast('Could not save ('+((e&&(e.code||e.message))||'error')+')'); this.disabled=false; }
+  };
+}
+$('#ledSeg').addEventListener('click',e=>{ const b=e.target.closest('button[data-v]'); if(!b) return; ledKind=b.dataset.v; renderDue(); });
+$('#ledFind').addEventListener('input',renderDue); $('#ledAll').addEventListener('change',renderDue);
+$('#ledAdd').onclick=()=>openOpening(ledKind,'','','');
+$('#ledList').addEventListener('click',e=>{ const b=e.target.closest('[data-party]'); if(b) openParty(ledKind,b.dataset.party); });
+// pick a known customer: fill their phone
+$('#salParty').addEventListener('change',()=>{ const p=LED.customer.get(pkey($('#salParty').value)); if(p&&p.phone&&!$('#salPhone').value) $('#salPhone').value=p.phone; });
+$('#purSupplier').addEventListener('change',()=>{ const p=LED.supplier.get(pkey($('#purSupplier').value)); if(p&&p.phone&&!$('#purPhone').value) $('#purPhone').value=p.phone; });
 function renderDemo(){
   const any=[...S.products,...S.sales,...S.purchases,...S.adjustments,...S.expenses].some(x=>x.demo);
   $('#demoBanner').hidden=!any;
@@ -1118,16 +1351,16 @@ function summaryData(){
   const sales=S.sales.filter(s=>s.date===d), purs=S.purchases.filter(p=>p.date===d);
   const sum=l=>l.reduce((a,x)=>a+(+x.total||0),0);
   const total=sum(sales), paid=sum(sales.filter(s=>s.paid)), credit=total-paid, buy=sum(purs);
-  const collected=sum(S.sales.filter(s=>s.paid && s.paidAt && new Date(s.paidAt).toLocaleDateString('en-CA')===d && s.date!==d));
+  const collected=sum(S.sales.filter(s=>s.paid && s.paidAt && !s.credit && new Date(s.paidAt).toLocaleDateString('en-CA')===d && s.date!==d))+sum(S.payments.filter(x=>x.kind==='customer'&&x.date===d));
   let profit=0; const by=new Map();
   for(const s of sales) for(const it of (s.items||[])){
     const st=STOCK.get(it.pid), cost=st?st.avg:0, q=+it.qty||0, rt=+it.rate||0, ratio=(s.taxable!=null&&+s.subtotal>0)?s.taxable/s.subtotal:1;
     profit+=q*(rt*ratio-cost);
     const e=by.get(it.pid)||{name:it.name,unit:it.unit,qty:0,amt:0}; e.qty+=q; e.amt+=q*rt; by.set(it.pid,e);
   }
-  const owed=S.sales.filter(s=>!s.paid);
+  const ls=ledgerStats();
   return {d,sales,purs,total,paid,credit,buy,collected,profit,top:[...by.values()].sort((a,b)=>b.amt-a.amt).slice(0,5),
-    owedSum:sum(owed),lateCount:owed.filter(b=>daysAgo(b.date)>LATE_AFTER).length,lowCount:lowItems().length};
+    owedSum:ls.recv,lateCount:ls.late,lowCount:lowItems().length};
 }
 function summaryText(s){
   return `${shopLabel()||'Dukaan'} - ${shortDate(s.d)} summary\nSales: ${money(r2(s.total))} (${s.sales.length} bills)\nPaid now: ${money(r2(s.paid))}\nUdhaar given: ${money(r2(s.credit))}\nUdhaar collected: ${money(r2(s.collected))}\nPurchases: ${money(r2(s.buy))}\nEstimated profit: ${money(r2(s.profit))}\nCustomers owe in total: ${money(r2(s.owedSum))} (${s.lateCount} late)\nLow stock items: ${s.lowCount}`;
@@ -1169,7 +1402,7 @@ function renderChart(endStr){
   $('#chartToggle').textContent=chartTable?'Show chart':'Show table';
   if(chartTable){
     wrap.innerHTML=`<table class="sumtab"><thead><tr><th>Day</th><th class="r">Bills</th><th class="r">Sales</th></tr></thead><tbody>`+
-      data.map(x=>`<tr><td>${x.dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</td><td class="r num">${x.bills}</td><td class="r num">${money(r2(x.total))}</td></tr>`).join('')+`</tbody></table>`;
+      data.map(x=>`<tr><td>${x.dt.toLocaleDateString(LOC(),{weekday:'short',day:'numeric',month:'short'})}</td><td class="r num">${x.bills}</td><td class="r num">${money(r2(x.total))}</td></tr>`).join('')+`</tbody></table>`;
     return;
   }
   const W=Math.max(260,Math.floor(wrap.clientWidth)||320), H=220, L=46, R=6, T=18, B=36;
@@ -1183,7 +1416,7 @@ function renderChart(endStr){
     const cx=L+slot*i+slot/2, bx=cx-bw/2, h=ph*(x.total/max), sel=i===6;
     if(x.total>0) bars+=`<path d="${barPath(bx,T+ph-h,bw,h)}" fill="url(#barGrad)" opacity="${sel?1:.62}"/>`;
     if(sel && x.total>0) labels+=`<text class="sel" x="${cx}" y="${T+ph-h-6}" text-anchor="middle">${compact(r2(x.total))}</text>`;
-    labels+=`<text class="${sel?'sel':''}" x="${cx}" y="${H-18}" text-anchor="middle">${x.dt.toLocaleDateString('en-IN',{weekday:'short'})}</text><text class="${sel?'sel':''}" x="${cx}" y="${H-5}" text-anchor="middle">${x.dt.getDate()}</text>`;
+    labels+=`<text class="${sel?'sel':''}" x="${cx}" y="${H-18}" text-anchor="middle">${x.dt.toLocaleDateString(LOC(),{weekday:'short'})}</text><text class="${sel?'sel':''}" x="${cx}" y="${H-5}" text-anchor="middle">${x.dt.getDate()}</text>`;
     hits+=`<rect data-i="${i}" x="${L+slot*i}" y="${T}" width="${slot}" height="${ph+B-4}" fill="transparent"/>`;
   });
   wrap.innerHTML=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Sales for the 7 days ending ${shortDate(endStr)}, total ${money(r2(total))}">
@@ -1193,7 +1426,7 @@ function renderChart(endStr){
   const show=e=>{
     const r=e.target.closest&&e.target.closest('[data-i]'); if(!r){ tip.hidden=true; return; }
     const x=data[+r.dataset.i], cx=L+slot*(+r.dataset.i)+slot/2;
-    tip.innerHTML=`<b>${x.dt.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'})}</b><br>${money(r2(x.total))} · ${x.bills} bill${x.bills===1?'':'s'}`;
+    tip.innerHTML=`<b>${x.dt.toLocaleDateString(LOC(),{weekday:'short',day:'numeric',month:'short'})}</b><br>${money(r2(x.total))} · ${x.bills} bill${x.bills===1?'':'s'}`;
     tip.hidden=false; tip.style.left=Math.min(Math.max(cx,56),W-56)+'px'; tip.style.top=Math.max(y(x.total)-6,40)+'px';
   };
   svg.addEventListener('pointermove',show); svg.addEventListener('pointerdown',show);
@@ -1218,17 +1451,20 @@ function setRep(v){
 $$('#repSeg button').forEach(b=>b.addEventListener('click',()=>setRep(b.dataset.v)));
 
 /* ---------- shared helpers for accounts ---------- */
-const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_HI=['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
+const MN=()=>LANG==='hi'?MONTHS_HI:MONTHS_EN;
+function LOC(){ return LANG==='hi'?'hi-IN':'en-IN'; }
 const fm=n=>{ n=r2(n); return n<0?'('+money(-n)+')':money(n); };
 const sumBy=(l,f)=>l.reduce((a,x)=>a+(+f(x)||0),0);
 const stockValue=m=>[...m.values()].reduce((a,r)=>a+r.value,0);
 const slug=h=>String(h).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'x';
-const monthLabel=ym=>{ const [y,m]=ym.split('-').map(Number); return MONTHS[m-1]+' '+y; };
+const monthLabel=ym=>{ const [y,m]=ym.split('-').map(Number); return MN()[m-1]+' '+y; };
 const inRange=(d,f,t)=>(!f||d>=f)&&(!t||d<=t);
 const itemsText=b=>(b.items||[]).map(i=>i.name+' x '+qtyFmt(+i.qty)).join(', ');
 function monthBounds(ym){
   const [y,m]=ym.split('-').map(Number), last=new Date(y,m,0).getDate();
-  return {start:ym+'-01',end:ym+'-'+String(last).padStart(2,'0'),prevEnd:new Date(y,m-1,0).toLocaleDateString('en-CA'),lastDay:last,monthName:MONTHS[m-1],year:y};
+  return {start:ym+'-01',end:ym+'-'+String(last).padStart(2,'0'),prevEnd:new Date(y,m-1,0).toLocaleDateString('en-CA'),lastDay:last,monthName:MN()[m-1],year:y};
 }
 const endLabel=b=>b.lastDay+' '+b.monthName+' '+b.year;
 const prevYm=ym=>{ const [y,m]=ym.split('-').map(Number); return new Date(y,m-2,1).toLocaleDateString('en-CA').slice(0,7); };
@@ -1298,8 +1534,8 @@ function finCalc(ym){
   const exps=S.expenses.filter(e=>e.month===ym).sort((a,c)=>(+c.amount||0)-(+a.amount||0));
   const expT=sumBy(exps,e=>e.amount), net=gross-expT;
   const fin=S.fin[ym]||{};
-  const debtors=sumBy(S.sales.filter(s=>s.date<=b.end&&unpaidAt(s,b.end)),s=>s.total);
-  const creditors=sumBy(S.purchases.filter(p=>p.date<=b.end&&unpaidAt(p,b.end)),p=>p.total);
+  const debtors=ledgerTotal('customer',b.end);
+  const creditors=ledgerTotal('supplier',b.end);
   const openCap=+fin.openCapital||0, draw=+fin.drawings||0, loans=+fin.loans||0, cash=+fin.cash||0, fixed=+fin.fixed||0;
   const closeCap=openCap+net-draw, liab=closeCap+loans+creditors+gstPay, assets=closeStock+debtors+cash+fixed;
   return {ym,b,sales,purs,salesT,gstPay,purT,openStock,closeStock,cogs,gross,exps,expT,net,debtors,creditors,openCap,draw,loans,cash,fixed,closeCap,liab,assets,diff:r2(assets-liab)};
@@ -1438,13 +1674,169 @@ function openFinWizard(ym){
   draw();
 }
 
-function renderAll(){ compute(); renderRecent(); renderStock(); renderLow(); renderDue(); renderToday(); if(repView==='export') renderExpPreview(); renderFin(); renderDemo(); }
+/* ---------- Business Saathi: free rule-based advisor + how-to guides ---------- */
+const addDays=(ds,n)=>{ const [y,m,d]=ds.split('-').map(Number); return new Date(y,m-1,d+n).toLocaleDateString('en-CA'); };
+function soldMap(from,to){
+  const m=new Map();
+  for(const s of S.sales){ if(s.date<from||s.date>to) continue;
+    const ratio=(s.taxable!=null&&+s.subtotal>0)?s.taxable/s.subtotal:1;
+    for(const it of (s.items||[])){
+      const st=STOCK.get(it.pid), cost=st?st.avg:0, q=+it.qty||0, net=(+it.rate||0)*ratio;
+      const e=m.get(it.pid)||{pid:it.pid,name:it.name,unit:it.unit||'pcs',qty:0,rev:0,profit:0,below:0}; e.qty+=q; e.rev+=q*net; e.profit+=q*(net-cost); if(net<cost-0.005) e.below++; m.set(it.pid,e);
+    } }
+  return m;
+}
+function saathiInsights(){
+  const out=[], push=(topic,lvl,title,text,go)=>out.push({topic,lvl,title,text,go});
+  const t=todayStr(), ym=t.slice(0,7), day=+t.slice(8), pm=prevYm(ym);
+  const mtd=(arr,m,f)=>sumBy(arr.filter(x=>x.date.slice(0,7)===m&&+x.date.slice(8)<=day),f);
+  const nm=l=>l.map(x=>x.name).join(', ');
+  if(S.sales.length<3){
+    push('sales','info',T('Not enough data yet','अभी डेटा कम है','Abhi data kam hai'),
+      T('Keep making bills and purchase entries for a few days. Then I can show trends, slow items and profit.','कुछ दिन बिल और खरीद दर्ज करते रहें। फिर मैं ट्रेंड, धीमा माल और मुनाफ़ा बता पाऊँगा।','Kuch din bill aur purchase daalte raho. Phir main trend, slow maal aur munafa bata paunga.'));
+  }
+  /* sales trend */
+  const sc=mtd(S.sales,ym,s=>s.total), sp=mtd(S.sales,pm,s=>s.total);
+  if(sp>0&&day>=5){
+    const pc=Math.round((sc-sp)/sp*100);
+    if(pc>=10) push('sales','good',T('Sales are up','बिक्री बढ़ रही है','Sales badh rahi hai'),
+      T(`This month so far you sold ${money(r2(sc))}, ${pc}% more than the same days last month (${money(r2(sp))}). Keep your fast items well stocked.`,`इस महीने अब तक ${money(r2(sc))} की बिक्री, पिछले महीने के इन्हीं दिनों से ${pc}% ज़्यादा (${money(r2(sp))})। तेज़ बिकने वाला माल भरपूर रखें।`,`Is mahine ab tak ${money(r2(sc))} ki sale, pichhle mahine ke inhi dino se ${pc}% zyada (${money(r2(sp))}). Tez bikne wala maal bharpoor rakho.`));
+    else if(pc<=-10) push('sales','warn',T('Sales are down','बिक्री घट रही है','Sales ghat rahi hai'),
+      T(`This month so far ${money(r2(sc))}, which is ${-pc}% less than the same days last month (${money(r2(sp))}). Check whether popular items went out of stock, and think of a small offer.`,`इस महीने अब तक ${money(r2(sc))}, पिछले महीने के इन्हीं दिनों से ${-pc}% कम (${money(r2(sp))})। देखें कि कहीं मशहूर माल ख़त्म तो नहीं हुआ, और छोटा ऑफ़र सोचें।`,`Is mahine ab tak ${money(r2(sc))}, pichhle mahine ke inhi dino se ${-pc}% kam (${money(r2(sp))}). Dekho kahin popular maal khatam to nahi hua, aur chhota offer socho.`));
+    else push('sales','info',T('Sales are steady','बिक्री स्थिर है','Sales steady hai'),
+      T(`This month so far ${money(r2(sc))}, about the same as last month's same days.`,`इस महीने अब तक ${money(r2(sc))}, पिछले महीने जितनी ही।`,`Is mahine ab tak ${money(r2(sc))}, pichhle mahine jitni hi.`));
+  }
+  /* purchases */
+  const pc2=mtd(S.purchases,ym,p=>p.total), pp=mtd(S.purchases,pm,p=>p.total);
+  if(sc>0&&pc2>sc*1.1&&day>=7) push('buy','warn',T('Buying more than you sell','बिक्री से ज़्यादा खरीद रहे हैं','Bikri se zyada kharid rahe ho'),
+    T(`This month you bought ${money(r2(pc2))} of goods but sold ${money(r2(sc))}. Money may be getting stuck in stock. Buy only what is selling.`,`इस महीने ${money(r2(pc2))} का माल खरीदा पर बिक्री ${money(r2(sc))} है। पैसा स्टॉक में फँस सकता है। वही खरीदें जो बिक रहा है।`,`Is mahine ${money(r2(pc2))} ka maal kharida par sale ${money(r2(sc))} hai. Paisa stock mein phans sakta hai. Wahi kharido jo bik raha hai.`),'purchase');
+  else if(pp>0&&pc2>0&&day>=5&&pc2>pp*1.3) push('buy','info',T('Purchases increased','खरीद बढ़ी है','Kharidi badhi hai'),
+    T(`Purchases this month are ${money(r2(pc2))} against ${money(r2(pp))} in the same days last month.`,`इस महीने की खरीद ${money(r2(pc2))} है, पिछले महीने इन्हीं दिनों में ${money(r2(pp))} थी।`,`Is mahine ki kharidi ${money(r2(pc2))} hai, pichhle mahine inhi dino mein ${money(r2(pp))} thi.`));
+  /* products */
+  const a=soldMap(addDays(t,-29),t), b=soldMap(addDays(t,-59),addDays(t,-30));
+  const rising=[], short=[], slow=[], below=[];
+  for(const r of STOCK.values()){
+    const x=a.get(r.p.id), q30=x?x.qty:0, qp=(b.get(r.p.id)||{qty:0}).qty, daily=q30/30, left=daily>0?Math.max(r.qty,0)/daily:Infinity;
+    const low=r.qty<=(+r.p.reorder||0)||left<7;
+    const want=Math.max(Math.ceil(daily*14-Math.max(r.qty,0)),1);
+    if(q30>=3&&qp>0&&q30>=qp*1.25&&low) rising.push({name:r.p.name,pc:Math.round((q30-qp)/qp*100),left,want,unit:r.p.unit||'pcs',qty:r.qty});
+    else if(q30>=3&&(r.qty<=0||left<5)) short.push({name:r.p.name,left,want,unit:r.p.unit||'pcs',qty:r.qty});
+    if(q30===0&&r.qty>0&&r.value>0&&r.p.id) slow.push({name:r.p.name,value:r.value,qty:r.qty,unit:r.p.unit||'pcs'});
+    if(x&&x.below) below.push({name:r.p.name});
+  }
+  rising.sort((p,q)=>q.pc-p.pc).slice(0,3).forEach(x=>push('stock','bad',T(`${x.name}: demand up, stock running low`,`${x.name}: माँग बढ़ी, स्टॉक कम`,`${x.name}: demand badhi, stock kam`),
+    T(`Your sales of ${x.name} grew ${x.pc}% in the last 30 days, but stock is low (${qtyFmt(x.qty)} ${x.unit} left). Increase your reorder quantity. About ${x.want} ${x.unit} would cover the next two weeks.`,`पिछले 30 दिन में ${x.name} की बिक्री ${x.pc}% बढ़ी, पर स्टॉक कम है (${qtyFmt(x.qty)} ${x.unit} बचा)। रीऑर्डर मात्रा बढ़ाएँ। अगले दो हफ़्ते के लिए लगभग ${x.want} ${x.unit} चाहिए।`,`Pichhle 30 din mein ${x.name} ki sale ${x.pc}% badhi, par stock kam hai (${qtyFmt(x.qty)} ${x.unit} bacha). Reorder quantity badhao. Agle do hafte ke liye lagbhag ${x.want} ${x.unit} chahiye.`),'stock'));
+  if(short.length){ short.sort((p,q)=>p.left-q.left); const top=short.slice(0,5);
+    push('stock','warn',T('Stock may run out soon','स्टॉक जल्दी ख़त्म हो सकता है','Stock jaldi khatam ho sakta hai'),
+      top.map(x=>x.qty<=0?T(`${x.name}: out of stock, order about ${x.want} ${x.unit}`,`${x.name}: ख़त्म है, लगभग ${x.want} ${x.unit} मँगाएँ`,`${x.name}: khatam hai, lagbhag ${x.want} ${x.unit} mangao`):T(`${x.name}: about ${Math.max(1,Math.floor(x.left))} days left, order about ${x.want} ${x.unit}`,`${x.name}: लगभग ${Math.max(1,Math.floor(x.left))} दिन का बचा है, लगभग ${x.want} ${x.unit} मँगाएँ`,`${x.name}: lagbhag ${Math.max(1,Math.floor(x.left))} din ka bacha hai, lagbhag ${x.want} ${x.unit} mangao`)).join('\n'),'stock'); }
+  const li=lowItems().filter(l=>!rising.some(x=>x.name===l.r.p.name)&&!short.some(x=>x.name===l.r.p.name));
+  if(li.length) push('stock','info',T(`${li.length} items are at or below their low level`,`${li.length} आइटम कम स्तर पर हैं`,`${li.length} items low level par hain`),nm(li.slice(0,6).map(l=>({name:l.r.p.name})))+(li.length>6?' ...':''),'stock');
+  /* slow movers */
+  if(slow.length){ slow.sort((p,q)=>q.value-p.value); const tot=sumBy(slow,x=>x.value);
+    push('slow','warn',T('Slow-moving items','धीमा बिकने वाला माल','Slow bikne wala maal'),
+      T(`${slow.length} items had no sale in 30 days. About ${money(r2(tot))} of stock is sitting idle. Biggest: ${slow.slice(0,3).map(x=>x.name+' ('+money(r2(x.value))+')').join(', ')}. Try a small discount or stop reordering them.`,`${slow.length} आइटम 30 दिन से नहीं बिके। लगभग ${money(r2(tot))} का माल पड़ा है। सबसे बड़े: ${slow.slice(0,3).map(x=>x.name+' ('+money(r2(x.value))+')').join(', ')}। थोड़ी छूट दें या दोबारा मँगाना बंद करें।`,`${slow.length} items 30 din se nahi bike. Lagbhag ${money(r2(tot))} ka maal pada hai. Sabse bade: ${slow.slice(0,3).map(x=>x.name+' ('+money(r2(x.value))+')').join(', ')}. Thodi chhoot do ya dobara mangana band karo.`),'stock'); }
+  /* profitability */
+  const arr=[...a.values()].filter(x=>x.rev>0).sort((p,q)=>q.profit-p.profit);
+  if(arr.length>=2){ const top=arr.slice(0,3), totP=sumBy(arr,x=>x.profit);
+    push('profit','good',T('Your best earners (30 days)','सबसे ज़्यादा कमाने वाले (30 दिन)','Sabse zyada kamane wale (30 din)'),
+      T(`${top.map(x=>x.name+' '+money(r2(x.profit))).join(', ')}. Estimated total profit on items sold: ${money(r2(totP))}. Never let these run out.`,`${top.map(x=>x.name+' '+money(r2(x.profit))).join(', ')}। बिके माल पर अनुमानित कुल मुनाफ़ा: ${money(r2(totP))}। इनका स्टॉक कभी ख़त्म न होने दें।`,`${top.map(x=>x.name+' '+money(r2(x.profit))).join(', ')}. Bike maal par andaza kul munafa: ${money(r2(totP))}. Inka stock kabhi khatam mat hone do.`),'today');
+    const thin=arr.filter(x=>x.rev>0&&x.profit/x.rev<0.05&&x.profit>=0&&x.rev>=500).slice(0,3);
+    if(thin.length) push('profit','warn',T('Very low margin items','बहुत कम मार्जिन वाला माल','Bahut kam margin wala maal'),
+      T(`${nm(thin)} earn less than 5% on what you sell. Check the buying rate or selling price.`,`${nm(thin)} पर 5% से कम कमाई है। खरीद रेट या बिक्री भाव जाँचें।`,`${nm(thin)} par 5% se kam kamai hai. Kharid rate ya bikri bhav check karo.`),'stock'); }
+  if(below.length) push('profit','bad',T('Selling below cost','लागत से कम पर बिक रहा है','Lagat se kam par bik raha hai'),
+    T(`${nm(below.slice(0,5))}: some bills sold these below your average buying cost. Check the rate on the bill.`,`${nm(below.slice(0,5))}: कुछ बिलों में ये आपकी औसत खरीद लागत से कम पर बिके। बिल का रेट जाँचें।`,`${nm(below.slice(0,5))}: kuch bills mein ye aapki average kharid lagat se kam par bike. Bill ka rate check karo.`),'stock');
+  /* pending payments */
+  const ls=ledgerStats();
+  if(ls.recv>0.004){ const cs=[...LED.customer.values()].filter(p=>p.bal>0.004).sort((p,q)=>q.bal-p.bal).slice(0,3);
+    push('due',ls.late?'warn':'info',T('Money to collect','वसूली बाकी है','Vasooli baaki hai'),
+      T(`Customers owe you ${money(ls.recv)}${ls.late?', and '+ls.late+' of them are late (over '+LATE_AFTER+' days)':''}. Biggest: ${cs.map(p=>p.name+' '+money(p.bal)).join(', ')}. Send a WhatsApp reminder from Ledger.`,`ग्राहकों पर ${money(ls.recv)} बाकी है${ls.late?', उनमें से '+ls.late+' लेट हैं ('+LATE_AFTER+' दिन से ज़्यादा)':''}। सबसे बड़े: ${cs.map(p=>p.name+' '+money(p.bal)).join(', ')}। Ledger से WhatsApp रिमाइंडर भेजें।`,`Customers par ${money(ls.recv)} baaki hai${ls.late?', unmein se '+ls.late+' late hain ('+LATE_AFTER+' din se zyada)':''}. Sabse bade: ${cs.map(p=>p.name+' '+money(p.bal)).join(', ')}. Ledger se WhatsApp reminder bhejo.`),'baaki'); }
+  if(ls.pay>0.004) push('due','info',T('Money you have to pay','आपको देना बाकी है','Aapko dena baaki hai'),
+    T(`You owe suppliers ${money(ls.pay)}. Pay on time to keep good terms.`,`आपको सप्लायर को ${money(ls.pay)} देना है। समय पर दें ताकि रिश्ता अच्छा रहे।`,`Aapko suppliers ko ${money(ls.pay)} dena hai. Time par do taaki rishta achha rahe.`),'baaki');
+  /* expenses */
+  const ec=sumBy(S.expenses.filter(e=>e.month===ym),e=>e.amount), ep=sumBy(S.expenses.filter(e=>e.month===pm),e=>e.amount);
+  if(!S.expenses.length) push('exp','info',T('Enter your monthly expenses','महीने के खर्चे दर्ज करें','Mahine ke kharche daalo'),
+    T('Add rent, salary, electricity and other costs in Reports, then Financials. Then I can tell you your real profit.','किराया, तनख्वाह, बिजली आदि खर्चे Reports में Financials में डालें। तब मैं असली मुनाफ़ा बता पाऊँगा।','Kiraya, salary, bijli jaise kharche Reports mein Financials mein daalo. Tab main asli munafa bata paunga.'),'today');
+  else if(ec>0){ const top=S.expenses.filter(e=>e.month===ym).sort((p,q)=>(+q.amount||0)-(+p.amount||0))[0];
+    push('exp',ep>0&&ec>ep*1.15?'warn':'info',T('Monthly expenses','महीने के खर्चे','Mahine ke kharche'),
+      T(`Expenses this month: ${money(r2(ec))}${ep>0?' (last month '+money(r2(ep))+')':''}. Biggest: ${top.head} ${money(r2(+top.amount||0))}.${sc>0?' That is '+Math.round(ec/sc*100)+'% of sales so far.':''}`,`इस महीने के खर्चे: ${money(r2(ec))}${ep>0?' (पिछले महीने '+money(r2(ep))+')':''}। सबसे बड़ा: ${top.head} ${money(r2(+top.amount||0))}।${sc>0?' यह अब तक की बिक्री का '+Math.round(ec/sc*100)+'% है।':''}`,`Is mahine ke kharche: ${money(r2(ec))}${ep>0?' (pichhle mahine '+money(r2(ep))+')':''}. Sabse bada: ${top.head} ${money(r2(+top.amount||0))}.${sc>0?' Ye ab tak ki sale ka '+Math.round(ec/sc*100)+'% hai.':''}`),'today'); }
+  const rank={bad:0,warn:1,info:2,good:3}; out.sort((p,q)=>rank[p.lvl]-rank[q.lvl]);
+  return out;
+}
+const GUIDES=[
+ {id:'sale',cash:1,go:'sale',t:['Make a sale and bill','बिक्री और बिल बनाना','Sale aur bill banana'],s:[
+  ['Open the Sale tab. Scan the barcode, or type the item name and tap it.','Sale टैब खोलें। बारकोड स्कैन करें, या नाम लिखकर आइटम दबाएँ।','Sale tab kholo. Barcode scan karo, ya naam likhkar item dabao.'],
+  ['Change the quantity if needed. Add discount or GST if the bill needs it.','ज़रूरत हो तो मात्रा बदलें। डिस्काउंट या GST लगाना हो तो डालें।','Zaroorat ho to quantity badlo. Discount ya GST lagana ho to daalo.'],
+  ['For udhaar choose "Udhaar" and type the customer name. For cash choose "Paid now".','उधार हो तो "Udhaar" चुनें और ग्राहक का नाम लिखें। नकद हो तो "Paid now"।','Udhaar ho to "Udhaar" chuno aur customer ka naam likho. Cash ho to "Paid now".'],
+  ['Tap "Save and make bill". Then use the WhatsApp button to send the bill.','"Save and make bill" दबाएँ। फिर WhatsApp बटन से बिल भेजें।','"Save and make bill" dabao. Phir WhatsApp button se bill bhejo.']]},
+ {id:'buy',cash:1,go:'purchase',t:['Record a purchase','माल की खरीद दर्ज करना','Purchase (maal aaya) likhna'],s:[
+  ['Open Buy. Type the supplier name and bill number.','Buy खोलें। सप्लायर का नाम और बिल नंबर लिखें।','Buy kholo. Supplier ka naam aur bill number likho.'],
+  ['Scan or search each item and enter quantity and rate.','हर आइटम स्कैन या खोजें और मात्रा व रेट डालें।','Har item scan ya search karo aur quantity aur rate daalo.'],
+  ['Choose "Paid" or "Not paid yet". Unpaid bills go to the supplier ledger.','"Paid" या "Not paid yet" चुनें। बिना चुकाए बिल सप्लायर खाते में जाते हैं।','"Paid" ya "Not paid yet" chuno. Na chukaye bill supplier khate mein jaate hain.'],
+  ['Tap "Save purchase". Stock goes up automatically.','"Save purchase" दबाएँ। स्टॉक अपने आप बढ़ जाएगा।','"Save purchase" dabao. Stock apne aap badh jayega.']]},
+ {id:'item',cash:1,go:'stock',t:['Add a new item','नया आइटम जोड़ना','Naya item jodna'],s:[
+  ['Open Stock. Scan the barcode with Camera, or tap "Add item".','Stock खोलें। Camera से बारकोड स्कैन करें, या "Add item" दबाएँ।','Stock kholo. Camera se barcode scan karo, ya "Add item" dabao.'],
+  ['If the name is known it fills in by itself. Otherwise type the name, MRP and unit.','नाम पता हो तो अपने आप भर जाता है। नहीं तो नाम, MRP और यूनिट लिखें।','Naam pata ho to apne aap bhar jata hai. Nahi to naam, MRP aur unit likho.'],
+  ['Enter the stock you have now and the low-stock level. Tap Save.','अभी का स्टॉक और कम-स्टॉक स्तर डालें। Save दबाएँ।','Abhi ka stock aur low-stock level daalo. Save dabao.']]},
+ {id:'count',cash:1,go:'stock',t:['Count stock','स्टॉक गिनना','Stock count karna'],s:[
+  ['Open Stock and tap "Count stock" on the item.','Stock खोलें और आइटम पर "Count stock" दबाएँ।','Stock kholo aur item par "Count stock" dabao.'],
+  ['Type how many you really have on the shelf. The app saves the difference.','शेल्फ़ पर असल में कितना है वह लिखें। ऐप फ़र्क़ सँभाल लेगा।','Shelf par asal mein kitna hai wo likho. App farq sambhal lega.']]},
+ {id:'scan',cash:1,go:'sale',t:['Use the barcode scanner','बारकोड स्कैनर चलाना','Barcode scanner chalana'],s:[
+  ['USB scanner: click in the scan box and scan. It types the number and presses Enter.','USB स्कैनर: स्कैन बॉक्स में क्लिक करें और स्कैन करें। वह नंबर लिखकर Enter दबा देता है।','USB scanner: scan box mein click karo aur scan karo. Wo number likhkar Enter dabata hai.'],
+  ['Phone: tap Camera, allow camera access and point at the barcode. A beep means it was read.','फ़ोन: Camera दबाएँ, कैमरा की इजाज़त दें और बारकोड पर रखें। बीप का मतलब पढ़ लिया।','Phone: Camera dabao, camera ki ijazat do aur barcode par rakho. Beep ka matlab padh liya.'],
+  ['If the camera fails, use "Photo se scan" or type the number.','कैमरा न चले तो "Photo se scan" या नंबर लिखें।','Camera na chale to "Photo se scan" ya number likho.']]},
+ {id:'ledger',own:1,go:'baaki',t:['Udhaar and ledger','उधार और खाता','Udhaar aur ledger'],s:[
+  ['Open Ledger. Customers shows who owes you, Suppliers shows whom you owe.','Ledger खोलें। Customers में दिखता है कौन देगा, Suppliers में किसे देना है।','Ledger kholo. Customers mein dikhta hai kaun dega, Suppliers mein kisko dena hai.'],
+  ['Tap a name to see every bill and payment with the running balance.','नाम दबाएँ तो हर बिल और भुगतान चलते बैलेंस के साथ दिखेगा।','Naam dabao to har bill aur payment running balance ke saath dikhega.'],
+  ['When money comes or goes, tap "Payment received" or "Payment made". Part payment is fine.','पैसा आए या जाए तो "Payment received" या "Payment made" दबाएँ। आंशिक भुगतान भी चलेगा।','Paisa aaye ya jaye to "Payment received" ya "Payment made" dabao. Part payment bhi chalega.'],
+  ['Old balance from before the app: tap "Add party" or "Add old balance".','ऐप से पहले का पुराना बाकी: "Add party" या "Add old balance" दबाएँ।','App se pehle ka purana baaki: "Add party" ya "Add old balance" dabao.']]},
+ {id:'fin',own:1,go:'today',t:['Make profit and loss, balance sheet','मुनाफ़ा-नुकसान और बैलेंस शीट','Profit-loss aur balance sheet banana'],s:[
+  ['Open Reports, then Financials. Pick the month.','Reports खोलें, फिर Financials। महीना चुनें।','Reports kholo, phir Financials. Mahina chuno.'],
+  ['Tap "Make financials". Enter your rent, salary and other expenses, then cash and capital.','"Make financials" दबाएँ। किराया, तनख्वाह आदि खर्चे, फिर कैश और पूँजी डालें।','"Make financials" dabao. Kiraya, salary jaise kharche, phir cash aur capital daalo.'],
+  ['Read the statements and download the Excel file for your accountant.','रिपोर्ट देखें और अकाउंटेंट के लिए Excel फ़ाइल डाउनलोड करें।','Report dekho aur accountant ke liye Excel file download karo.']]},
+ {id:'cashier',own:1,go:'setup',t:['Add a cashier','कैशियर जोड़ना','Cashier jodna'],s:[
+  ['Open the menu (three dots), then Settings.','मेन्यू (तीन बिंदु) खोलें, फिर Settings।','Menu (teen dot) kholo, phir Settings.'],
+  ['Tap "Cashier ka code banao" and send the code on WhatsApp.','"Cashier ka code banao" दबाएँ और कोड WhatsApp पर भेजें।','"Cashier ka code banao" dabao aur code WhatsApp par bhejo.'],
+  ['The cashier opens the link, creates an account with the code and email. You can stop access anytime.','कैशियर लिंक खोलकर कोड और ईमेल से अकाउंट बनाएगा। आप कभी भी उसे बंद कर सकते हैं।','Cashier link kholkar code aur email se account banayega. Aap kabhi bhi use band kar sakte ho.']]}
+];
+function guideList(){ return GUIDES.filter(g=>ROLE==='owner'||!g.own); }
+function openGuide(id,back){
+  const g=GUIDES.find(x=>x.id===id); if(!g) return;
+  openModal(`<h3>${esc(T(...g.t))}</h3><ol class="gsteps">${g.s.map(x=>`<li>${esc(T(...x))}</li>`).join('')}</ol>
+    <div class="row">${ROLE&&(ROLE==='owner'||g.go!=='setup')?`<button type="button" class="btn" id="gd_go">${T('Take me there','वहाँ ले चलो','Wahan le chalo')}</button>`:''}<button type="button" class="btn line" id="gd_back">${T('Back','पीछे','Wapas')}</button></div>`);
+  const go=$('#gd_go'); if(go) go.onclick=()=>{ closeModal(); showTab(g.go); };
+  $('#gd_back').onclick=()=>{ if(back==='help') openHelp(); else closeModal(); };
+}
+function guideButtons(back){ return guideList().map(g=>`<button type="button" class="guide" data-guide="${g.id}" data-back="${back||''}">${esc(T(...g.t))}</button>`).join(''); }
+function openHelp(){
+  openModal(`<h3>${T('How do I...?','कैसे करें...?','Kaise karein...?')}</h3><div class="guides">${guideButtons('help')}</div><button type="button" class="btn line" id="hp_close">${T('Close','बंद करें','Band karo')}</button>`);
+  $('#hp_close').onclick=closeModal;
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-guide]'); if(b) openGuide(b.dataset.guide,b.dataset.back); const g=e.target.closest('[data-go]'); if(g) showTab(g.dataset.go); });
+let saathiTopic='all';
+const SAATHI_TOPICS=[['all','All advice','सारी सलाह','Saari salah'],['sales','Sales','बिक्री','Sales'],['stock','Stock','स्टॉक','Stock'],['profit','Profit','मुनाफ़ा','Profit'],['slow','Slow items','धीमा माल','Slow maal'],['due','Payments','भुगतान','Payments'],['buy','Buying','खरीद','Kharidi'],['exp','Expenses','खर्चे','Kharche']];
+function renderSaathi(){
+  if(ROLE!=='owner'||curTab!=='saathi') return;
+  const all=saathiInsights(), list=saathiTopic==='all'?all:all.filter(x=>x.topic===saathiTopic);
+  const goName={stock:['Open Stock','स्टॉक खोलें','Stock kholo'],purchase:['Open Buy','Buy खोलें','Buy kholo'],baaki:['Open Ledger','Ledger खोलें','Ledger kholo'],today:['Open Reports','Reports खोलें','Reports kholo']};
+  $('#saathiBody').innerHTML=`<div class="panel saathi-hi"><h2>${T('Business Saathi','बिज़नेस साथी','Business Saathi')}</h2>
+      <div class="hint">${T('I read your sales, stock, payments and expenses and tell you what to do next. Advice updates as you add data.','मैं आपकी बिक्री, स्टॉक, भुगतान और खर्चे पढ़कर बताता हूँ कि आगे क्या करना चाहिए। डेटा जुड़ने पर सलाह बदलती है।','Main aapki sale, stock, payments aur kharche padhkar batata hoon ki aage kya karna chahiye. Data judne par salah badalti hai.')}</div>
+      <div class="chips">${SAATHI_TOPICS.map(t=>`<button type="button" class="chipbtn" data-topic="${t[0]}" aria-pressed="${t[0]===saathiTopic}">${esc(T(t[1],t[2],t[3]))}</button>`).join('')}</div></div>
+    ${list.length?list.map(x=>`<div class="ins ${x.lvl}"><b>${esc(x.title)}</b><p>${esc(x.text).replace(/\n/g,'<br>')}</p>${x.go&&goName[x.go]?`<button type="button" class="btn sm line" data-go="${x.go}">${esc(T(...goName[x.go]))}</button>`:''}</div>`).join(''):`<div class="panel"><div class="empty">${T('Nothing to flag here right now. Good.','अभी यहाँ कुछ चिंता की बात नहीं है। बढ़िया।','Abhi yahan chinta ki baat nahi hai. Badhiya.')}</div></div>`}
+    <div class="panel"><h2>${T('How do I...?','कैसे करें...?','Kaise karein...?')}</h2><div class="guides">${guideButtons('')}</div></div>`;
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-topic]'); if(b){ saathiTopic=b.dataset.topic; renderSaathi(); } });
+
+function renderAll(){ compute(); renderSaathi(); renderRecent(); renderStock(); renderLow(); renderDue(); renderToday(); if(repView==='export') renderExpPreview(); renderFin(); renderDemo(); }
 
 /* ---------- tabs ---------- */
+let curTab='sale';
 function showTab(name){
+  if(ROLE==='cashier' && !['sale','purchase','stock'].includes(name)) name='sale';
+  if(ROLE==='owner' && name==='setup') { /* reached from the menu */ }
+  curTab=name;
   $$('.nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name)));
   $$('.tab').forEach(t=>t.hidden = t.id!=='tab-'+name);
-  scrollTo(0,0); if(name==='today') setRep(repView); if(name==='setup' && typeof renderSetup==='function') renderSetup();
+  scrollTo(0,0); if(name==='today') setRep(repView); if(name==='setup' && typeof renderSetup==='function') renderSetup(); if(name==='saathi') renderSaathi();
   if(matchMedia('(pointer:fine)').matches){ const f={sale:'#saleScan',purchase:'#purScan',stock:'#stockScan'}[name]; if(f) $(f).focus(); }
 }
 $$('.nav button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
@@ -1498,7 +1890,7 @@ function makeStore(client,bid,role){
   }
   async function put(n,id,data){
     const row={business_id:bid,col:n,id,data,updated_at:new Date().toISOString()};
-    const r=await (role==='cashier'?client.from('docs').insert(row):client.from('docs').upsert(row,{onConflict:'business_id,col,id'}));
+    const r=await client.from('docs').upsert(row,{onConflict:'business_id,col,id'});
     if(r.error) throw bad(r.error);
     C(n).map.set(id,data); emit(n);
   }
@@ -1520,9 +1912,477 @@ function makeStore(client,bid,role){
   };
 }
 
+/* [English, Hindi, Hinglish] */
+const D={
+/* navigation */
+"Sale":["Sale","बिक्री","Sale"],"Bikri":["Billing","बिल","Bikri"],
+"Buy":["Buy","खरीद","Buy"],"Kharidi":["Purchase","माल आया","Kharidi"],
+"Stock":["Stock","माल","Stock"],"Maal":["Items","स्टॉक","Maal"],
+"Baaki":["Dues","बाकी","Baaki"],"Pending":["Pending","उधार","Pending"],
+"Reports":["Reports","रिपोर्ट","Reports"],"Hisaab":["Accounts","हिसाब","Hisaab"],
+"Setup":["Setup","सेटअप","Setup"],"Settings":["Settings","सेटिंग्स","Settings"],
+"Sections":["Sections","भाग","Sections"],
+"Owner":["Owner","मालिक","Owner"],"Cashier":["Cashier","कैशियर","Cashier"],"Admin":["Admin","एडमिन","Admin"],
+"Connecting":["Connecting","जुड़ रहा है","Connecting"],"Live":["Live","लाइव","Live"],
+"Cannot reach data yet":["Cannot reach data yet","डेटा तक नहीं पहुँच पा रहे","Data tak nahi pahunch paa rahe"],
+"Sync problem":["Sync problem","सिंक में दिक्कत","Sync mein dikkat"],"Sync not available":["Sync not available","सिंक उपलब्ध नहीं","Sync available nahi hai"],
+"Account":["Account","अकाउंट","Account"],
+/* login gate */
+"Login":["Login","लॉगिन","Login"],
+"Email":["Email","ईमेल","Email"],"Password":["Password","पासवर्ड","Password"],
+"Password (kam se kam 6 akshar)":["Password (at least 6 characters)","पासवर्ड (कम से कम 6 अक्षर)","Password (kam se kam 6 akshar)"],
+"Naya account banana hai (code ke saath)":["Create a new account (with a code)","नया अकाउंट बनाएँ (कोड के साथ)","Naya account banana hai (code ke saath)"],
+"Password bhool gaye?":["Forgot password?","पासवर्ड भूल गए?","Password bhool gaye?"],
+"Naya account":["New account","नया अकाउंट","Naya account"],
+"Code (jo aapko bheja gaya)":["Code (the one sent to you)","कोड (जो आपको भेजा गया)","Code (jo aapko bheja gaya)"],
+"Business ka naam (sirf naye vendor ke liye)":["Business name (only for a new vendor)","बिज़नेस का नाम (सिर्फ़ नए वेंडर के लिए)","Business ka naam (sirf naye vendor ke liye)"],
+"Account banao":["Create account","अकाउंट बनाएँ","Account banao"],
+"Wapas login":["Back to login","वापस लॉगिन","Wapas login"],
+"Password reset":["Password reset","पासवर्ड रीसेट","Password reset"],
+"Apna email":["Your email","आपका ईमेल","Apna email"],
+"Email daalo. Reset ka link us par aayega.":["Enter your email. The reset link will come there.","ईमेल डालें। रीसेट का लिंक उसी पर आएगा।","Email daalo. Reset ka link us par aayega."],
+"Link bhejo":["Send link","लिंक भेजें","Link bhejo"],
+"Naya password":["New password","नया पासवर्ड","Naya password"],
+"Password badlo":["Change password","पासवर्ड बदलें","Password badlo"],
+"Account band hai":["Account is blocked","अकाउंट बंद है","Account band hai"],
+"Is account ko abhi band kiya gaya hai. Jisne aapko ye app di hai unse baat karein.":["This account has been switched off. Please talk to the person who gave you this app.","इस अकाउंट को अभी बंद किया गया है। जिसने आपको यह ऐप दी है उनसे बात करें।","Is account ko abhi band kiya gaya hai. Jisne aapko ye app di hai unse baat karein."],
+"Code daalo":["Enter code","कोड डालें","Code daalo"],"Code":["Code","कोड","Code"],
+"Aapka account ban gaya hai. Ab wo code daalo jo aapko mila tha.":["Your account is created. Now enter the code you were given.","आपका अकाउंट बन गया है। अब वह कोड डालें जो आपको मिला था।","Aapka account ban gaya hai. Ab wo code daalo jo aapko mila tha."],
+"Aage badho":["Continue","आगे बढ़ें","Aage badho"],"Logout":["Logout","लॉगआउट","Logout"],
+"Loading...":["Loading...","लोड हो रहा है...","Loading..."],
+"Email ya password galat hai.":["Wrong email or password.","ईमेल या पासवर्ड गलत है।","Email ya password galat hai."],
+"Email aur password daalo.":["Enter email and password.","ईमेल और पासवर्ड डालें।","Email aur password daalo."],
+"Code, email aur password daalo.":["Enter code, email and password.","कोड, ईमेल और पासवर्ड डालें।","Code, email aur password daalo."],
+"Code galat hai ya pehle use ho chuka hai.":["The code is wrong or already used.","कोड गलत है या पहले इस्तेमाल हो चुका है।","Code galat hai ya pehle use ho chuka hai."],
+"Naye vendor ke liye business ka naam daalo.":["Enter the business name for a new vendor.","नए वेंडर के लिए बिज़नेस का नाम डालें।","Naye vendor ke liye business ka naam daalo."],
+"Business ka naam daalo":["Enter the business name","बिज़नेस का नाम डालें","Business ka naam daalo"],
+"Business ka naam daalo.":["Enter the business name.","बिज़नेस का नाम डालें।","Business ka naam daalo."],
+"Code daalo.":["Enter the code.","कोड डालें।","Code daalo."],
+"Email daalo.":["Enter your email.","ईमेल डालें।","Email daalo."],
+"Sahi email daalo.":["Enter a valid email.","सही ईमेल डालें।","Sahi email daalo."],
+"Ye email pehle se registered hai. Login karo.":["This email is already registered. Please log in.","यह ईमेल पहले से रजिस्टर्ड है। लॉगिन करें।","Ye email pehle se registered hai. Login karo."],
+"Ye account pehle se kisi business se juda hai.":["This account is already linked to a business.","यह अकाउंट पहले से किसी बिज़नेस से जुड़ा है।","Ye account pehle se kisi business se juda hai."],
+"Password kam se kam 6 akshar ka rakho.":["Keep the password at least 6 characters.","पासवर्ड कम से कम 6 अक्षर का रखें।","Password kam se kam 6 akshar ka rakho."],
+"Password kam se kam 6 akshar ka rakho":["Keep the password at least 6 characters","पासवर्ड कम से कम 6 अक्षर का रखें","Password kam se kam 6 akshar ka rakho"],
+"Thodi der baad dobara try karo.":["Please try again after some time.","थोड़ी देर बाद दोबारा कोशिश करें।","Thodi der baad dobara try karo."],
+"Agar ye email registered hai to reset ka link bhej diya gaya hai.":["If this email is registered, the reset link has been sent.","अगर यह ईमेल रजिस्टर्ड है तो रीसेट का लिंक भेज दिया गया है।","Agar ye email registered hai to reset ka link bhej diya gaya hai."],
+"Password badal gaya":["Password changed","पासवर्ड बदल गया","Password badal gaya"],
+/* sale */
+"New sale":["New sale","नई बिक्री","Nayi sale"],
+"Scan barcode or type item name":["Scan barcode or type item name","बारकोड स्कैन करें या आइटम का नाम लिखें","Barcode scan karo ya item ka naam likho"],
+"Scan barcode or search item":["Scan barcode or search item","बारकोड स्कैन करें या आइटम खोजें","Barcode scan karo ya item dhoondho"],
+"Camera":["Camera","कैमरा","Camera"],
+"Scanner machine ho to bas scan karo. Wo number type karke Enter dabata hai.":["If you have a scanner machine, just scan. It types the number and presses Enter.","स्कैनर मशीन हो तो बस स्कैन करें। वह नंबर टाइप करके Enter दबा देती है।","Scanner machine ho to bas scan karo. Wo number type karke Enter dabata hai."],
+"Scan to open or add an item":["Scan to open or add an item","आइटम खोलने या जोड़ने के लिए स्कैन करें","Item kholne ya jodne ke liye scan karo"],
+"Scan barcode":["Scan barcode","बारकोड स्कैन","Barcode scan"],
+"Customer WhatsApp number (optional)":["Customer WhatsApp number (optional)","ग्राहक का WhatsApp नंबर (ज़रूरी नहीं)","Customer ka WhatsApp number (optional)"],
+"Customer name (optional)":["Customer name (optional)","ग्राहक का नाम (ज़रूरी नहीं)","Customer ka naam (optional)"],
+"Customer WhatsApp number":["Customer WhatsApp number","ग्राहक का WhatsApp नंबर","Customer ka WhatsApp number"],
+"10 digits":["10 digits","10 अंक","10 digits"],
+"GST":["GST","GST","GST"],
+"Nahi lagana":["Do not add","नहीं लगाना","Nahi lagana"],
+"Total ke andar shamil hai":["Already included in total","टोटल के अंदर शामिल है","Total ke andar shamil hai"],
+"Total ke upar jodna hai":["Add on top of total","टोटल के ऊपर जोड़ना है","Total ke upar jodna hai"],
+"GST rate (%)":["GST rate (%)","GST दर (%)","GST rate (%)"],
+"Discount (₹)":["Discount (₹)","छूट (₹)","Discount (₹)"],
+"Discount":["Discount","छूट","Discount"],
+"Items total":["Items total","आइटम का कुल","Items ka total"],
+"Total":["Total","कुल","Total"],
+"Paid now":["Paid now","अभी चुकाया","Abhi paid"],
+"Udhaar (credit)":["Credit (udhaar)","उधार","Udhaar (credit)"],
+"Payment":["Payment","भुगतान","Payment"],
+"Save and make bill":["Save and make bill","सेव करें और बिल बनाएँ","Save karo aur bill banao"],
+"Recent sales":["Recent sales","हाल की बिक्री","Recent sales"],
+"No sales yet.":["No sales yet.","अभी कोई बिक्री नहीं।","Abhi koi sale nahi."],
+"Bill":["Bill","बिल","Bill"],"Delete":["Delete","हटाएँ","Delete"],
+"Not paid":["Not paid","बाकी","Baaki"],"Paid":["Paid","चुकाया","Paid"],
+"Add at least one item":["Add at least one item","कम से कम एक आइटम जोड़ें","Kam se kam ek item jodo"],
+"Udhaar ke liye customer ka naam daalo":["Enter the customer name for credit","उधार के लिए ग्राहक का नाम डालें","Udhaar ke liye customer ka naam daalo"],
+"WhatsApp number 10 digit ka hona chahiye":["WhatsApp number must be 10 digits","WhatsApp नंबर 10 अंक का होना चाहिए","WhatsApp number 10 digit ka hona chahiye"],
+"Total zero hai. Discount check karo.":["Total is zero. Check the discount.","टोटल ज़ीरो है। छूट जाँचें।","Total zero hai. Discount check karo."],
+"Naya barcode. Naam dhoondh raha hoon...":["New barcode. Looking up the name...","नया बारकोड। नाम खोज रहे हैं...","Naya barcode. Naam dhoondh raha hoon..."],
+"Ye item list mein nahi hai. Owner se jodne ko kaho.":["This item is not in the list. Ask the owner to add it.","यह आइटम लिस्ट में नहीं है। मालिक से जोड़ने को कहें।","Ye item list mein nahi hai. Owner se jodne ko kaho."],
+"No item found. Use Add item to create it.":["No item found. Use Add item to create it.","आइटम नहीं मिला। बनाने के लिए Add item दबाएँ।","Item nahi mila. Banane ke liye Add item dabao."],
+"Scan an item to start the bill.":["Scan an item to start the bill.","बिल शुरू करने के लिए आइटम स्कैन करें।","Bill shuru karne ke liye item scan karo."],
+"Scan the items on the supplier bill.":["Scan the items on the supplier bill.","सप्लायर के बिल के आइटम स्कैन करें।","Supplier bill ke items scan karo."],
+"Rate ₹":["Rate ₹","दर ₹","Rate ₹"],"Cost ₹":["Cost ₹","लागत ₹","Cost ₹"],
+/* purchase */
+"New purchase":["New purchase","नई खरीद","Nayi kharidi"],
+"Supplier":["Supplier","सप्लायर","Supplier"],"Supplier WhatsApp":["Supplier WhatsApp","सप्लायर का WhatsApp","Supplier ka WhatsApp"],
+"Bill number":["Bill number","बिल नंबर","Bill number"],"Bill date":["Bill date","बिल की तारीख़","Bill ki tarikh"],
+"Bill total":["Bill total","बिल का कुल","Bill ka total"],
+"Not paid yet":["Not paid yet","अभी चुकाया नहीं","Abhi paid nahi"],
+"Save purchase":["Save purchase","खरीद सेव करें","Kharidi save karo"],
+"Recent purchases":["Recent purchases","हाल की खरीद","Recent kharidi"],
+"No purchases yet.":["No purchases yet.","अभी कोई खरीद नहीं।","Abhi koi kharidi nahi."],
+"Enter the supplier name":["Enter the supplier name","सप्लायर का नाम डालें","Supplier ka naam daalo"],
+/* stock */
+"Items":["Items","आइटम","Items"],"Stock value (at cost)":["Stock value (at cost)","स्टॉक की कीमत (लागत पर)","Stock ki keemat (cost par)"],
+"Low or out":["Low or out","कम या ख़त्म","Kam ya khatam"],
+"Low stock list":["Low stock list","कम स्टॉक की लिस्ट","Low stock list"],
+"Suggested quantity brings each item back up to twice its low level.":["The suggested quantity brings each item back up to twice its low level.","सुझाई गई मात्रा हर आइटम को उसके कम-स्तर से दोगुना कर देती है।","Suggested quantity har item ko uske low level ka double kar deti hai."],
+"Copy order list":["Copy order list","ऑर्डर लिस्ट कॉपी करें","Order list copy karo"],
+"Send on WhatsApp":["Send on WhatsApp","WhatsApp पर भेजें","WhatsApp pe bhejo"],
+"Find item":["Find item","आइटम खोजें","Item dhoondho"],"Name or barcode":["Name or barcode","नाम या बारकोड","Naam ya barcode"],
+"Add item":["Add item","आइटम जोड़ें","Item jodo"],
+"Count stock":["Count stock","स्टॉक गिनें","Stock gino"],"Edit":["Edit","बदलें","Edit"],
+"Out of stock":["Out of stock","स्टॉक ख़त्म","Stock khatam"],"Low":["Low","कम","Kam"],
+"Order":["Order","ऑर्डर","Order"],
+"Item name":["Item name","आइटम का नाम","Item ka naam"],"Barcode":["Barcode","बारकोड","Barcode"],
+"Scan or type. Leave empty for loose items":["Scan or type. Leave empty for loose items","स्कैन करें या लिखें। खुले सामान के लिए खाली छोड़ें","Scan karo ya likho. Khule saaman ke liye khaali chhodo"],
+"MRP (₹)":["MRP (₹)","MRP (₹)","MRP (₹)"],"Unit":["Unit","इकाई","Unit"],
+"Usual buying rate (₹)":["Usual buying rate (₹)","सामान्य खरीद दर (₹)","Usual kharid rate (₹)"],
+"Stock you have now":["Stock you have now","अभी आपके पास स्टॉक","Abhi aapke paas stock"],"Opening stock":["Opening stock","शुरुआती स्टॉक","Opening stock"],
+"Mark low when stock is at or below":["Mark low when stock is at or below","स्टॉक इतना या कम होने पर \"कम\" मानें","Stock itna ya kam ho to \"kam\" maano"],
+"Save item":["Save item","आइटम सेव करें","Item save karo"],"Cancel":["Cancel","रद्द करें","Cancel"],
+"New item":["New item","नया आइटम","Naya item"],"Edit item":["Edit item","आइटम बदलें","Item edit karo"],"Delete item":["Delete item","आइटम हटाएँ","Item delete karo"],
+"Item saved":["Item saved","आइटम सेव हो गया","Item save ho gaya"],"Item deleted":["Item deleted","आइटम हट गया","Item delete ho gaya"],
+"Enter the item name":["Enter the item name","आइटम का नाम डालें","Item ka naam daalo"],"Enter the MRP":["Enter the MRP","MRP डालें","MRP daalo"],
+"Another item already has this barcode":["Another item already has this barcode","किसी और आइटम में यही बारकोड है","Kisi aur item mein yahi barcode hai"],
+"Naam sabke catalogue se mila. Check karke MRP daalo.":["Name found in the shared catalogue. Check it and enter the MRP.","नाम सबकी कैटलॉग से मिला। जाँचकर MRP डालें।","Naam sabke catalogue se mila. Check karke MRP daalo."],
+"Naam internet se mila. Sahi hai ya nahi check karo, phir MRP daalo.":["Name found on the internet. Check that it is right, then enter the MRP.","नाम इंटरनेट से मिला। सही है या नहीं जाँचें, फिर MRP डालें।","Naam internet se mila. Sahi hai ya nahi check karo, phir MRP daalo."],
+"Ye barcode pehli baar aaya hai. Naam aur MRP daalo.":["This barcode is new. Enter the name and MRP.","यह बारकोड पहली बार आया है। नाम और MRP डालें।","Ye barcode pehli baar aaya hai. Naam aur MRP daalo."],
+"Counted quantity":["Counted quantity","गिनी हुई मात्रा","Gini hui quantity"],"Update stock":["Update stock","स्टॉक अपडेट करें","Stock update karo"],
+"System shows":["System shows","सिस्टम में है","System mein hai"],". Enter what is on the shelf.":[". Enter what is on the shelf.",". जो शेल्फ़ पर है वह डालें।",". Jo shelf par hai wo daalo."],
+"Enter the counted quantity":["Enter the counted quantity","गिनी हुई मात्रा डालें","Gini hui quantity daalo"],
+"Stock already matches":["Stock already matches","स्टॉक पहले से मेल खाता है","Stock pehle se match karta hai"],
+"Item deleted":["Item deleted","आइटम हट गया","Item delete ho gaya"],
+"Added:":["Added:","जोड़ा:","Joda:"],
+/* due */
+"Customers who owe you":["Customers who owe you","जिन ग्राहकों पर बाकी है","Jin customers par baaki hai"],
+"Bills older than 3 days are marked late. Tap Remind to open WhatsApp with the message ready. Sending it automatically is the next step.":["Bills older than 3 days are marked late. Tap Remind to open WhatsApp with the message ready.","3 दिन से पुराने बिल \"देर\" माने जाते हैं। Remind दबाने पर संदेश तैयार होकर WhatsApp खुलेगा।","3 din se purane bill \"late\" maane jaate hain. Remind dabao to message ready hokar WhatsApp khulega."],
+"Customers owe you":["Customers owe you","ग्राहकों पर बाकी","Customers par baaki"],
+"You owe suppliers":["You owe suppliers","सप्लायर का बाकी","Suppliers ka baaki"],
+"Mark paid":["Mark paid","चुकाया मानें","Paid mark karo"],
+"Remind on WhatsApp":["Remind on WhatsApp","WhatsApp पर याद दिलाएँ","WhatsApp pe yaad dilao"],
+"Copy message":["Copy message","संदेश कॉपी करें","Message copy karo"],
+"Add a phone number to send a reminder":["Add a phone number to send a reminder","याद दिलाने के लिए फ़ोन नंबर जोड़ें","Reminder bhejne ke liye phone number jodo"],
+"Nobody owes you anything right now.":["Nobody owes you anything right now.","अभी किसी पर आपका बाकी नहीं है।","Abhi kisi par aapka baaki nahi hai."],
+"No supplier bills pending.":["No supplier bills pending.","सप्लायर का कोई बिल बाकी नहीं।","Supplier ka koi bill baaki nahi."],
+"Late bills (over":["Late bills (over","देर वाले बिल (","Late bills ("],
+"Marked as paid":["Marked as paid","चुकाया मान लिया","Paid mark ho gaya"],
+"Message copied":["Message copied","संदेश कॉपी हो गया","Message copy ho gaya"],
+"Could not update":["Could not update","अपडेट नहीं हो सका","Update nahi ho saka"],
+/* reports */
+"Report type":["Report type","रिपोर्ट का प्रकार","Report ka type"],
+"Daily":["Daily","रोज़ का","Daily"],"Excel report":["Excel report","Excel रिपोर्ट","Excel report"],"Financials":["Financials","वित्तीय विवरण","Financials"],
+"Daily summary":["Daily summary","रोज़ का सारांश","Daily summary"],"Day":["Day","दिन","Din"],
+"Profit is an estimate: selling rate minus average buying cost of each item.":["Profit is an estimate: selling rate minus the average buying cost of each item.","मुनाफ़ा अनुमान है: बिक्री दर में से हर आइटम की औसत खरीद लागत घटाकर।","Profit andaaza hai: bikri rate minus har item ki average kharid cost."],
+"Sales, last 7 days":["Sales, last 7 days","पिछले 7 दिनों की बिक्री","Pichhle 7 din ki sales"],
+"Show table":["Show table","तालिका दिखाएँ","Table dikhao"],"Show chart":["Show chart","चार्ट दिखाएँ","Chart dikhao"],
+"Top items":["Top items","सबसे ज़्यादा बिकने वाले","Top items"],"Needs attention":["Needs attention","ध्यान देने लायक","Dhyaan dene layak"],
+"Copy summary":["Copy summary","सारांश कॉपी करें","Summary copy karo"],"Summary copied":["Summary copied","सारांश कॉपी हो गया","Summary copy ho gaya"],
+"Items low or out of stock":["Items low or out of stock","कम या ख़त्म स्टॉक वाले आइटम","Kam ya khatam stock wale items"],
+"Estimated profit":["Estimated profit","अनुमानित मुनाफ़ा","Andaazit profit"],
+"Udhaar given":["Credit given","दिया हुआ उधार","Udhaar diya"],"Udhaar collected":["Credit collected","वसूला हुआ उधार","Udhaar vasool hua"],
+"Purchases":["Purchases","खरीद","Kharidi"],"No sales on this day.":["No sales on this day.","इस दिन कोई बिक्री नहीं।","Is din koi sale nahi."],
+"Sales and purchase report":["Sales and purchase report","बिक्री और खरीद की रिपोर्ट","Sales aur purchase report"],
+"Pick any start and end date. You get an Excel file with a summary, every bill and every item sold or bought.":["Pick any start and end date. You get an Excel file with a summary, every bill and every item sold or bought.","कोई भी शुरू और आख़िरी तारीख़ चुनें। आपको सारांश, हर बिल और हर आइटम वाली Excel फ़ाइल मिलेगी।","Koi bhi shuru aur aakhri tarikh chuno. Summary, har bill aur har item wali Excel file milegi."],
+"From":["From","से","Se"],"To":["To","तक","Tak"],"Download Excel":["Download Excel","Excel डाउनलोड करें","Excel download karo"],
+"Pick both dates":["Pick both dates","दोनों तारीख़ें चुनें","Dono tarikhein chuno"],
+"The start date is after the end date":["The start date is after the end date","शुरू की तारीख़ आख़िरी तारीख़ के बाद है","Shuru ki tarikh aakhri tarikh ke baad hai"],
+"Excel tool did not load. Check the internet and reload.":["Excel tool did not load. Check the internet and reload.","Excel टूल लोड नहीं हुआ। इंटरनेट जाँचकर दोबारा खोलें।","Excel tool load nahi hua. Internet check karke dobara kholo."],
+"File ready":["File ready","फ़ाइल तैयार है","File ready hai"],"Could not save the file":["Could not save the file","फ़ाइल सेव नहीं हो सकी","File save nahi ho saki"],
+"Profit and loss, balance sheet":["Profit and loss, balance sheet","लाभ-हानि और बैलेंस शीट","Profit and loss, balance sheet"],
+"Made month by month, in the usual format for a proprietorship shop. Pick the month and tap Make financials. It asks for your other expenses first.":["Made month by month, in the usual format for a proprietorship shop. Pick the month and tap Make financials. It asks for your other expenses first.","महीने-दर-महीने, प्रोप्राइटरशिप दुकान के सामान्य प्रारूप में। महीना चुनें और Make financials दबाएँ। पहले यह आपके दूसरे ख़र्च पूछेगा।","Mahine ke hisaab se, proprietorship dukaan ke usual format mein. Mahina chuno aur Make financials dabao. Pehle ye aapke baaki kharche poochhega."],
+"Month":["Month","महीना","Mahina"],"Make financials":["Make financials","विवरण बनाएँ","Make financials"],
+"Trading and Profit and Loss Account":["Trading and Profit and Loss Account","ट्रेडिंग और लाभ-हानि खाता","Trading and Profit and Loss Account"],
+"Balance Sheet":["Balance Sheet","बैलेंस शीट","Balance Sheet"],
+"Trading account":["Trading account","ट्रेडिंग खाता","Trading account"],"Profit and loss account":["Profit and loss account","लाभ-हानि खाता","Profit and loss account"],
+"Gross profit":["Gross profit","सकल लाभ","Gross profit"],"Gross profit margin":["Gross profit margin","सकल लाभ मार्जिन","Gross profit margin"],
+"Net profit":["Net profit","शुद्ध लाभ","Net profit"],"Net loss":["Net loss","शुद्ध हानि","Net loss"],"Net profit margin":["Net profit margin","शुद्ध लाभ मार्जिन","Net profit margin"],
+"Less: Cost of goods sold":["Less: Cost of goods sold","घटाएँ: बेचे गए माल की लागत","Minus: Bechey gaye maal ki cost"],
+"Add: Purchases (":["Add: Purchases (","जोड़ें: खरीद (","Add: Purchases ("],
+"Less: Closing stock":["Less: Closing stock","घटाएँ: अंतिम स्टॉक","Minus: Closing stock"],
+"Cost of goods sold":["Cost of goods sold","बेचे गए माल की लागत","Bechey gaye maal ki cost"],
+"Less: Expenses":["Less: Expenses","घटाएँ: ख़र्च","Minus: Kharche"],"Total expenses":["Total expenses","कुल ख़र्च","Total kharche"],
+"No other expenses entered":["No other expenses entered","कोई और ख़र्च नहीं डाला","Koi aur kharcha nahi daala"],
+"Capital and liabilities":["Capital and liabilities","पूँजी और देनदारियाँ","Capital aur liabilities"],"Assets":["Assets","संपत्तियाँ","Assets"],
+"Capital at start of month":["Capital at start of month","महीने की शुरुआत की पूँजी","Mahine ki shuruaat ki capital"],
+"Capital at the start of month":["Capital at the start of month","महीने की शुरुआत की पूँजी","Mahine ki shuruaat ki capital"],
+"Add: Net profit":["Add: Net profit","जोड़ें: शुद्ध लाभ","Add: Net profit"],"Less: Net loss":["Less: Net loss","घटाएँ: शुद्ध हानि","Minus: Net loss"],"Less: Drawings":["Less: Drawings","घटाएँ: निजी निकासी","Minus: Drawings"],
+"Closing capital":["Closing capital","अंतिम पूँजी","Closing capital"],"Loans and other dues":["Loans and other dues","लोन और अन्य देनदारी","Loans aur baaki dues"],
+"Sundry creditors (suppliers to be paid)":["Sundry creditors (suppliers to be paid)","सुंदरी लेनदार (सप्लायर को देना है)","Sundry creditors (suppliers ko dena hai)"],
+"GST collected (to be paid to govt)":["GST collected (to be paid to govt)","वसूला गया GST (सरकार को देना है)","Vasoola GST (sarkar ko dena hai)"],
+"Closing stock":["Closing stock","अंतिम स्टॉक","Closing stock"],
+"Sundry debtors (customers who owe you)":["Sundry debtors (customers who owe you)","सुंदरी देनदार (ग्राहक जिन पर बाकी है)","Sundry debtors (customers jinpar baaki hai)"],
+"Cash and bank":["Cash and bank","नकद और बैंक","Cash aur bank"],"Fixed assets":["Fixed assets","स्थायी संपत्ति","Fixed assets"],
+"The balance sheet tallies.":["The balance sheet tallies.","बैलेंस शीट मिल गई है।","Balance sheet tally ho gayi."],
+"Edit details":["Edit details","विवरण बदलें","Details badlo"],
+"Prepared from the bills you recorded and the figures you entered, on the accrual basis. Stock is valued at average cost. Have your accountant review it before using it for tax or a bank loan.":["Prepared from the bills you recorded and the figures you entered, on the accrual basis. Stock is valued at average cost. Have your accountant review it before using it for tax or a bank loan.","आपके दर्ज किए बिलों और आँकड़ों से, एक्रूअल आधार पर बना है। स्टॉक औसत लागत पर आँका गया है। टैक्स या बैंक लोन में इस्तेमाल से पहले अपने अकाउंटेंट से जँचवाएँ।","Aapke daale bills aur figures se, accrual basis par bana hai. Stock average cost par aanka gaya hai. Tax ya bank loan mein use se pehle apne accountant se check karwao."],
+"Financials ready for":["Financials ready for","विवरण तैयार:","Financials ready:"],
+"Expenses for":["Expenses for","ख़र्च:","Kharche:"],
+"Step 1 of 2 · other than purchases":["Step 1 of 2 · other than purchases","चरण 1/2 · खरीद के अलावा","Step 1/2 · kharidi ke alawa"],
+"Add rent, salary, electricity and anything else you paid this month. Tap a name to add it with the amount from last time. You can change the amount.":["Add rent, salary, electricity and anything else you paid this month. Tap a name to add it with the amount from last time. You can change the amount.","किराया, तनख़्वाह, बिजली और इस महीने चुकाया कोई भी ख़र्च जोड़ें। नाम दबाएँ तो पिछली बार की रकम के साथ जुड़ जाएगा। रकम बदल सकते हैं।","Kiraya, salary, bijli aur is mahine ka koi bhi kharcha jodo. Naam dabao to pichhli baar ki amount ke saath jud jayega. Amount badal sakte ho."],
+"+ Add another":["+ Add another","+ एक और जोड़ें","+ Ek aur jodo"],"Next":["Next","आगे","Aage"],"Back":["Back","पीछे","Peeche"],
+"A few more details":["A few more details","कुछ और जानकारी","Kuch aur details"],
+"Step 2 of 2 · for the balance sheet as at":["Step 2 of 2 · for the balance sheet as at","चरण 2/2 · बैलेंस शीट के लिए, दिनांक","Step 2/2 · balance sheet ke liye, tarikh"],
+"Capital at the start of the month (₹)":["Capital at the start of the month (₹)","महीने की शुरुआत की पूँजी (₹)","Mahine ki shuruaat ki capital (₹)"],
+"Money you took out for yourself this month (₹)":["Money you took out for yourself this month (₹)","इस महीने अपने लिए निकाली रकम (₹)","Is mahine apne liye nikaali amount (₹)"],
+"Cash in hand plus bank balance on the last day (₹)":["Cash in hand plus bank balance on the last day (₹)","आख़िरी दिन हाथ में नकद और बैंक बैलेंस (₹)","Aakhri din haath ka cash aur bank balance (₹)"],
+"Shop assets: furniture, fridge, counters etc., at current value (₹)":["Shop assets: furniture, fridge, counters etc., at current value (₹)","दुकान की संपत्ति: फ़र्नीचर, फ्रिज, काउंटर आदि, मौजूदा कीमत पर (₹)","Dukaan ki assets: furniture, fridge, counter etc., abhi ki keemat par (₹)"],
+"Loans and other dues, apart from suppliers (₹)":["Loans and other dues, apart from suppliers (₹)","सप्लायर के अलावा लोन और दूसरी देनदारी (₹)","Suppliers ke alawa loans aur baaki dues (₹)"],
+"Enter an amount for each expense":["Enter an amount for each expense","हर ख़र्च की रकम डालें","Har kharche ki amount daalo"],
+"Rent":["Rent","किराया","Kiraya"],"Salary":["Salary","तनख़्वाह","Salary"],"Electricity":["Electricity","बिजली","Bijli"],"Transport":["Transport","ढुलाई","Transport"],"Phone and internet":["Phone and internet","फ़ोन और इंटरनेट","Phone aur internet"],"Other":["Other","अन्य","Other"],
+"Expense name":["Expense name","ख़र्च का नाम","Kharche ka naam"],"Amount":["Amount","रकम","Amount"],
+};
+
+Object.assign(D,{
+/* setup tab */
+"Business details":["Business details","बिज़नेस की जानकारी","Business details"],
+"Ye naam app ke upar aur har PDF bill par aata hai. PDF bill mein Hindi akshar nahi aate, isliye naam aur address English mein rakho.":["This name appears at the top of the app and on every PDF bill. Hindi letters do not print in the PDF bill, so keep the name and address in English.","यह नाम ऐप के ऊपर और हर PDF बिल पर आता है। PDF बिल में हिंदी अक्षर नहीं छपते, इसलिए नाम और पता अंग्रेज़ी में रखें।","Ye naam app ke upar aur har PDF bill par aata hai. PDF bill mein Hindi akshar nahi aate, isliye naam aur address English mein rakho."],
+"Business name":["Business name","बिज़नेस का नाम","Business ka naam"],
+"Address (bill par)":["Address (on the bill)","पता (बिल पर)","Address (bill par)"],
+"Phone":["Phone","फ़ोन","Phone"],"GSTIN (agar hai)":["GSTIN (if you have one)","GSTIN (अगर है)","GSTIN (agar hai)"],
+"Save":["Save","सेव करें","Save"],"Save ho gaya":["Saved","सेव हो गया","Save ho gaya"],
+"Cashier ka code banao":["Create cashier code","कैशियर का कोड बनाएँ","Cashier ka code banao"],
+"Cashier bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte.":["A cashier can make bills, record purchases, add new items and count stock. They cannot see buying rates, stock value, profit or reports.","कैशियर बिल बना सकता है, खरीद लिख सकता है, नया आइटम जोड़ सकता है और स्टॉक गिन सकता है। उसे खरीद दर, स्टॉक की कीमत, मुनाफ़ा और रिपोर्ट नहीं दिखते।","Cashier bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte."],
+"Naya vendor (sirf aapke liye)":["New vendor (only for you)","नया वेंडर (सिर्फ़ आपके लिए)","Naya vendor (sirf aapke liye)"],
+"Vendor ka naam (apni yaad ke liye)":["Vendor name (for your own memory)","वेंडर का नाम (अपनी याद के लिए)","Vendor ka naam (apni yaad ke liye)"],
+"Vendor ka code banao":["Create vendor code","वेंडर का कोड बनाएँ","Vendor ka code banao"],
+"Abhi tak use na hue code":["Codes not used yet","अभी तक इस्तेमाल न हुए कोड","Abhi tak use na hue code"],
+"Saare vendors":["All vendors","सभी वेंडर","Saare vendors"],
+"Koi pending code nahi.":["No pending code.","कोई बाकी कोड नहीं।","Koi pending code nahi."],
+"Abhi koi vendor nahi.":["No vendor yet.","अभी कोई वेंडर नहीं।","Abhi koi vendor nahi."],
+"Abhi koi cashier nahi hai.":["There is no cashier yet.","अभी कोई कैशियर नहीं है।","Abhi koi cashier nahi hai."],
+"Chalu":["Active","चालू","Chalu"],"Band":["Off","बंद","Band"],"Chalu karo":["Switch on","चालू करें","Chalu karo"],"Band karo":["Close","बंद करें","Band karo"],
+"Code (ek hi baar chalega)":["Code (works only once)","कोड (सिर्फ़ एक बार चलेगा)","Code (ek hi baar chalega)"],
+"Copy":["Copy","कॉपी","Copy"],"WhatsApp pe bhejo":["Send on WhatsApp","WhatsApp पर भेजें","WhatsApp pe bhejo"],
+"Message copy ho gaya":["Message copied","संदेश कॉपी हो गया","Message copy ho gaya"],
+"Copy nahi hua. Text ko dabake select karo.":["Could not copy. Press and hold the text to select it.","कॉपी नहीं हुआ। टेक्स्ट को दबाकर चुनें।","Copy nahi hua. Text ko dabake select karo."],
+"Could not copy. Use Send on WhatsApp.":["Could not copy. Use Send on WhatsApp.","कॉपी नहीं हो सका। WhatsApp पर भेजें इस्तेमाल करें।","Copy nahi ho saka. WhatsApp pe bhejo use karo."],
+"Order list copied":["Order list copied","ऑर्डर लिस्ट कॉपी हो गई","Order list copy ho gayi"],
+"Business ka naam daalo":["Enter the business name","बिज़नेस का नाम डालें","Business ka naam daalo"],
+/* account menu */
+"kam se kam 6 akshar":["at least 6 characters","कम से कम 6 अक्षर","kam se kam 6 akshar"],
+"Language":["Language","भाषा","Bhasha"],
+/* camera */
+"Barcode scan":["Barcode scan","बारकोड स्कैन","Barcode scan"],
+"Camera khul raha hai...":["Opening the camera...","कैमरा खुल रहा है...","Camera khul raha hai..."],
+"Light":["Light","लाइट","Light"],"Photo se scan":["Scan from photo","फ़ोटो से स्कैन","Photo se scan"],
+"Ek ke baad ek scan karte jao. Ho jaye to Band karo.":["Keep scanning one after another. Tap Close when you are done.","एक के बाद एक स्कैन करते जाएँ। हो जाए तो बंद करें।","Ek ke baad ek scan karte jao. Ho jaye to Band karo."],
+"Photo padh rahe hain...":["Reading the photo...","फ़ोटो पढ़ रहे हैं...","Photo padh rahe hain..."],
+"Photo se barcode nahi padha. Sirf barcode ko poora bhar ke, seedhi photo lo.":["Could not read a barcode from the photo. Take a straight photo with only the barcode filling the picture.","फ़ोटो से बारकोड नहीं पढ़ा गया। सिर्फ़ बारकोड को पूरा भरकर, सीधी फ़ोटो लें।","Photo se barcode nahi padha. Sirf barcode ko poora bhar ke, seedhi photo lo."],
+"Is browser mein live camera nahi chal raha. Photo se scan karo.":["Live camera does not work in this browser. Scan from a photo.","इस ब्राउज़र में लाइव कैमरा नहीं चल रहा। फ़ोटो से स्कैन करें।","Is browser mein live camera nahi chal raha. Photo se scan karo."],
+/* bill modal */
+"Bill ban raha hai...":["Making the bill...","बिल बन रहा है...","Bill ban raha hai..."],
+"PDF share karo":["Share PDF","PDF शेयर करें","PDF share karo"],"PDF download":["Download PDF","PDF डाउनलोड","PDF download"],
+"PDF nahi ban paya. Internet check karke dobara kholo. Message phir bhi bheja ja sakta hai.":["The PDF could not be made. Check the internet and open again. The message can still be sent.","PDF नहीं बन पाया। इंटरनेट जाँचकर दोबारा खोलें। संदेश फिर भी भेजा जा सकता है।","PDF nahi ban paya. Internet check karke dobara kholo. Message phir bhi bheja ja sakta hai."],
+"Bill taiyar hai. WhatsApp wala button dabao, phir WhatsApp mein Send dabao.":["The bill is ready. Tap the WhatsApp button, then press Send in WhatsApp.","बिल तैयार है। WhatsApp वाला बटन दबाएँ, फिर WhatsApp में Send दबाएँ।","Bill taiyar hai. WhatsApp wala button dabao, phir WhatsApp mein Send dabao."],
+"Bill ki link nahi ban payi. PDF download ya share karke bhej sakte ho.":["The bill link could not be made. You can download or share the PDF and send it.","बिल का लिंक नहीं बन पाया। PDF डाउनलोड या शेयर करके भेज सकते हैं।","Bill ki link nahi ban payi. PDF download ya share karke bhej sakte ho."],
+"Sure?":["Sure?","पक्का?","Pakka?"],"Deleted":["Deleted","हटा दिया","Delete ho gaya"],"Could not delete":["Could not delete","हटा नहीं सके","Delete nahi ho saka"],
+"Tap again to delete":["Tap again to delete","हटाने के लिए फिर दबाएँ","Delete karne ke liye phir dabao"],
+"Could not save":["Could not save","सेव नहीं हो सका","Save nahi ho saka"],
+"Example data is loaded so you can try everything. Remove it before real use.":["Example data is loaded so you can try everything. Remove it before real use.","आज़माने के लिए उदाहरण डेटा डाला गया है। असली इस्तेमाल से पहले हटा दें।","Try karne ke liye example data daala gaya hai. Asli use se pehle hata do."],
+"Remove example data":["Remove example data","उदाहरण डेटा हटाएँ","Example data hatao"],
+"Tap again to remove":["Tap again to remove","हटाने के लिए फिर दबाएँ","Hatane ke liye phir dabao"],
+"Example data removed":["Example data removed","उदाहरण डेटा हट गया","Example data hat gaya"],
+"Could not remove all example data":["Could not remove all example data","सारा उदाहरण डेटा नहीं हट सका","Saara example data nahi hat saka"],
+"Copied":["Copied","कॉपी हो गया","Copied"],
+"Link kholo, \"Naya account banana hai\" dabao, code aur apna email daalo.":["Open the link, tap \"Create a new account\", and enter the code and your email.","लिंक खोलें, \"नया अकाउंट बनाएँ\" दबाएँ, कोड और अपना ईमेल डालें।","Link kholo, \"Naya account banana hai\" dabao, code aur apna email daalo."],
+});
+Object.assign(D,{
+"Show password":["Show password","पासवर्ड दिखाएँ","Password dikhao"],"Show":["Show","दिखाएँ","Dikhao"],"Hide":["Hide","छिपाएँ","Chhupao"],
+"Email verify karo":["Verify your email","ईमेल सत्यापित करें","Email verify karo"],"Email ka code":["Code from your email","ईमेल वाला कोड","Email ka code"],
+"Verify karo":["Verify","सत्यापित करें","Verify karo"],"Code dobara bhejo":["Send the code again","कोड दोबारा भेजें","Code dobara bhejo"],"Wapas":["Back","वापस","Wapas"],
+"Email ka poora code daalo.":["Enter the full code from your email.","ईमेल वाला पूरा कोड डालें।","Email ka poora code daalo."],
+"Naya code bhej diya.":["A new code has been sent.","नया कोड भेज दिया।","Naya code bhej diya."],
+"Code galat hai ya purana ho gaya. Naya code mangwao.":["The code is wrong or expired. Ask for a new code.","कोड ग़लत है या पुराना हो गया। नया कोड मँगाएँ।","Code galat hai ya purana ho gaya. Naya code mangwao."],
+"Bahar jaane ke liye dobara back dabao":["Press back again to exit","बाहर जाने के लिए फिर से back दबाएँ","Bahar jaane ke liye dobara back dabao"],
+"Help":["Help","मदद","Help"],"Ledger":["Ledger","खाता","Ledger"],"Khata":["Accounts","खाता-बही","Khata"],"Saathi":["Saathi","साथी","Saathi"],"Salah":["Advice","सलाह","Salah"],
+"Naya version aaya hai. Update karne par app dobara khulegi.":["A new version is available. The app will reopen when you update.","नया वर्ज़न आया है। अपडेट करने पर ऐप दोबारा खुलेगी।","Naya version aaya hai. Update karne par app dobara khulegi."],
+"Update karo":["Update","अपडेट करें","Update karo"],"Dekho":["View","देखें","Dekho"],
+"Customers":["Customers","ग्राहक","Customers"],"Suppliers":["Suppliers","सप्लायर","Suppliers"],"Find party":["Find party","पार्टी खोजें","Party dhoondo"],"Name":["Name","नाम","Naam"],
+"Add party":["Add party","पार्टी जोड़ें","Party jodo"],"Show settled parties too":["Show settled parties too","चुकता पार्टियाँ भी दिखाएँ","Chukta parties bhi dikhao"],
+"No customers to show. Udhaar bills and added parties appear here.":["No customers to show. Udhaar bills and added parties appear here.","दिखाने को कोई ग्राहक नहीं। उधार बिल और जोड़ी गई पार्टियाँ यहाँ दिखेंगी।","Dikhane ko koi customer nahi. Udhaar bill aur jodi gayi parties yahan dikhengi."],
+"No suppliers to show. Unpaid purchases and added parties appear here.":["No suppliers to show. Unpaid purchases and added parties appear here.","दिखाने को कोई सप्लायर नहीं। बिना चुकाई खरीद और जोड़ी गई पार्टियाँ यहाँ दिखेंगी।","Dikhane ko koi supplier nahi. Na chukayi kharidi aur jodi gayi parties yahan dikhengi."],
+"Advance":["Advance","एडवांस","Advance"],"Settled":["Settled","चुकता","Chukta"],"Phone number not added":["Phone number not added","फ़ोन नंबर नहीं जुड़ा","Phone number nahi joda"],
+"You will receive":["You will receive","आपको मिलना है","Aapko milna hai"],"You have to pay":["You have to pay","आपको देना है","Aapko dena hai"],
+"Payment received":["Payment received","भुगतान मिला","Payment mili"],"Payment made":["Payment made","भुगतान किया","Payment diya"],"Add old balance":["Add old balance","पुराना बाकी जोड़ें","Purana baaki jodo"],
+"Send statement":["Send statement","खाता भेजें","Statement bhejo"],"Date":["Date","तारीख़","Date"],"Details":["Details","विवरण","Details"],"Udhaar (+)":["Credit given (+)","उधार (+)","Udhaar (+)"],"Payment (−)":["Payment (−)","भुगतान (−)","Payment (−)"],"Balance":["Balance","बैलेंस","Balance"],
+"Nothing yet.":["Nothing yet.","अभी कुछ नहीं।","Abhi kuch nahi."],"Amount (₹)":["Amount (₹)","राशि (₹)","Amount (₹)"],"How":["How","कैसे","Kaise"],"Cash":["Cash","नकद","Cash"],"UPI":["UPI","UPI","UPI"],"Bank":["Bank","बैंक","Bank"],
+"Note (optional)":["Note (optional)","नोट (ज़रूरी नहीं)","Note (zaroori nahi)"],"Phone (optional)":["Phone (optional)","फ़ोन (ज़रूरी नहीं)","Phone (zaroori nahi)"],"Old balance (₹)":["Old balance (₹)","पुराना बाकी (₹)","Purana baaki (₹)"],
+"Customer ka purana baaki jo app se pehle ka hai.":["Customer's old balance from before the app.","ग्राहक का ऐप से पहले का पुराना बाकी।","Customer ka purana baaki jo app se pehle ka hai."],
+"Supplier ko dena baaki jo app se pehle ka hai.":["Amount you owe a supplier from before the app.","ऐप से पहले का सप्लायर को देना बाकी।","Supplier ko dena baaki jo app se pehle ka hai."],
+"Amount daalo":["Enter the amount","राशि डालें","Amount daalo"],"Naam daalo":["Enter the name","नाम डालें","Naam daalo"],"Saved":["Saved","सेव हो गया","Saved"],
+"Opening balance":["Opening balance","शुरुआती बाकी","Opening balance"],"Purchase":["Purchase","खरीद","Purchase"],"Settings (business, cashier)":["Settings (business, cashier)","सेटिंग्स (बिज़नेस, कैशियर)","Settings (business, cashier)"],"Theme":["Theme","थीम","Theme"],
+"Barcode catalogue (sab vendors ke liye)":["Barcode catalogue (for all vendors)","बारकोड कैटलॉग (सभी वेंडर के लिए)","Barcode catalogue (sab vendors ke liye)"],
+"Kisi barcode ka galat naam yahan theek karo. Wo sab vendors ke naye scan par aur naam-sudhar suggestion mein dikhega.":["Fix a wrong name for any barcode here. It shows on every vendor's new scans and in their name-fix suggestion.","किसी बारकोड का ग़लत नाम यहाँ ठीक करें। वह सभी वेंडर के नए स्कैन और नाम-सुधार सुझाव में दिखेगा।","Kisi barcode ka galat naam yahan theek karo. Wo sab vendors ke naye scan par aur naam-sudhar suggestion mein dikhega."],
+"Barcode ya naam":["Barcode or name","बारकोड या नाम","Barcode ya naam"],"Dhoondo":["Search","खोजें","Dhoondo"],"Vendors ki reports":["Vendor reports","वेंडर की रिपोर्टें","Vendors ki reports"],"Koi report nahi.":["No reports.","कोई रिपोर्ट नहीं।","Koi report nahi."],
+"Kuch nahi mila.":["Nothing found.","कुछ नहीं मिला।","Kuch nahi mila."],"Fix":["Fix","ठीक करें","Fix"],"Hatao":["Remove","हटाएँ","Hatao"],
+"Report list nahi khuli. update2.sql chalayi?":["Could not load reports. Did you run update2.sql?","रिपोर्ट नहीं खुलीं। क्या update2.sql चलाई?","Report list nahi khuli. update2.sql chalayi?"],
+"Catalogue theek ho gaya. Sab vendors ko dikhega.":["Catalogue fixed. All vendors will see it.","कैटलॉग ठीक हो गया। सभी वेंडर को दिखेगा।","Catalogue theek ho gaya. Sab vendors ko dikhega."],
+"Is barcode ka naam galat hai? Admin ko batao":["Is the name for this barcode wrong? Tell the admin","इस बारकोड का नाम ग़लत है? एडमिन को बताएँ","Is barcode ka naam galat hai? Admin ko batao"],
+"Sahi naam":["Correct name","सही नाम","Sahi naam"],"Report bhejo":["Send report","रिपोर्ट भेजें","Report bhejo"],"Sahi naam likho":["Type the correct name","सही नाम लिखें","Sahi naam likho"],
+"Report bhej di. Shukriya.":["Report sent. Thank you.","रिपोर्ट भेज दी। धन्यवाद।","Report bhej di. Shukriya."],
+"Naam sudhar":["Name fixes","नाम सुधार","Naam sudhar"],
+"Ye naam sabke catalogue mein theek kiye gaye hain. Update karne se aapke item ka naam badal jayega. Stock aur bikri par asar nahi padega.":["These names were corrected in the shared catalogue. Updating changes your item's name. Stock and sales are not affected.","ये नाम सबकी कैटलॉग में ठीक किए गए हैं। अपडेट करने से आपके आइटम का नाम बदल जाएगा। स्टॉक और बिक्री पर असर नहीं पड़ेगा।","Ye naam sabke catalogue mein theek kiye gaye hain. Update karne se aapke item ka naam badal jayega. Stock aur bikri par asar nahi padega."],
+"Sab update karo":["Update all","सब अपडेट करें","Sab update karo"],"Mere naam rakho":["Keep my names","मेरे नाम रखें","Mere naam rakho"],"Naam update ho gaye":["Names updated","नाम अपडेट हो गए","Naam update ho gaye"],
+"Is barcode ka naam galat hai?":["Is this barcode's name wrong?","इस बारकोड का नाम ग़लत है?","Is barcode ka naam galat hai?"]
+});
+const PAT=[
+[/^Sales \((\d+) bills?\)$/,["Sales ($1 bills)","बिक्री ($1 बिल)","Sales ($1 bills)"]],
+[/^Purchases \((\d+) bills?\)$/,["Purchases ($1 bills)","खरीद ($1 बिल)","Kharidi ($1 bills)"]],
+[/^Add: Purchases \((\d+) bills?\)$/,["Add: Purchases ($1 bills)","जोड़ें: खरीद ($1 बिल)","Add: Purchases ($1 bills)"]],
+[/^Only ([\d.,]+) (.+) in stock$/,["Only $1 $2 in stock","स्टॉक में सिर्फ़ $1 $2","Stock mein sirf $1 $2"]],
+[/^MRP ₹([\d.,]+) · (.+)$/,["MRP ₹$1 · $2","MRP ₹$1 · $2","MRP ₹$1 · $2"]],
+[/^Have ([\d.,]+) (.+)$/,["Have $1 $2","$1 $2 हैं","$1 $2 hai"]],
+[/^Count: (.+)$/,["Count: $1","गिनती: $1","Count: $1"]],
+[/^Bill (INV-\d+)$/,["Bill $1","बिल $1","Bill $1"]],
+[/^(\d+) days?, late$/,["$1 days, late","$1 दिन, देर","$1 din, late"]],
+[/^(\d+) days?$/,["$1 days","$1 दिन","$1 din"]],
+[/^Today$/,["Today","आज","Aaj"]],
+[/^Added: (.+)$/,["Added: $1","जोड़ा: $1","Joda: $1"]],
+[/^Could not save \((.+)\)$/,["Could not save ($1)","सेव नहीं हो सका ($1)","Save nahi ho saka ($1)"]],
+[/^Purchase saved: (.+)$/,["Purchase saved: $1","खरीद सेव हो गई: $1","Kharidi save ho gayi: $1"]],
+[/^Sale saved: (.+)$/,["Sale saved: $1","बिक्री सेव हो गई: $1","Sale save ho gayi: $1"]],
+[/^Financials ready for (.+)$/,["Financials ready for $1","$1 के विवरण तैयार","$1 ke financials ready"]],
+[/^Stock updated \((.+)\)$/,["Stock updated ($1)","स्टॉक अपडेट हुआ ($1)","Stock update hua ($1)"]],
+[/^Expenses for (.+)$/,["Expenses for $1","$1 के ख़र्च","$1 ke kharche"]],
+[/^Step 2 of 2 · for the balance sheet as at (.+)$/,["Step 2 of 2 · for the balance sheet as at $1","चरण 2/2 · बैलेंस शीट के लिए, $1 तक","Step 2/2 · balance sheet ke liye, $1 tak"]],
+[/^For the month ended (.+)$/,["For the month ended $1","$1 को समाप्त महीने के लिए","$1 ko khatam mahine ke liye"]],
+[/^As at (.+)$/,["As at $1","$1 की स्थिति","$1 tak"]],
+[/^No financials for (.+) yet\. Tap Make financials, enter your expenses, and the statements appear here\.$/,["No financials for $1 yet. Tap Make financials, enter your expenses, and the statements appear here.","$1 के विवरण अभी नहीं बने हैं। Make financials दबाएँ, अपने ख़र्च डालें, और विवरण यहाँ दिखेंगे।","$1 ke financials abhi nahi bane. Make financials dabao, apne kharche daalo, aur statements yahan dikhenge."]],
+[/^Bills late by more than (\d+) days$/,["Bills late by more than $1 days","$1 दिन से ज़्यादा देर वाले बिल","$1 din se zyada late bills"]],
+[/^Late bills \(over (\d+) days\)$/,["Late bills (over $1 days)","देर वाले बिल ($1 दिन से ऊपर)","Late bills ($1 din se upar)"]],
+[/^(.+) · (\d+) items?$/,["$1 · $2 items","$1 · $2 आइटम","$1 · $2 items"]],
+[/^Bill (.+) · (\d+) items?$/,["Bill $1 · $2 items","बिल $1 · $2 आइटम","Bill $1 · $2 items"]],
+[/^Cashier: (\d+)$/,["Cashier: $1","कैशियर: $1","Cashier: $1"]],
+[/^cashier: (\d+)$/,["cashier: $1","कैशियर: $1","cashier: $1"]],
+[/^Cashier · (.+)$/,["Cashier · $1","कैशियर · $1","Cashier · $1"]],
+[/^Sales for the 7 days ending (.+), total (.+)$/,["Sales for the 7 days ending $1, total $2","$1 को ख़त्म 7 दिनों की बिक्री, कुल $2","$1 par khatam 7 din ki sales, total $2"]],
+]; 
+
+
+Object.assign(D,{
+"e.g. Rent":["e.g. Rent","जैसे: किराया","jaise: Kiraya"],
+"Less":["Less","कम","Kam"],"More":["More","ज़्यादा","Zyada"],"Quantity":["Quantity","मात्रा","Quantity"],"Rate":["Rate","दर","Rate"],"Remove":["Remove","हटाएँ","Hatao"],
+"No items yet. Tap Add item or scan a barcode.":["No items yet. Tap Add item or scan a barcode.","अभी कोई आइटम नहीं। Add item दबाएँ या बारकोड स्कैन करें।","Abhi koi item nahi. Add item dabao ya barcode scan karo."],
+"No item matches.":["No item matches.","कोई आइटम नहीं मिला।","Koi item match nahi hua."],
+"Carried over from last month. Change it only if it is wrong.":["Carried over from last month. Change it only if it is wrong.","पिछले महीने से आया है। गलत हो तभी बदलें।","Pichhle mahine se aaya hai. Galat ho tabhi badlo."],
+"Your own money in the business on day 1 of this month. Enter it once, later months carry it forward.":["Your own money in the business on day 1 of this month. Enter it once, later months carry it forward.","इस महीने के पहले दिन आपका अपना पैसा जो दुकान में था। एक बार डालें, आगे के महीनों में अपने आप आगे आता रहेगा।","Is mahine ke pehle din aapka apna paisa jo dukaan mein tha. Ek baar daalo, aage ke mahinon mein apne aap aata rahega."],
+"Aapka Stock Khata account taiyar hai.":["Your Stock Khata account is ready.","आपका Stock Khata अकाउंट तैयार है।","Aapka Stock Khata account taiyar hai."],
+});
+PAT.unshift(
+[/^Remove (.+)$/,["Remove $1","$1 हटाएँ","$1 hatao"]],
+[/^([\d.,]+) (.+) sold$/,["$1 $2 sold","$1 $2 बिके","$1 $2 bika"]],
+[/^(· )?MRP ₹([\d.,]+) · Avg cost ₹([\d.,]+)$/,["$1MRP ₹$2 · Avg cost ₹$3","$1MRP ₹$2 · औसत लागत ₹$3","$1MRP ₹$2 · Avg cost ₹$3"]],
+[/^Bill (\S+) · (.+) ·$/,["Bill $1 · $2 ·","बिल $1 · $2 ·","Bill $1 · $2 ·"]],
+[/^GST ([\d.]+)% \(total mein shamil\)$/,["GST $1% (included in total)","GST $1% (टोटल में शामिल)","GST $1% (total mein shamil)"]],
+[/^GST ([\d.]+)% \(upar se joda\)$/,["GST $1% (added on top)","GST $1% (ऊपर से जोड़ा)","GST $1% (upar se joda)"]],
+[/^The balance sheet does not tally\. Assets are (.+) more than capital and liabilities\. Check the capital, cash and bank, assets and loans you entered, then tap Edit details\.$/,["The balance sheet does not tally. Assets are $1 more than capital and liabilities. Check the capital, cash and bank, assets and loans you entered, then tap Edit details.","बैलेंस शीट नहीं मिल रही। संपत्तियाँ पूँजी और देनदारियों से $1 ज़्यादा हैं। डाली हुई पूँजी, नकद और बैंक, संपत्ति और लोन जाँचें, फिर Edit details दबाएँ।","Balance sheet tally nahi ho rahi. Assets, capital aur liabilities se $1 zyada hain. Daali hui capital, cash aur bank, assets aur loans check karo, phir Edit details dabao."]],
+[/^The balance sheet does not tally\. Assets are (.+) less than capital and liabilities\. Check the capital, cash and bank, assets and loans you entered, then tap Edit details\.$/,["The balance sheet does not tally. Assets are $1 less than capital and liabilities. Check the capital, cash and bank, assets and loans you entered, then tap Edit details.","बैलेंस शीट नहीं मिल रही। संपत्तियाँ पूँजी और देनदारियों से $1 कम हैं। डाली हुई पूँजी, नकद और बैंक, संपत्ति और लोन जाँचें, फिर Edit details दबाएँ।","Balance sheet tally nahi ho rahi. Assets, capital aur liabilities se $1 kam hain. Daali hui capital, cash aur bank, assets aur loans check karo, phir Edit details dabao."]],
+[/^(.+) · owner$/,["$1 · owner","$1 · मालिक","$1 · owner"]],
+[/^(.+) · cashier$/,["$1 · cashier","$1 · कैशियर","$1 · cashier"]],
+[/^(.+) · admin$/,["$1 · admin","$1 · एडमिन","$1 · admin"]],
+[/^(.+) · cashier: (\d+)$/,["$1 · cashier: $2","$1 · कैशियर: $2","$1 · cashier: $2"]]
+);
+
+PAT.unshift(
+[/^Late customers \(over (\d+) days\)$/,["Late customers (over $1 days)","लेट ग्राहक ($1 दिन से ज़्यादा)","Late customers ($1 din se zyada)"]],
+[/^Baaki (₹[\d.,]+)$/,["Due $1","बाकी $1","Baaki $1"]],
+[/^· baaki (₹[\d.,]+)$/,["· due $1","· बाकी $1","· baaki $1"]],
+[/^Bill ([\w\-\/]+)$/,["Bill $1","बिल $1","Bill $1"]],
+[/^(\d+) items ke naam sabke catalogue mein sudhar gaye hain\.$/,["$1 item names were corrected in the shared catalogue.","$1 आइटम के नाम सबकी कैटलॉग में सुधरे हैं।","$1 items ke naam sabke catalogue mein sudhar gaye hain."]]
+);
+
+/* ---------- language: Hindi / English / Hinglish ---------- */
+const LIDX={en:0,hi:1,hl:2};
+function trStr(k){
+  const e=D[k]; if(e) return e[LIDX[LANG]];
+  for(const [re,t] of PAT){ const m=k.match(re); if(m) return t[LIDX[LANG]].replace(/\$(\d)/g,(_,n)=>m[+n]===undefined?'':m[+n]); }
+  return null;
+}
+const TREC=new WeakMap();
+function trNode(n){
+  const p=n.parentNode; if(!p||/^(SCRIPT|STYLE|TEXTAREA|PRE)$/.test(p.nodeName)) return;
+  const cur=n.nodeValue, rec=TREC.get(n);
+  const orig=(rec&&cur===rec.t)?rec.o:cur;
+  const m=orig.match(/^(\s*)([\s\S]*?)(\s*)$/); if(!m[2]) return;
+  const out=trStr(m[2].replace(/\s+/g,' '));
+  const t=out===null?orig:m[1]+out+m[3];
+  TREC.set(n,{o:orig,t});
+  if(t!==cur) n.nodeValue=t;
+}
+const TATTR=['placeholder','aria-label','title'];
+function trAttrs(el){
+  if(!el.getAttribute) return;
+  for(const a of TATTR){
+    const cur=el.getAttribute(a); if(cur===null) continue;
+    const store=el._tr||(el._tr={}), rec=store[a];
+    const orig=(rec&&cur===rec.t)?rec.o:cur;
+    const out=trStr(orig.replace(/\s+/g,' ').trim());
+    const t=out===null?orig:out;
+    store[a]={o:orig,t};
+    if(t!==cur) el.setAttribute(a,t);
+  }
+}
+function trWalk(root){
+  if(root.nodeType===3){ trNode(root); return; }
+  if(root.nodeType!==1) return;
+  trAttrs(root);
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT);
+  let n; while((n=w.nextNode())){ if(n.nodeType===3) trNode(n); else trAttrs(n); }
+}
+let trObs=null;
+function setLang(l){
+  if(LIDX[l]===undefined) return; LANG=l;
+  try{ localStorage.setItem('khata_lang',l); }catch(e){}
+  document.documentElement.lang=(l==='en'?'en':l==='hi'?'hi':'hi-Latn');
+  $$('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===l)));
+  trWalk(document.body);
+  try{ if(started) renderAll(); }catch(e){}
+}
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-lang]'); if(b) setLang(b.dataset.lang); });
+if('MutationObserver' in window){
+  trObs=new MutationObserver(list=>{
+    for(const m of list){
+      if(m.type==='characterData') trNode(m.target);
+      else if(m.type==='attributes') trAttrs(m.target);
+      else m.addedNodes.forEach(trWalk);
+    }
+  });
+  trObs.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:TATTR});
+}
+setLang(LANG);
+
+
+/* ---------- show / hide password ---------- */
+function eyeify(root){
+  $$('input[type=password]',root||document).forEach(inp=>{
+    if(inp.parentNode.classList&&inp.parentNode.classList.contains('pw')) return;
+    const w=document.createElement('span'); w.className='pw';
+    inp.parentNode.insertBefore(w,inp); w.appendChild(inp);
+    const b=document.createElement('button'); b.type='button'; b.className='eye'; b.textContent='Show'; b.setAttribute('aria-label','Show password');
+    b.onclick=()=>{ const show=inp.type==='password'; inp.type=show?'text':'password'; b.textContent=show?'Hide':'Show'; };
+    w.appendChild(b);
+  });
+}
+eyeify();
+
+/* ---------- back button ---------- */
+let exitArmed=0;
+const gateHome=()=>!$('#gate').hidden && $('#gLogin').hidden===false;
+function pushSentinel(){ try{ history.pushState({k:'khata'},'',location.href); }catch(e){} }
+(function(){
+  try{ history.replaceState({k:'base'},'',location.href); }catch(e){}
+  pushSentinel();
+  window.addEventListener('popstate',()=>{
+    if(!$('#modal').hidden){ closeModal(); pushSentinel(); return; }
+    if(!$('#gate').hidden){
+      if(!$('#gLogin').hidden||!$('#gLoading').hidden){ if(Date.now()-exitArmed<2500){ history.back(); return; } exitArmed=Date.now(); toast('Bahar jaane ke liye dobara back dabao'); pushSentinel(); return; }
+      pending=null; showGate('login'); pushSentinel(); return;
+    }
+    const home=ROLE?'sale':'setup';
+    if(curTab!==home){ showTab(home); pushSentinel(); return; }
+    if(Date.now()-exitArmed<2500){ history.back(); return; }
+    exitArmed=Date.now(); toast('Bahar jaane ke liye dobara back dabao'); pushSentinel();
+  });
+})();
+
 /* ---------- sign in, roles, start ---------- */
 let sb=null, recovering=false;
-const gateViews={loading:'gLoading',login:'gLogin',signup:'gSignup',forgot:'gForgot',recover:'gRecover',claim:'gClaim',blocked:'gBlocked'};
+const gateViews={loading:'gLoading',login:'gLogin',signup:'gSignup',forgot:'gForgot',recover:'gRecover',claim:'gClaim',blocked:'gBlocked',otp:'gOtp'};
 function gateMsg(t,ok){ const m=$('#gMsg'); m.textContent=t||''; m.className='gmsg'+(ok?' ok':''); }
 function showGate(view,msg,ok){
   $('#appRoot').hidden=true; $('#gate').hidden=false;
@@ -1536,6 +2396,7 @@ const niceErr=m=>{
   if(/at least 6|weak/i.test(m)) return 'Password kam se kam 6 akshar ka rakho.';
   if(/valid email|invalid format|is invalid/i.test(m)) return 'Sahi email daalo.';
   if(/rate limit|too many/i.test(m)) return 'Thodi der baad dobara try karo.';
+  if(/otp.*(expired|invalid)|token.*(expired|invalid)|expired or is invalid/i.test(m)) return 'Code galat hai ya purana ho gaya. Naya code mangwao.';
   if(/bad_code/.test(m)) return 'Code galat hai ya pehle use ho chuka hai.';
   if(/name_required/.test(m)) return 'Business ka naam daalo.';
   if(/already_member/.test(m)) return 'Ye account pehle se kisi business se juda hai.';
@@ -1550,7 +2411,7 @@ async function enter(){
   if(CTX.member&&(!CTX.member.member_active||!CTX.member.business_active)&&!CTX.is_admin){ showGate('blocked'); return; }
   startApp();
 }
-let started=false;
+
 function startApp(){
   const m=CTX.member&&CTX.member.member_active&&CTX.member.business_active?CTX.member:null;
   ROLE=m?m.role:'';
@@ -1559,9 +2420,10 @@ function startApp(){
   $('#gate').hidden=true; $('#appRoot').hidden=false;
   $('#brandName').textContent=BIZ.name||'Stock Khata'; document.title=(BIZ.name?BIZ.name+' · ':'')+'Stock Khata';
   $('#roleChip').textContent=ROLE==='owner'?'Owner':ROLE==='cashier'?'Cashier':'Admin';
-  $('#navBar').hidden=(ROLE==='cashier');
-  $('#navBar [data-tab=sale]').hidden=!ROLE;
-  $('#navBar .setup-tab').hidden=(ROLE==='cashier');
+  $('#navBar').hidden=false;
+  ['sale','purchase','stock'].forEach(t=>{ $('#navBar [data-tab='+t+']').hidden=!ROLE; });
+  $('#navBar .setup-tab').hidden=!!ROLE;
+  $('#helpBtn').hidden=!ROLE;
   showTab(ROLE?'sale':'setup');
   if(started) return; started=true;
   setSync('','Connecting');
@@ -1569,8 +2431,8 @@ function startApp(){
   if(!m){ clearTimeout(syncTimer); setSync('ok','Admin'); renderSetup(); return; }
   db=makeStore(sb,m.business_id,ROLE);
   const fail=()=>{ clearTimeout(syncTimer); setSync('bad','Sync problem'); };
-  const names=ROLE==='owner'?['products','sales','purchases','adjustments','expenses']:['products','sales'];
-  names.forEach(name=>db.collection(name).onSnapshot(snap=>{ S[name]=snap.docs.map(d=>({id:d.id,...d.data()})); markLive(snap); renderAll(); },fail));
+  const names=ROLE==='owner'?['products','sales','purchases','adjustments','expenses','payments','opening']:['products','sales','purchases','adjustments'];
+  names.forEach(name=>db.collection(name).onSnapshot(snap=>{ S[name]=snap.docs.map(d=>({id:d.id,...d.data()})); markLive(snap); renderAll(); if(name==='products') scheduleCatCheck(); },fail));
   if(ROLE==='owner') db.collection('fin').onSnapshot(snap=>{ S.fin={}; snap.docs.forEach(d=>{ S.fin[d.id]=d.data(); }); renderFin(); },()=>{});
   renderSetup(); renderSaleTotals();
 }
@@ -1585,7 +2447,10 @@ $('#gLogin').addEventListener('submit',async e=>{
   const email=val('liEmail').toLowerCase(), password=$('#liPw').value;
   if(!email||!password){ gateMsg('Email aur password daalo.'); return; }
   const r=await sb.auth.signInWithPassword({email,password});
-  if(r.error){ gateMsg(niceErr(r.error.message)); return; }
+  if(r.error){
+    if(/not confirmed/i.test(r.error.message||'')){ pending={code:'',name:'',email}; try{ await sb.auth.resend({type:'signup',email}); }catch(x){} showOtp(); return; }
+    gateMsg(niceErr(r.error.message)); return;
+  }
   enter();
 });
 $('#gSignup').addEventListener('submit',async e=>{
@@ -1597,11 +2462,37 @@ $('#gSignup').addEventListener('submit',async e=>{
   if(ck.data==='owner'&&!name){ gateMsg('Naye vendor ke liye business ka naam daalo.'); return; }
   const r=await sb.auth.signUp({email,password});
   if(r.error){ gateMsg(niceErr(r.error.message)); return; }
-  if(!r.data.session){ gateMsg('Account ban gaya, par abhi login nahi ho sakta. Supabase mein "Confirm email" band karna hoga (setup steps dekho).'); return; }
+  if(!r.data.session){
+    // email confirmation is ON: a 6-digit code was mailed. Ask for it.
+    if(r.data.user&&Array.isArray(r.data.user.identities)&&!r.data.user.identities.length){ gateMsg(niceErr('already registered')); return; }
+    pending={code,name,email}; showOtp(); return;
+  }
   const c=await sb.rpc('claim_invite',{p_code:code,p_name:name,p_login:email});
   if(c.error){ showGate('claim',niceErr(c.error.message)); return; }
   enter();
 });
+let pending=null;
+function showOtp(){
+  showGate('otp');
+  $('#otpHint').textContent=T('A code has been emailed to '+pending.email+'. Type it here. Check Spam too.','कोड '+pending.email+' पर ईमेल किया गया है। यहाँ लिखें। Spam भी देखें।',pending.email+' par code email kiya gaya hai. Yahan daalo. Spam bhi dekho.');
+  $('#otpCode').value=''; setTimeout(()=>{ try{ $('#otpCode').focus(); }catch(e){} },50);
+}
+$('#gOtp').addEventListener('submit',async e=>{
+  e.preventDefault(); gateMsg('');
+  const token=$('#otpCode').value.replace(/\D/g,''); if(token.length<6){ gateMsg('Email ka poora code daalo.'); return; }
+  const r=await sb.auth.verifyOtp({email:pending.email,token,type:'signup'});
+  if(r.error){ gateMsg(niceErr(r.error.message)); return; }
+  if(pending.code){
+    const c=await sb.rpc('claim_invite',{p_code:pending.code,p_name:pending.name,p_login:pending.email});
+    if(c.error){ showGate('claim',niceErr(c.error.message)); return; }
+  }
+  pending=null; enter();
+});
+$('#otpResend').onclick=async()=>{
+  if(!pending) return; const r=await sb.auth.resend({type:'signup',email:pending.email});
+  if(r.error){ gateMsg(niceErr(r.error.message)); return; } gateMsg('Naya code bhej diya.',true);
+};
+$('#otpBack').onclick=()=>{ pending=null; showGate('login'); };
 $('#gClaim').addEventListener('submit',async e=>{
   e.preventDefault(); gateMsg('');
   const code=val('clCode').toUpperCase(), name=val('clName');
@@ -1627,14 +2518,25 @@ $('#gRecover').addEventListener('submit',async e=>{
 });
 
 /* account menu */
+$('#helpBtn').onclick=openHelp;
 $('#menuBtn').onclick=async()=>{
   const u=await sb.auth.getUser(); const email=(u.data&&u.data.user&&u.data.user.email)||'';
   openModal(`<h3>Account</h3>
     <div><b>${esc(email)}</b><div class="hint">${esc(BIZ.name||'Admin')} · ${esc(ROLE||'admin')}</div></div>
     <label class="f">Naya password<input id="ac_pw" type="password" autocomplete="new-password" placeholder="kam se kam 6 akshar"></label>
     <div class="row"><button type="button" class="btn" id="ac_save">Password badlo</button><button type="button" class="btn line" id="ac_out">Logout</button></div>
+    <div class="f"><span class="hint">Theme</span><div class="skins" id="skinSw"><button type="button" data-skin="classic"><i style="background:linear-gradient(90deg,#1550D6,#E6EEFD)"></i>Classic</button><button type="button" data-skin="ember"><i style="background:linear-gradient(90deg,#26282C,#E8590C)"></i>Ember</button><button type="button" data-skin="emerald"><i style="background:linear-gradient(90deg,#0B6B4A,#F5EFDF)"></i>Emerald</button></div></div>
+    <div class="f"><span class="hint">Language / भाषा</span><div class="langsw"><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button><button type="button" data-lang="en" aria-pressed="false">English</button><button type="button" data-lang="hl" aria-pressed="false">Hinglish</button></div></div>
+    ${ROLE==='cashier'?'':'<button type="button" class="btn line" id="ac_setup">Settings (business, cashier)</button>'}
     <button type="button" class="btn line" id="ac_close">Band karo</button>`);
-  $('#ac_close').onclick=closeModal; $('#ac_out').onclick=logout;
+  const curSkin=document.documentElement.dataset.skin||'classic';
+  $$('#skinSw [data-skin]').forEach(b=>{ b.setAttribute('aria-pressed',String(b.dataset.skin===curSkin)); b.onclick=()=>{
+    if(b.dataset.skin==='classic') delete document.documentElement.dataset.skin; else document.documentElement.dataset.skin=b.dataset.skin;
+    try{ localStorage.setItem('khata_skin',b.dataset.skin); }catch(e){}
+    $$('#skinSw [data-skin]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  }; });
+  if($('#ac_setup')) $('#ac_setup').onclick=()=>{ closeModal(); showTab('setup'); };
+  $('#ac_close').onclick=closeModal; $('#ac_out').onclick=logout; $$('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===LANG)));
   $('#ac_save').onclick=async()=>{
     const pw=$('#ac_pw').value; if(pw.length<6){ toast('Password kam se kam 6 akshar ka rakho'); return; }
     const r=await sb.auth.updateUser({password:pw}); if(r.error){ toast(niceErr(r.error.message)); return; }
@@ -1685,6 +2587,7 @@ async function loadAdmin(){
   if(!b.error) $('#admBiz').innerHTML=(b.data||[]).length?b.data.map(x=>`<div class="bill"><div><b>${esc(x.name)}</b> <span class="chip ${x.active?'ok':'late'}">${x.active?'Chalu':'Band'}</span>
     <div class="hint">${esc(x.owner_login||'')} · cashier: ${x.staff}</div></div>
     <button type="button" class="btn sm line" data-biz="${esc(x.id)}" data-on="${x.active?'0':'1'}">${x.active?'Band karo':'Chalu karo'}</button></div>`).join(''):'<div class="empty">Abhi koi vendor nahi.</div>';
+  loadCatReports();
   if(!i.error) $('#admInvites').innerHTML=(i.data||[]).length?i.data.map(x=>`<div class="bill"><div><b class="code">${esc(x.code)}</b><div class="hint">${esc(x.label||'')}</div></div></div>`).join(''):'<div class="empty">Koi pending code nahi.</div>';
 }
 $('#admBiz').addEventListener('click',async e=>{
@@ -1697,10 +2600,89 @@ $('#admInvite').onclick=async()=>{
   codeBox($('#admCode'),r.data,'Aapka Stock Khata account taiyar hai.'); $('#admLabel').value=''; loadAdmin();
 };
 
+/* ---------- update check ---------- */
+async function checkVersion(){
+  try{
+    const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
+    const j=await r.json(); if(j&&j.v&&j.v!==APP_V) $('#updBanner').hidden=false;
+  }catch(e){}
+}
+$('#updBtn').onclick=async()=>{
+  try{ if('caches' in window){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
+  try{ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.update())); }catch(e){}
+  location.reload();
+};
+setInterval(checkVersion,30*60*1000); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkVersion(); });
+setTimeout(checkVersion,4000);
+
+/* ---------- shared catalogue: names fixed by admin ---------- */
+let catDiffs=[], catTimer=0;
+const catSkip=()=>{ try{ return JSON.parse(localStorage.getItem('khata_catskip')||'[]'); }catch(e){ return []; } };
+async function checkCatNames(){
+  if(ROLE!=='owner'||!sb) return;
+  const codes=[...new Set(S.products.map(p=>p.barcode).filter(Boolean))]; if(!codes.length) return;
+  const skip=new Set(catSkip()), diffs=[];
+  try{
+    for(let i=0;i<codes.length;i+=150){
+      const r=await sb.from('catalogue').select('barcode,name,unit').in('barcode',codes.slice(i,i+150)); if(r.error) return;
+      for(const c of r.data||[]){
+        const p=S.products.find(x=>x.barcode===c.barcode);
+        if(p&&c.name&&pkey(p.name)!==pkey(c.name)&&!skip.has(c.barcode+'|'+c.name)) diffs.push({p,name:c.name});
+      }
+    }
+  }catch(e){ return; }
+  catDiffs=diffs; const bn=$('#catBanner');
+  if(diffs.length){ $('#catBannerTxt').textContent=diffs.length+' items ke naam sabke catalogue mein sudhar gaye hain.'; bn.hidden=false; } else bn.hidden=true;
+}
+let lastCat=0, lastCatN=-1;
+function scheduleCatCheck(){ if(Date.now()-lastCat<600000&&S.products.length===lastCatN) return; clearTimeout(catTimer); catTimer=setTimeout(()=>{ lastCat=Date.now(); lastCatN=S.products.length; checkCatNames(); },6000); }
+$('#catBtn').onclick=()=>{
+  openModal(`<h3>Naam sudhar</h3><div class="hint">Ye naam sabke catalogue mein theek kiye gaye hain. Update karne se aapke item ka naam badal jayega. Stock aur bikri par asar nahi padega.</div>
+    <div>${catDiffs.map(d=>`<div class="bill"><div><div class="hint">${esc(d.p.name)}</div><b>${esc(d.name)}</b></div></div>`).join('')}</div>
+    <div class="row"><button type="button" class="btn" id="cn_ok">Sab update karo</button><button type="button" class="btn line" id="cn_no">Mere naam rakho</button></div>`);
+  $('#cn_no').onclick=()=>{ const sk=catSkip(); catDiffs.forEach(d=>sk.push(d.p.barcode+'|'+d.name)); try{ localStorage.setItem('khata_catskip',JSON.stringify(sk.slice(-500))); }catch(e){} closeModal(); $('#catBanner').hidden=true; };
+  $('#cn_ok').onclick=async function(){
+    this.disabled=true;
+    try{ for(const d of catDiffs) await db.doc('products/'+d.p.id).update({name:d.name}); toast('Naam update ho gaye'); closeModal(); $('#catBanner').hidden=true; catDiffs=[]; }
+    catch(e){ toast('Could not update'); this.disabled=false; }
+  };
+};
+
+/* ---------- admin: shared barcode catalogue ---------- */
+const repSug=new Map();
+async function loadCatReports(){
+  const r=await sb.rpc('admin_list_reports'); if(r.error){ $('#admReports').innerHTML='<div class="empty">Report list nahi khuli. update2.sql chalayi?</div>'; return; }
+  const rows=r.data||[]; repSug.clear(); rows.forEach(x=>repSug.set(x.barcode,x.suggested_name));
+  $('#admReports').innerHTML=rows.length?rows.map(x=>`<div class="bill"><div><div class="hint code">${esc(x.barcode)} · ${esc(x.vendor||'')}</div><div>${esc(x.current_name||x.shown_name)} → <b>${esc(x.suggested_name||'?')}</b></div></div>
+    <div style="display:flex;gap:6px"><button type="button" class="btn sm" data-rep-fix="${esc(x.barcode)}">Fix</button><button type="button" class="btn sm line" data-rep-del="${esc(x.id)}">Hatao</button></div></div>`).join(''):'<div class="empty">Koi report nahi.</div>';
+}
+async function catSearch(q){
+  q=String(q||'').trim(); if(!q) return;
+  const r=await sb.rpc('admin_search_catalogue',{p_q:q}); if(r.error){ toast(niceErr(r.error.message)); return; }
+  const rows=r.data||[];
+  $('#admCatRes').innerHTML=rows.length?rows.map(x=>`<div class="bill" data-cat="${esc(x.barcode)}"><div style="flex:1;min-width:0"><div class="hint code">${esc(x.barcode)}</div>
+    <input type="text" data-cn value="${esc(repSug.get(x.barcode)||x.name)}"></div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><select data-cu style="width:auto">${UNITS.map(u=>`<option value="${u}"${u===x.unit?' selected':''}>${u}</option>`).join('')}</select><button type="button" class="btn sm" data-cat-save>Save</button></div></div>`).join(''):'<div class="empty">Kuch nahi mila.</div>';
+}
+$('#admCatGo').onclick=()=>catSearch($('#admCatQ').value);
+$('#admCatQ').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); catSearch($('#admCatQ').value); } });
+$('#admCatRes').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-cat-save]'); if(!b) return; const row=b.closest('[data-cat]');
+  const r=await sb.rpc('admin_set_catalogue',{p_barcode:row.dataset.cat,p_name:$('[data-cn]',row).value,p_unit:$('[data-cu]',row).value});
+  if(r.error){ toast(niceErr(r.error.message)); return; } toast('Catalogue theek ho gaya. Sab vendors ko dikhega.'); loadCatReports();
+});
+$('#admReports').addEventListener('click',async e=>{
+  const f=e.target.closest('[data-rep-fix]'), d=e.target.closest('[data-rep-del]');
+  if(f){ $('#admCatQ').value=f.dataset.repFix; catSearch(f.dataset.repFix); }
+  if(d){ const r=await sb.rpc('admin_resolve_report',{p_id:d.dataset.repDel}); if(r.error){ toast(niceErr(r.error.message)); return; } loadCatReports(); }
+});
+
 /* ---------- start ---------- */
 async function boot(){
   recovering=/type=recovery/.test(location.hash);
   const cfg=window.KHATA_CONFIG||{};
+  if(cfg.url) cfg.url=String(cfg.url).trim().replace(/\/rest\/v1\/?$/,'').replace(/\/+$/,'');
+  if(cfg.key) cfg.key=String(cfg.key).trim();
   if(!cfg.url||!cfg.key||/PASTE/.test(cfg.url+cfg.key)){ showGate('loading','config.js mein Supabase ka URL aur key daalna baaki hai.'); return; }
   if(!window.supabase){ showGate('loading','Internet check karo aur page dobara kholo.'); return; }
   try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
