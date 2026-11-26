@@ -593,13 +593,13 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.1';
+const APP_V='2026-11-26.2';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
 let db = null, STOCK = new Map();
 let BIZ={name:'',address:'',phone:'',gstin:''}, ROLE='', CTX=null;
-let LANG='hl'; try{ const l=localStorage.getItem('khata_lang'); if(l==='en'||l==='hi'||l==='hl') LANG=l; }catch(e){}
+let LANG='en'; try{ const l=localStorage.getItem('khata_lang'); if(l==='en'||l==='hi'||l==='hl') LANG=l; }catch(e){}
 let started=false;
 
 const $ = (s,el)=> (el||document).querySelector(s);
