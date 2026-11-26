@@ -593,7 +593,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.5';
+const APP_V='2026-11-26.6';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -997,6 +997,35 @@ function renderSaleTotals(){
   $('#saleGstV').textContent=money(c.gst);
 }
 saleCart.onChange=renderSaleTotals;
+
+/* ---------- unsaved bill draft: survives a refresh ---------- */
+let DKEY='', lastDraft='';
+const DF={sale:['salPhone','salParty','saleGst','saleGstRate','saleDisc'],pur:['purSupplier','purPhone','purBill','purDate']};
+function draftState(){
+  const f={}; [...DF.sale,...DF.pur].forEach(id=>{ const e=$('#'+id); if(e) f[id]=e.value; });
+  const rs=$('input[name=salepay]:checked'), rp=$('input[name=purpay]:checked');
+  return {sale:saleCart.items,pur:purCart.items,f,sp:rs?rs.value:'paid',pp:rp?rp.value:'unpaid'};
+}
+function draftSave(){
+  if(!DKEY) return;
+  const d=draftState(), has=d.sale.length||d.pur.length||['salParty','salPhone','saleDisc','purSupplier','purPhone','purBill'].some(k=>d.f[k]);
+  const s=has?JSON.stringify(d):''; if(s===lastDraft) return; lastDraft=s;
+  try{ if(s) localStorage.setItem(DKEY,s); else localStorage.removeItem(DKEY); }catch(e){}
+}
+function draftLoad(){
+  let d=null; try{ d=JSON.parse(localStorage.getItem(DKEY)||'null'); }catch(e){}
+  if(!d) return;
+  saleCart.items=Array.isArray(d.sale)?d.sale:[]; purCart.items=Array.isArray(d.pur)?d.pur:[];
+  Object.keys(d.f||{}).forEach(id=>{ const e=$('#'+id); if(e&&d.f[id]!=null) e.value=d.f[id]; });
+  const rs=$('input[name=salepay][value='+(d.sp==='credit'?'credit':'paid')+']'), rp=$('input[name=purpay][value='+(d.pp==='paid'?'paid':'unpaid')+']');
+  if(rs) rs.checked=true; if(rp) rp.checked=true;
+  saleCart.render(); purCart.render(); renderSaleTotals(); lastDraft=JSON.stringify(draftState());
+  if(saleCart.items.length||purCart.items.length) toast('Your unsaved bill was restored');
+}
+['clear'].forEach(k=>{ const a=saleCart[k], b=purCart[k]; saleCart[k]=()=>{ a(); draftSave(); }; purCart[k]=()=>{ b(); draftSave(); }; });
+setInterval(draftSave,800);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') draftSave(); });
+window.addEventListener('pagehide',draftSave);
 ['#saleDisc','#saleGstRate'].forEach(s=>$(s).addEventListener('input',renderSaleTotals));
 $('#saleGst').addEventListener('change',renderSaleTotals);
 
@@ -2214,6 +2243,7 @@ Object.assign(D,{
 });
 Object.assign(D,{
 "Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega.":["Fill the screen with the barcode. Tilted or upside down also works.","बारकोड को स्क्रीन में भरकर पकड़ें। टेढ़ा या उल्टा भी चलेगा।","Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega."],
+"Your unsaved bill was restored":["Your unsaved bill was restored","आपका बिना सेव किया बिल वापस आ गया","Aapka bina save kiya bill wapas aa gaya"],
 "Show password":["Show password","पासवर्ड दिखाएँ","Password dikhao"],"Show":["Show","दिखाएँ","Dikhao"],"Hide":["Hide","छिपाएँ","Chhupao"],
 "Email verify karo":["Verify your email","ईमेल सत्यापित करें","Email verify karo"],"Email ka code":["Code from your email","ईमेल वाला कोड","Email ka code"],
 "Verify karo":["Verify","सत्यापित करें","Verify karo"],"Code dobara bhejo":["Send the code again","कोड दोबारा भेजें","Code dobara bhejo"],"Wapas":["Back","वापस","Wapas"],
@@ -2462,6 +2492,7 @@ function startApp(){
   syncTimer=setTimeout(()=>setSync('bad','Cannot reach data yet'),10000);
   if(!m){ clearTimeout(syncTimer); setSync('ok','Admin'); renderSetup(); return; }
   db=makeStore(sb,m.business_id,ROLE);
+  DKEY='khata_draft_'+m.business_id+'_'+ROLE; draftLoad();
   const fail=()=>{ clearTimeout(syncTimer); setSync('bad','Sync problem'); };
   const names=ROLE==='owner'?['products','sales','purchases','adjustments','expenses','payments','opening']:['products','sales','purchases','adjustments'];
   names.forEach(name=>db.collection(name).onSnapshot(snap=>{ S[name]=snap.docs.map(d=>({id:d.id,...d.data()})); markLive(snap); renderAll(); if(name==='products') scheduleCatCheck(); },fail));
