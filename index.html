@@ -593,7 +593,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.4';
+const APP_V='2026-11-26.5';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -672,7 +672,7 @@ function bindScan(ctx,input,sug,onPickCtx){
   input.addEventListener('keydown',e=>{
     if(e.key!=='Enter') return; e.preventDefault();
     const v=input.value.trim(); if(!v) return;
-    const exact=S.products.find(p=>p.barcode===v);
+    const exact=findByCode(v);
     if(exact){ input.value=''; hide(); pick(ctx,exact); return; }
     const list=findProducts(v);
     if(list.length===1){ input.value=''; hide(); pick(ctx,list[0]); return; }
@@ -708,7 +708,7 @@ document.addEventListener('pointerdown',ensureAudio,{once:true});
 /* ---------- barcode found ---------- */
 async function handleCode(ctx,raw){
   const code=String(raw).trim(); if(!code) return;
-  const p=S.products.find(x=>x.barcode===code);
+  const p=findByCode(code);
   if(p){ beep(true); pick(ctx,p); return; }
   beep(false);
   toast('Naya barcode. Naam dhoondh raha hoon...');
@@ -762,9 +762,27 @@ function stopCam(){
   if(camZx){ try{camZx.reset()}catch(e){} camZx=null; }
   if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; }
 }
+/* barcode matching: UPC-A (12) and EAN-13 (13) of the same item match, leading zeros ignored */
+const bkey=c=>{ c=String(c==null?'':c).trim(); return /^\d+$/.test(c)?c.replace(/^0+/,''):c.toUpperCase(); };
+const findByCode=c=>{ const k=bkey(c); return k?S.products.find(x=>x.barcode&&bkey(x.barcode)===k):undefined; };
+function eanOk(c){
+  if(!/^\d+$/.test(c)||![8,12,13].includes(c.length)) return true;
+  const d=c.split('').map(Number), chk=d.pop(); let s=0;
+  d.reverse().forEach((n,i)=>{ s+=n*(i%2===0?3:1); });
+  return (10-(s%10))%10===chk;
+}
+let camVote={c:'',n:0,t:0};
+function camVoteOk(code){
+  const now=Date.now();
+  if(camVote.c===code&&now-camVote.t<1200) camVote.n++; else camVote={c:code,n:1,t:now};
+  camVote.t=now;
+  return camVote.n>=(findByCode(code)?2:3);
+}
 function onCamCode(ctx,code){
+  code=String(code||'').trim(); if(!code||!eanOk(code)) return;
+  if(!camVoteOk(code)) return;
   const now=Date.now(); if(camSeen[code]&&now-camSeen[code]<2500) return; camSeen[code]=now;
-  const p=S.products.find(x=>x.barcode===code);
+  const p=findByCode(code);
   if(p){
     beep(true);
     if(ctx==='stock'){ stopCam(); closeModal(); openProduct(p); } else pick(ctx,p);
@@ -923,7 +941,7 @@ function openProduct(p,opts){
     const name=$('#pm_name').value.trim(), code=$('#pm_code').value.trim(), mrp=parseFloat($('#pm_mrp').value);
     if(!name){ toast('Enter the item name'); return; }
     if(isNaN(mrp)){ toast('Enter the MRP'); return; }
-    if(code && S.products.some(x=>x.barcode===code && (!edit || x.id!==p.id))){ toast('Another item already has this barcode'); return; }
+    if(code && S.products.some(x=>x.barcode&&bkey(x.barcode)===bkey(code) && (!edit || x.id!==p.id))){ toast('Another item already has this barcode'); return; }
     let id = edit ? p.id : (code.replace(/[^A-Za-z0-9_\-.~:@+]/g,'') || 'p'+Date.now().toString(36));
     if(!edit && S.products.some(x=>x.id===id)) id = 'p'+Date.now().toString(36);
     const doc={name,barcode:code,mrp,unit:$('#pm_unit').value,buyRate:parseFloat(($('#pm_buy')||{}).value)||0,openQty:parseFloat($('#pm_open').value)||0,reorder:parseFloat($('#pm_reorder').value)||0};
