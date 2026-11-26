@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#1550D6">
+<meta name="theme-color" content="#0D0A22">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Stock Khata</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap">
 <script src="config.js"></script>
-<script>try{var k=localStorage.getItem("khata_skin");if(k==="ember"||k==="emerald")document.documentElement.dataset.skin=k;}catch(e){}</script>
+<script>try{var k=localStorage.getItem("khata_skin");if(k==="ember"||k==="emerald"||k==="forest")document.documentElement.dataset.skin=k;}catch(e){}</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js" defer></script>
@@ -18,25 +18,14 @@
 <style>
 /* Layout: phone-first single column, bottom tab bar on phones, top tab bar on wide screens. */
 :root{
-  --bg:#F2F5F8; --surface:#FFFFFF; --ink:#13202B; --muted:#586977; --line:#D9E1E8;
-  --accent:#1550D6; --on-accent:#FFFFFF; --tint:#E6EEFD;
-  --good:#0B7A48; --good-tint:#E1F4EA; --warn:#9A5A00; --warn-tint:#FFF1D6; --bad:#BC2430; --bad-tint:#FCE7E8;
+  --bg:#0D0A22; --bg2:#1A1250; --surface:#17133A; --ink:#EEEBFF; --muted:#A29DCE; --line:#2C2662;
+  --accent:#A78BFA; --on-accent:#1B0F44; --tint:#261E5C;
+  --btn-a:#8B5CF6; --btn-b:#5B33D8; --glow:rgba(124,77,255,.38);
+  --good:#4FD18F; --good-tint:#12301F; --warn:#F0B454; --warn-tint:#3A2C10; --bad:#FF8A92; --bad-tint:#3C1A1E;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(5,2,25,.45); --radius:16px;
   --f-body:'Inter','Noto Sans Devanagari',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --f-head:'Space Grotesk','Inter','Noto Sans Devanagari',system-ui,sans-serif;
   --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#0D141A; --surface:#151E26; --ink:#E7EEF4; --muted:#93A3B1; --line:#27333E;
-    --accent:#7AA7FF; --on-accent:#0A1220; --tint:#1A2A47;
-    --good:#4FD18F; --good-tint:#12301F; --warn:#F0B454; --warn-tint:#3A2C10; --bad:#FF8A92; --bad-tint:#3C1A1E;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#0D141A; --surface:#151E26; --ink:#E7EEF4; --muted:#93A3B1; --line:#27333E;
-  --accent:#7AA7FF; --on-accent:#0A1220; --tint:#1A2A47;
-  --good:#4FD18F; --good-tint:#12301F; --warn:#F0B454; --warn-tint:#3A2C10; --bad:#FF8A92; --bad-tint:#3C1A1E;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -213,9 +202,6 @@ body[data-role="cashier"] .owner-only,body[data-role="none"] .owner-only{display
 .sheet .langsw{align-self:flex-start;margin-top:6px}
 
 /* polish layer */
-:root{--shadow:0 1px 2px rgba(15,30,50,.06),0 6px 18px rgba(15,30,50,.06);--radius:14px}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3)}}
-:root[data-theme="dark"]{--shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.3)}
 body{background-image:linear-gradient(180deg,color-mix(in srgb,var(--accent) 7%,var(--bg)) 0,var(--bg) 220px);background-repeat:no-repeat}
 .top{position:sticky;top:0;z-index:6;padding:12px 0 10px;background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .top .brand{font-size:20px;display:flex;align-items:center;gap:8px}
@@ -242,15 +228,10 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 @media (min-width:820px){.nav{border-radius:14px;box-shadow:var(--shadow)}}
 
 
-/* skins: Classic (default, above), Ember (charcoal + white + orange), Emerald (deep emerald + cream) */
-:root[data-skin="ember"]{--bg:#F3F2F0;--surface:#FFFFFF;--ink:#202124;--muted:#6A6D73;--line:#E2E0DC;--accent:#E8590C;--on-accent:#FFFFFF;--tint:#FDE9DC;--good:#2B8A3E;--good-tint:#E3F3E6;--warn:#B45309;--warn-tint:#FFF0D9}
-:root[data-skin="emerald"]{--bg:#F5EFDF;--surface:#FFFBF0;--ink:#11291F;--muted:#5B6B61;--line:#E1D8BF;--accent:#0B6B4A;--on-accent:#FFFFFF;--tint:#DDEBD9;--good:#0B6B4A;--good-tint:#DDEBD9;--warn:#9A5A00;--warn-tint:#FBEBC8}
-@media (prefers-color-scheme: dark){
-  :root[data-skin="ember"]:not([data-theme="light"]){--bg:#16171A;--surface:#212327;--ink:#F4F3F1;--muted:#A1A4AA;--line:#34373C;--accent:#FF8A3D;--on-accent:#1A0F05;--tint:#3A2617;--good:#5FD38A;--good-tint:#16301F}
-  :root[data-skin="emerald"]:not([data-theme="light"]){--bg:#0B1913;--surface:#12251C;--ink:#F2EBD6;--muted:#9DB0A4;--line:#24392E;--accent:#44C28F;--on-accent:#04150D;--tint:#14332A;--good:#44C28F;--good-tint:#14332A}
-}
-:root[data-skin="ember"][data-theme="dark"]{--bg:#16171A;--surface:#212327;--ink:#F4F3F1;--muted:#A1A4AA;--line:#34373C;--accent:#FF8A3D;--on-accent:#1A0F05;--tint:#3A2617;--good:#5FD38A;--good-tint:#16301F}
-:root[data-skin="emerald"][data-theme="dark"]{--bg:#0B1913;--surface:#12251C;--ink:#F2EBD6;--muted:#9DB0A4;--line:#24392E;--accent:#44C28F;--on-accent:#04150D;--tint:#14332A;--good:#44C28F;--good-tint:#14332A}
+/* skins (all dark): Violet (default), Ember = orange on black, Forest = dark green, Emerald = bright emerald */
+:root[data-skin="ember"]{--bg:#0E0E10;--bg2:#24160E;--surface:#1A1A1E;--ink:#F6F3EF;--muted:#AAA6A1;--line:#303034;--accent:#FF8A3D;--on-accent:#1A0F05;--tint:#3A2617;--btn-a:#FF7A2B;--btn-b:#DC4F08;--glow:rgba(255,122,43,.30)}
+:root[data-skin="forest"]{--bg:#07140E;--bg2:#103021;--surface:#0F2318;--ink:#E8F3EA;--muted:#8FAE9A;--line:#1E3C2B;--accent:#7BD389;--on-accent:#06140B;--tint:#17382A;--btn-a:#3FA06A;--btn-b:#1F6B43;--glow:rgba(63,160,106,.32)}
+:root[data-skin="emerald"]{--bg:#03110E;--bg2:#06302A;--surface:#08201A;--ink:#E6FAF3;--muted:#8CB8AA;--line:#13453B;--accent:#34D399;--on-accent:#02140E;--tint:#0F3A31;--btn-a:#10C48A;--btn-b:#05916A;--glow:rgba(16,196,138,.36)}
 .skins{display:flex;gap:6px}
 .skins button{flex:1 1 0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 6px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:var(--ink)}
 .skins button[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--tint)}
@@ -301,6 +282,52 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .thr b{font-size:14px}.thr span{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .canned{display:flex;flex-direction:column;gap:6px}
 .canned .btn{white-space:normal;text-align:left}
+/* premium dark layer */
+html{background:var(--bg)}
+body{background-color:var(--bg);background-image:radial-gradient(640px 360px at 88% -40px,var(--glow),transparent 70%),radial-gradient(520px 380px at -12% 34%,color-mix(in srgb,var(--glow) 45%,transparent),transparent 70%);background-repeat:no-repeat;background-attachment:fixed}
+.top{background:color-mix(in srgb,var(--bg) 78%,transparent)}
+.top .brand::before{background:linear-gradient(180deg,var(--btn-a),var(--btn-b))}
+.panel,.tile,.sheet,.gatebox,.wallbox,.fcard,.ins{background:linear-gradient(155deg,color-mix(in srgb,var(--surface) 90%,#fff 10%),var(--surface) 55%);border:1px solid color-mix(in srgb,var(--line) 85%,#fff 6%)}
+.panel,.tile,.gatebox,.fcard{box-shadow:var(--shadow)}
+.tile::before{background:linear-gradient(180deg,var(--btn-a),var(--btn-b));opacity:1}
+input:not([type=radio]):not([type=checkbox]),select,textarea{background:color-mix(in srgb,var(--bg) 78%,#000);border:1px solid var(--line)}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);outline:0}
+textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:inherit}
+.btn{background:linear-gradient(135deg,var(--btn-a),var(--btn-b));color:#fff;border:1px solid color-mix(in srgb,var(--btn-a) 55%,#fff 25%);border-radius:12px;letter-spacing:.01em;
+  box-shadow:0 8px 18px -8px color-mix(in srgb,var(--btn-b) 90%,transparent),inset 0 1px 0 rgba(255,255,255,.25);text-shadow:0 1px 0 rgba(0,0,0,.18)}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(1px) scale(.985);box-shadow:0 2px 8px -4px color-mix(in srgb,var(--btn-b) 90%,transparent),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn.line{background:color-mix(in srgb,var(--surface) 70%,transparent);color:var(--ink);border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));box-shadow:none;text-shadow:none}
+.btn.ghost{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);box-shadow:none;text-shadow:none}
+.btn.danger{background:var(--bad-tint);color:var(--bad);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);box-shadow:none;text-shadow:none}
+.btn.rec{background:var(--bad);color:#fff}
+.nav{background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid color-mix(in srgb,var(--line) 80%,#fff 5%);box-shadow:0 -10px 30px rgba(0,0,0,.4);border-radius:22px 22px 0 0}
+.nav button[aria-selected="true"]{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 22%,transparent),color-mix(in srgb,var(--accent) 8%,transparent));color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent)}
+.modal{background:rgba(3,2,14,.7);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sug{box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.toast{background:var(--accent);color:var(--on-accent);font-weight:600}
+.chip.ok{background:var(--good-tint);color:var(--good)}
+.langsw{background:color-mix(in srgb,var(--bg) 70%,#000)}
+.langsw button[aria-pressed="true"]{background:linear-gradient(135deg,var(--btn-a),var(--btn-b));color:#fff}
+.skins button{background:color-mix(in srgb,var(--bg) 70%,#000)}
+@media (min-width:820px){.nav{border-radius:16px}}
+/* login page */
+.gate{flex-direction:column;justify-content:flex-start;gap:20px;padding-block:22px 40px}
+.gate>.gatebox{margin-top:auto}
+.gbrand{display:flex;align-items:center;gap:14px}
+.logotile{width:72px;height:72px;border-radius:20px;background:#fff;display:grid;place-items:center;flex:none;box-shadow:0 10px 26px -8px var(--glow),0 0 0 1px rgba(255,255,255,.12)}
+.logotile img{width:52px;height:auto;display:block}
+.gname{font:700 26px/1.1 var(--f-head);letter-spacing:-.02em}
+.gtag{font-size:13px;color:var(--muted);margin-top:4px;line-height:1.35}
+.gfeat{width:100%;max-width:520px;display:flex;flex-direction:column;gap:12px;margin-bottom:auto}
+.gfeat h3{margin:6px 2px 0;font:700 18px var(--f-head);letter-spacing:-.01em}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fcard{border-radius:16px;padding:13px;display:flex;flex-direction:column;gap:7px;min-width:0}
+.fcard .ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:18px;background:linear-gradient(135deg,var(--btn-a),var(--btn-b));box-shadow:0 6px 14px -6px var(--btn-b)}
+.fcard b{font:700 14px var(--f-head)}
+.fcard span.d{font-size:12px;color:var(--muted);line-height:1.45}
+.gfoot{text-align:center;font-size:12px;color:var(--muted)}
+@media (min-width:520px){.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -316,7 +343,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <div class="gate" id="gate">
   <div class="gatebox">
     <div class="langsw" id="langSw"><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button><button type="button" data-lang="en" aria-pressed="false">English</button><button type="button" data-lang="hl" aria-pressed="false">Hinglish</button></div>
-    <div class="brand">Stock Khata</div>
+    <div class="gbrand"><div class="logotile"><img src="logo.png" alt="" width="52" height="40"></div><div><div class="gname">Stock Khata</div><div class="gtag">Stock, bills and khata for your shop</div></div></div>
     <div id="gLoading" class="hint">Loading...</div>
 
     <form id="gLogin" hidden>
@@ -377,6 +404,20 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
     </div>
 
     <div class="gmsg" id="gMsg" role="status"></div>
+  </div>
+  <div class="gfeat" id="gFeat" hidden>
+    <h3>Everything your shop needs</h3>
+    <div class="fgrid">
+      <div class="fcard"><div class="ic">📦</div><b>Manage Stock</b><span class="d">Scan barcodes, see live stock and get low-stock alerts.</span></div>
+      <div class="fcard"><div class="ic">🧾</div><b>Create Bills</b><span class="d">Fast billing with PDF bills you can send on WhatsApp.</span></div>
+      <div class="fcard"><div class="ic">📒</div><b>Customer and Supplier Ledger</b><span class="d">Track udhaar, payments and who owes whom, with WhatsApp reminders.</span></div>
+      <div class="fcard"><div class="ic">💡</div><b>Business Saathi</b><span class="d">Free, simple advice from your own sales, stock and profit.</span></div>
+      <div class="fcard"><div class="ic">📈</div><b>Reports and Profit</b><span class="d">Daily sales, profit, expenses and Excel downloads.</span></div>
+      <div class="fcard"><div class="ic">👥</div><b>Staff Accounts</b><span class="d">Give your staff their own login with limited access.</span></div>
+      <div class="fcard"><div class="ic">💬</div><b>Customer Support</b><span class="d">Type, speak or send a photo or voice note to our team.</span></div>
+      <div class="fcard"><div class="ic">📱</div><b>Works on any phone</b><span class="d">Install it like an app. Hindi, Hinglish and English.</span></div>
+    </div>
+    <div class="gfoot">Your shop's data stays private to your shop.</div>
   </div>
 </div>
 
@@ -650,7 +691,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.8';
+const APP_V='2026-11-26.9';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -2388,6 +2429,28 @@ Object.assign(D,{
 "Send to support":["Send to support","सपोर्ट को भेजें","Support ko bhejo"],
 "Replies from our team appear here. Photo, video, voice note and file can be up to 25 MB.":["Replies from our team appear here. Photo, video, voice note and file can be up to 25 MB.","हमारी टीम के जवाब यहीं दिखेंगे। फ़ोटो, वीडियो, वॉइस नोट और फ़ाइल 25 MB तक हो सकती है।","Hamari team ke jawab yahin dikhenge. Photo, video, voice note aur file 25 MB tak ho sakti hai."]
 });
+Object.assign(D,{
+"Stock, bills and khata for your shop":["Stock, bills and khata for your shop","आपकी दुकान के लिए स्टॉक, बिल और खाता","Aapki dukaan ke liye stock, bill aur khata"],
+"Everything your shop needs":["Everything your shop needs","आपकी दुकान को जो चाहिए, सब कुछ","Aapki dukaan ko jo chahiye, sab kuch"],
+"Manage Stock":["Manage Stock","स्टॉक संभालें","Stock sambhalo"],
+"Scan barcodes, see live stock and get low-stock alerts.":["Scan barcodes, see live stock and get low-stock alerts.","बारकोड स्कैन करें, लाइव स्टॉक देखें और कम स्टॉक का अलर्ट पाएँ।","Barcode scan karo, live stock dekho aur kam stock ka alert pao."],
+"Create Bills":["Create Bills","बिल बनाएँ","Bill banao"],
+"Fast billing with PDF bills you can send on WhatsApp.":["Fast billing with PDF bills you can send on WhatsApp.","तेज़ बिलिंग, PDF बिल WhatsApp पर भेजें।","Tez billing, PDF bill WhatsApp par bhejo."],
+"Customer and Supplier Ledger":["Customer and Supplier Ledger","ग्राहक और सप्लायर खाता","Customer aur supplier khata"],
+"Track udhaar, payments and who owes whom, with WhatsApp reminders.":["Track udhaar, payments and who owes whom, with WhatsApp reminders.","उधार, भुगतान और किसका कितना बाकी है, WhatsApp रिमाइंडर के साथ।","Udhaar, payment aur kiska kitna baaki hai, WhatsApp reminder ke saath."],
+"Business Saathi":["Business Saathi","बिज़नेस साथी","Business Saathi"],
+"Free, simple advice from your own sales, stock and profit.":["Free, simple advice from your own sales, stock and profit.","आपकी अपनी बिक्री, स्टॉक और मुनाफ़े से मुफ़्त, आसान सलाह।","Aapki apni bikri, stock aur profit se free, aasaan salah."],
+"Reports and Profit":["Reports and Profit","रिपोर्ट और मुनाफ़ा","Report aur profit"],
+"Daily sales, profit, expenses and Excel downloads.":["Daily sales, profit, expenses and Excel downloads.","रोज़ की बिक्री, मुनाफ़ा, ख़र्चे और Excel डाउनलोड।","Roz ki bikri, profit, kharche aur Excel download."],
+"Staff Accounts":["Staff Accounts","स्टाफ अकाउंट","Staff account"],
+"Give your staff their own login with limited access.":["Give your staff their own login with limited access.","अपने स्टाफ को सीमित पहुँच वाला अपना लॉगिन दें।","Apne staff ko limited access wala apna login do."],
+"Customer Support":["Customer Support","कस्टमर सपोर्ट","Customer Support"],
+"Type, speak or send a photo or voice note to our team.":["Type, speak or send a photo or voice note to our team.","हमारी टीम को लिखें, बोलें या फ़ोटो और वॉइस नोट भेजें।","Hamari team ko likho, bolo ya photo aur voice note bhejo."],
+"Works on any phone":["Works on any phone","हर फ़ोन पर चलता है","Har phone par chalta hai"],
+"Install it like an app. Hindi, Hinglish and English.":["Install it like an app. Hindi, Hinglish and English.","ऐप की तरह इंस्टॉल करें। हिन्दी, Hinglish और English।","App ki tarah install karo. Hindi, Hinglish aur English."],
+"Your shop's data stays private to your shop.":["Your shop's data stays private to your shop.","आपकी दुकान का डेटा सिर्फ़ आपकी दुकान का रहता है।","Aapki dukaan ka data sirf aapki dukaan ka rehta hai."],
+"Violet":["Violet","वायलेट","Violet"],"Forest":["Forest","फ़ॉरेस्ट","Forest"]
+});
 const PAT=[
 [/^Sales \((\d+) bills?\)$/,["Sales ($1 bills)","बिक्री ($1 बिल)","Sales ($1 bills)"]],
 [/^Purchases \((\d+) bills?\)$/,["Purchases ($1 bills)","खरीद ($1 बिल)","Kharidi ($1 bills)"]],
@@ -2549,12 +2612,16 @@ function pushSentinel(){ try{ history.pushState({k:'khata'},'',location.href); }
 })();
 
 /* ---------- sign in, roles, start ---------- */
+/* login lasts while the app is open; closing the app logs out (session lives in sessionStorage) */
+const SESS_STORE={getItem:k=>{try{return sessionStorage.getItem(k)}catch(e){return null}},setItem:(k,v)=>{try{sessionStorage.setItem(k,v)}catch(e){}},removeItem:k=>{try{sessionStorage.removeItem(k)}catch(e){}}};
+try{ Object.keys(localStorage).filter(k=>/^sb-.*-auth-token/.test(k)).forEach(k=>localStorage.removeItem(k)); }catch(e){}
 let sb=null, recovering=false;
 const gateViews={loading:'gLoading',login:'gLogin',signup:'gSignup',forgot:'gForgot',recover:'gRecover',claim:'gClaim',blocked:'gBlocked',otp:'gOtp'};
 function gateMsg(t,ok){ const m=$('#gMsg'); m.textContent=t||''; m.className='gmsg'+(ok?' ok':''); }
 function showGate(view,msg,ok){
   $('#appRoot').hidden=true; $('#gate').hidden=false;
   for(const k in gateViews) $('#'+gateViews[k]).hidden=(k!==view);
+  $('#gFeat').hidden=(view!=='login');
   gateMsg(msg||'',ok);
 }
 const niceErr=m=>{
@@ -2696,7 +2763,7 @@ $('#menuBtn').onclick=async()=>{
     <div><b>${esc(email)}</b><div class="hint">${esc(BIZ.name||'Admin')} · ${esc(ROLE==='cashier'?'staff':(ROLE||'admin'))}</div></div>
     <label class="f">Naya password<input id="ac_pw" type="password" autocomplete="new-password" placeholder="kam se kam 6 akshar"></label>
     <div class="row"><button type="button" class="btn" id="ac_save">Password badlo</button><button type="button" class="btn line" id="ac_out">Logout</button></div>
-    <div class="f"><span class="hint">Theme</span><div class="skins" id="skinSw"><button type="button" data-skin="classic"><i style="background:linear-gradient(90deg,#1550D6,#E6EEFD)"></i>Classic</button><button type="button" data-skin="ember"><i style="background:linear-gradient(90deg,#26282C,#E8590C)"></i>Ember</button><button type="button" data-skin="emerald"><i style="background:linear-gradient(90deg,#0B6B4A,#F5EFDF)"></i>Emerald</button></div></div>
+    <div class="f"><span class="hint">Theme</span><div class="skins" id="skinSw"><button type="button" data-skin="classic"><i style="background:linear-gradient(90deg,#0D0A22,#8B5CF6)"></i>Violet</button><button type="button" data-skin="ember"><i style="background:linear-gradient(90deg,#0E0E10,#FF7A2B)"></i>Ember</button><button type="button" data-skin="forest"><i style="background:linear-gradient(90deg,#07140E,#3FA06A)"></i>Forest</button><button type="button" data-skin="emerald"><i style="background:linear-gradient(90deg,#03110E,#10C48A)"></i>Emerald</button></div></div>
     <div class="f"><span class="hint">Language / भाषा</span><div class="langsw"><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button><button type="button" data-lang="en" aria-pressed="false">English</button><button type="button" data-lang="hl" aria-pressed="false">Hinglish</button></div></div>
     ${ROLE==='cashier'?'':'<button type="button" class="btn line" id="ac_setup">Settings (business, staff)</button>'}
     <button type="button" class="btn line" id="ac_close">Band karo</button>`);
@@ -3055,7 +3122,7 @@ async function boot(){
   if(!cfg.url||!cfg.key||/PASTE/.test(cfg.url+cfg.key)){ showGate('loading','config.js mein Supabase ka URL aur key daalna baaki hai.'); return; }
   if(!window.supabase){ showGate('loading','Internet check karo aur page dobara kholo.'); return; }
   try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{}); }catch(e){}
-  sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{storage:SESS_STORE,persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   sb.auth.onAuthStateChange(ev=>{ if(ev==='PASSWORD_RECOVERY'){ recovering=true; showGate('recover'); } });
   let sess=null;
   try{ const r=await sb.auth.getSession(); sess=r.data&&r.data.session; }catch(e){}
