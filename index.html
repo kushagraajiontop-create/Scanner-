@@ -272,14 +272,47 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .ledtbl td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
 .ledtbl td.num,.ledtbl th:nth-child(n+3){text-align:right}
 .btn.dis{opacity:.45;pointer-events:none}
+#updWall{position:fixed;inset:0;z-index:99999;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.wallbox{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:14px;text-align:center}
+.wallbox h2{margin:0;font-family:var(--f-head)}.wallbox p{margin:0;color:var(--muted);line-height:1.5}
 /* show-password eye + otp */
 .pw{position:relative;display:block}
 .pw input{width:100%;padding-right:72px}
 .pw .eye{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--accent);font-size:12px;font-weight:600;padding:8px 10px;cursor:pointer}
 #otpCode{letter-spacing:.35em;font-size:20px;text-align:center;font-family:var(--f-mono,monospace)}
+/* support chat */
+.nav button{position:relative}
+.nav .dot{position:absolute;top:1px;right:14%;background:var(--bad);color:#fff;border-radius:9px;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;padding:0 4px;font-style:normal;text-align:center}
+.supnote{background:var(--tint);color:var(--ink);border-radius:8px;padding:9px 11px;font-size:13px;line-height:1.4}
+.suplist{display:flex;flex-direction:column;gap:8px;max-height:calc(100vh - 430px);min-height:180px;overflow-y:auto;padding:4px 2px}
+.sb{max-width:86%;border-radius:12px;padding:8px 10px;font-size:14px;line-height:1.4;word-break:break-word;min-width:0}
+.sb.me{align-self:flex-end;background:var(--accent);color:var(--on-accent)}
+.sb.them{align-self:flex-start;background:var(--bg);border:1px solid var(--line);color:var(--ink)}
+.sb .sn{font-size:11px;font-weight:700;opacity:.8;margin-bottom:2px}
+.sb .st{font-size:11px;opacity:.7;margin-top:4px}
+.sb img,.sb video{max-width:100%;max-height:240px;border-radius:8px;display:block;margin-top:4px}
+.sb audio{width:100%;max-width:260px;margin-top:4px}
+.sb a{color:inherit;text-decoration:underline}
+.suppend{display:flex;align-items:center;justify-content:space-between;gap:8px;background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+.suptools{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.suptools select{width:auto;padding:7px 8px}
+.btn.rec{background:var(--bad);color:#fff;border-color:var(--bad)}
+.thr{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink)}
+.thr b{font-size:14px}.thr span{font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.canned{display:flex;flex-direction:column;gap:6px}
+.canned .btn{white-space:normal;text-align:left}
 </style>
 </head>
 <body>
+<div id="updWall" hidden>
+  <div class="wallbox">
+    <div class="brand">Stock Khata</div>
+    <h2>Update required</h2>
+    <p>A new version is ready. Please update to continue. The bill you were making is saved and will be here after the update.</p>
+    <button type="button" class="btn" id="updBtn">Update now</button>
+    <div class="hint" id="updTry" hidden>Still the old version? Wait two minutes and tap Update now again.</div>
+  </div>
+</div>
 <div class="gate" id="gate">
   <div class="gatebox">
     <div class="langsw" id="langSw"><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button><button type="button" data-lang="en" aria-pressed="false">English</button><button type="button" data-lang="hl" aria-pressed="false">Hinglish</button></div>
@@ -367,12 +400,13 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
     <button role="tab" data-tab="baaki" aria-selected="false" class="owner-only"><b>Ledger</b><span>Khata</span></button>
     <button role="tab" data-tab="saathi" aria-selected="false" class="owner-only"><b>Saathi</b><span>Salah</span></button>
     <button role="tab" data-tab="today" aria-selected="false" class="owner-only"><b>Reports</b><span>Hisaab</span></button>
+    <button role="tab" data-tab="support" aria-selected="false" class="support-tab"><b>Support</b><span>Madad</span></button>
+    <button role="tab" data-tab="inbox" aria-selected="false" class="inbox-tab" hidden><b>Inbox</b><span>Chats</span></button>
     <button role="tab" data-tab="setup" aria-selected="false" class="setup-tab"><b>Setup</b><span>Settings</span></button>
   </nav>
 
 
   <main>
-    <div class="banner" id="updBanner" hidden><span>Naya version aaya hai. Update karne par app dobara khulegi.</span><button class="btn sm" id="updBtn">Update karo</button></div>
     <div class="banner" id="catBanner" hidden><span id="catBannerTxt"></span><button class="btn sm" id="catBtn">Dekho</button></div>
     <div class="banner" id="demoBanner" hidden>
       <span>Example data is loaded so you can try everything. Remove it before real use.</span>
@@ -538,6 +572,29 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
     <!-- SAATHI -->
     <section class="tab" id="tab-saathi" hidden><div id="saathiBody"></div></section>
 
+    <!-- SUPPORT -->
+    <section class="tab" id="tab-support" hidden>
+      <div class="panel">
+        <h2>Customer Support</h2>
+        <div class="supnote">Messages, photos, voice notes and files in this chat are deleted from the server automatically after 24 hours.</div>
+        <div class="suplist" id="supList"></div>
+        <div id="supPend" class="suppend" hidden></div>
+        <textarea id="supTxt" rows="3" maxlength="2000" placeholder="Write your problem here, or tap Speak"></textarea>
+        <div class="suptools">
+          <button type="button" class="btn sm line" id="supAtt"><span aria-hidden="true">📎</span> Attach</button>
+          <button type="button" class="btn sm line" id="supMic"><span aria-hidden="true">🎤</span> Speak</button>
+          <select id="supSrL" aria-label="Speaking language"><option value="hi-IN">हिन्दी</option><option value="en-IN">English</option></select>
+          <button type="button" class="btn sm line" id="supRec"><span aria-hidden="true">⏺</span> Voice note</button>
+        </div>
+        <button type="button" class="btn" id="supSend">Send to support</button>
+        <input type="file" id="supFile" hidden accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv">
+        <div class="hint">Replies from our team appear here. Photo, video, voice note and file can be up to 25 MB.</div>
+      </div>
+    </section>
+
+    <!-- INBOX (admin) -->
+    <section class="tab" id="tab-inbox" hidden><div class="panel" id="inboxBody"></div></section>
+
     <!-- SETUP -->
     <section class="tab" id="tab-setup" hidden>
       <div class="panel owner-only">
@@ -552,10 +609,10 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
         <button class="btn" id="bizSave">Save</button>
       </div>
       <div class="panel owner-only">
-        <h2>Cashier</h2>
-        <div class="hint">Cashier bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte.</div>
+        <h2>Staff</h2>
+        <div class="hint">Staff bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte.</div>
         <div id="staffList"></div>
-        <button class="btn" id="staffInvite">Cashier ka code banao</button>
+        <button class="btn" id="staffInvite">Staff ka code banao</button>
         <div id="staffCode"></div>
       </div>
       <div class="panel admin-only">
@@ -593,7 +650,7 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.6';
+const APP_V='2026-11-26.8';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -739,8 +796,14 @@ async function decodePhoto(file){
       try{
         const det = new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']});
         const bmp = await createImageBitmap(file);
-        const res = await det.detect(bmp);
+        let res = await det.detect(bmp);
         if(res.length) return res[0].rawValue;
+        const w=bmp.width,h=bmp.height,d=Math.ceil(Math.hypot(w,h)),sc=Math.min(1,2000/d),cv=document.createElement('canvas'),g=cv.getContext('2d');
+        for(const a of [1.5708,3.1416,-1.5708,0.35,-0.35,0.7,-0.7]){
+          cv.width=cv.height=Math.ceil(d*sc); g.setTransform(1,0,0,1,0,0); g.fillStyle='#fff'; g.fillRect(0,0,cv.width,cv.height);
+          g.translate(cv.width/2,cv.height/2); g.rotate(a); g.scale(sc,sc); g.drawImage(bmp,-w/2,-h/2,w,h);
+          res=await det.detect(cv); if(res.length) return res[0].rawValue;
+        }
       }catch(e){}
     }
     if(window.ZXing){
@@ -778,9 +841,9 @@ function camVoteOk(code){
   camVote.t=now;
   return camVote.n>=(findByCode(code)?2:3);
 }
-function onCamCode(ctx,code){
+function onCamCode(ctx,code,force){
   code=String(code||'').trim(); if(!code||!eanOk(code)) return;
-  if(!camVoteOk(code)) return;
+  if(!force&&!camVoteOk(code)) return;
   const now=Date.now(); if(camSeen[code]&&now-camSeen[code]<2500) return; camSeen[code]=now;
   const p=findByCode(code);
   if(p){
@@ -795,7 +858,9 @@ async function openScanner(ctx){
   openModal(`<h3>Barcode scan</h3>
     <video id="camV" playsinline muted style="width:100%;border-radius:8px;background:#000;max-height:46vh;object-fit:cover"></video>
     <div class="hint" id="camMsg">Camera khul raha hai...</div>
-    <div class="row"><button type="button" class="btn line" id="camClose">Band karo</button><button type="button" class="btn line" id="camTorch" hidden>Light</button>
+    <label class="f" id="camZoomRow" hidden>Zoom<input type="range" id="camZoom" min="1" max="4" step="0.1" value="1"></label>
+    <div class="hint">Barcode par tap karo, camera focus karega. Blur ho to phone thoda peeche karo ya Switch camera dabao.</div>
+    <div class="row"><button type="button" class="btn line" id="camClose">Band karo</button><button type="button" class="btn line" id="camTorch" hidden>Light</button><button type="button" class="btn line" id="camSwitch" hidden>Switch camera</button>
       <label class="btn ghost camphoto">Photo se scan<input id="camPhoto" type="file" accept="image/*" capture="environment"></label></div>
     ${ctx==='stock'?'':'<div class="hint">Ek ke baad ek scan karte jao. Ho jaye to Band karo.</div>'}`);
   const msg=t=>{ const m=$('#camMsg'); if(m) m.textContent=t; };
@@ -804,14 +869,17 @@ async function openScanner(ctx){
     const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
     msg('Photo padh rahe hain...');
     const code=await decodePhoto(f);
-    if(code) onCamCode(ctx,code); else msg('Photo se barcode nahi padha. Sirf barcode ko poora bhar ke, seedhi photo lo.');
+    if(code&&!eanOk(code)) msg('Barcode galat padha gaya. Dobara photo lo, barcode ko saaf aur bada rakho.');
+    else if(code) onCamCode(ctx,code,true); else msg('Photo se barcode nahi padha. Sirf barcode ko poora bhar ke, seedhi photo lo.');
   });
   if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ msg('Is browser mein live camera nahi chal raha. Photo se scan karo.'); return; }
   try{
     let det=null;
     if('BarcodeDetector' in window){ try{ det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e','code_128','code_39']}); }catch(e){ det=null; } }
     if(det){
-      const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+      let pref=''; try{ pref=localStorage.getItem('khata_cam')||''; }catch(e){}
+      const vc={width:{ideal:1920},height:{ideal:1080}}; if(pref) vc.deviceId={ideal:pref}; else vc.facingMode={ideal:'environment'};
+      const stream=await navigator.mediaDevices.getUserMedia({video:vc,audio:false});
       const v=$('#camV');
       if(!v){ stream.getTracks().forEach(t=>t.stop()); return; }
       camStream=stream;
@@ -820,6 +888,25 @@ async function openScanner(ctx){
         const caps=tr.getCapabilities?tr.getCapabilities():{};
         if(caps.focusMode&&caps.focusMode.indexOf('continuous')>=0) await tr.applyConstraints({advanced:[{focusMode:'continuous'}]});
         if(caps.torch){ const tb=$('#camTorch'); tb.hidden=false; let on=false; tb.onclick=async()=>{ on=!on; try{ await tr.applyConstraints({advanced:[{torch:on}]}); }catch(e){} }; }
+      }catch(e){}
+      try{
+        const caps2=tr.getCapabilities?tr.getCapabilities():{};
+        if(caps2.zoom&&caps2.zoom.max>caps2.zoom.min){ const zr=$('#camZoom'); zr.min=caps2.zoom.min; zr.max=Math.min(caps2.zoom.max,6); zr.step=caps2.zoom.step||0.1; zr.value=caps2.zoom.min; $('#camZoomRow').hidden=false; zr.oninput=()=>{ tr.applyConstraints({advanced:[{zoom:+zr.value}]}).catch(()=>{}); }; }
+        const refocus=async(ev)=>{
+          if(!(caps2.focusMode&&caps2.focusMode.length)) return;
+          try{
+            const adv={focusMode:caps2.focusMode.indexOf('single-shot')>=0?'single-shot':'continuous'};
+            if(ev&&caps2.pointsOfInterest!==undefined){ const rc=v.getBoundingClientRect(); adv.pointsOfInterest=[{x:Math.min(1,Math.max(0,(ev.clientX-rc.left)/rc.width)),y:Math.min(1,Math.max(0,(ev.clientY-rc.top)/rc.height))}]; }
+            await tr.applyConstraints({advanced:[adv]});
+            setTimeout(()=>{ if(camOn&&caps2.focusMode.indexOf('continuous')>=0) tr.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{}); },1500);
+          }catch(e){}
+        };
+        v.addEventListener('click',refocus);
+        const devs=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+        if(devs.length>1){ const sb2=$('#camSwitch'); sb2.hidden=false; sb2.onclick=()=>{
+          const cur=(tr.getSettings&&tr.getSettings().deviceId)||'', i=devs.findIndex(d=>d.deviceId===cur), nx=devs[(i+1)%devs.length];
+          try{ localStorage.setItem('khata_cam',nx.deviceId); }catch(e){}
+          stopCam(); openScanner(ctx); }; }
       }catch(e){}
       v.srcObject=stream; await v.play(); camOn=true;
       msg('Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega.');
@@ -1853,10 +1940,10 @@ const GUIDES=[
   ['Open Reports, then Financials. Pick the month.','Reports खोलें, फिर Financials। महीना चुनें।','Reports kholo, phir Financials. Mahina chuno.'],
   ['Tap "Make financials". Enter your rent, salary and other expenses, then cash and capital.','"Make financials" दबाएँ। किराया, तनख्वाह आदि खर्चे, फिर कैश और पूँजी डालें।','"Make financials" dabao. Kiraya, salary jaise kharche, phir cash aur capital daalo.'],
   ['Read the statements and download the Excel file for your accountant.','रिपोर्ट देखें और अकाउंटेंट के लिए Excel फ़ाइल डाउनलोड करें।','Report dekho aur accountant ke liye Excel file download karo.']]},
- {id:'cashier',own:1,go:'setup',t:['Add a cashier','कैशियर जोड़ना','Cashier jodna'],s:[
+ {id:'cashier',own:1,go:'setup',t:['Add a staff member','स्टाफ जोड़ना','Staff jodna'],s:[
   ['Open the menu (three dots), then Settings.','मेन्यू (तीन बिंदु) खोलें, फिर Settings।','Menu (teen dot) kholo, phir Settings.'],
-  ['Tap "Cashier ka code banao" and send the code on WhatsApp.','"Cashier ka code banao" दबाएँ और कोड WhatsApp पर भेजें।','"Cashier ka code banao" dabao aur code WhatsApp par bhejo.'],
-  ['The cashier opens the link, creates an account with the code and email. You can stop access anytime.','कैशियर लिंक खोलकर कोड और ईमेल से अकाउंट बनाएगा। आप कभी भी उसे बंद कर सकते हैं।','Cashier link kholkar code aur email se account banayega. Aap kabhi bhi use band kar sakte ho.']]}
+  ['Tap "Staff ka code banao" and send the code on WhatsApp.','"Staff ka code banao" दबाएँ और कोड WhatsApp पर भेजें।','"Staff ka code banao" dabao aur code WhatsApp par bhejo.'],
+  ['The staff member opens the link, creates an account with the code and email. You can stop access anytime.','स्टाफ लिंक खोलकर कोड और ईमेल से अकाउंट बनाएगा। आप कभी भी उसे बंद कर सकते हैं।','Staff link kholkar code aur email se account banayega. Aap kabhi bhi use band kar sakte ho.']]}
 ];
 function guideList(){ return GUIDES.filter(g=>ROLE==='owner'||!g.own); }
 function openGuide(id,back){
@@ -1891,12 +1978,15 @@ function renderAll(){ compute(); renderSaathi(); renderRecent(); renderStock(); 
 /* ---------- tabs ---------- */
 let curTab='sale';
 function showTab(name){
-  if(ROLE==='cashier' && !['sale','purchase','stock'].includes(name)) name='sale';
+  if(ROLE==='cashier' && !['sale','purchase','stock','support'].includes(name)) name='sale';
+  if(name==='inbox' && !(CTX&&CTX.is_admin)) name=ROLE?'sale':'setup';
+  if(name==='support' && !ROLE) name='setup';
   if(ROLE==='owner' && name==='setup') { /* reached from the menu */ }
   curTab=name;
   $$('.nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===name)));
   $$('.tab').forEach(t=>t.hidden = t.id!=='tab-'+name);
   scrollTo(0,0); if(name==='today') setRep(repView); if(name==='setup' && typeof renderSetup==='function') renderSetup(); if(name==='saathi') renderSaathi();
+  if(name==='support' && typeof renderSupport==='function') renderSupport(); if(name==='inbox' && typeof renderInbox==='function') renderInbox();
   if(matchMedia('(pointer:fine)').matches){ const f={sale:'#saleScan',purchase:'#purScan',stock:'#stockScan'}[name]; if(f) $(f).focus(); }
 }
 $$('.nav button').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
@@ -1982,7 +2072,7 @@ const D={
 "Reports":["Reports","रिपोर्ट","Reports"],"Hisaab":["Accounts","हिसाब","Hisaab"],
 "Setup":["Setup","सेटअप","Setup"],"Settings":["Settings","सेटिंग्स","Settings"],
 "Sections":["Sections","भाग","Sections"],
-"Owner":["Owner","मालिक","Owner"],"Cashier":["Cashier","कैशियर","Cashier"],"Admin":["Admin","एडमिन","Admin"],
+"Owner":["Owner","मालिक","Owner"],"Staff":["Staff","स्टाफ","Staff"],"Admin":["Admin","एडमिन","Admin"],
 "Connecting":["Connecting","जुड़ रहा है","Connecting"],"Live":["Live","लाइव","Live"],
 "Cannot reach data yet":["Cannot reach data yet","डेटा तक नहीं पहुँच पा रहे","Data tak nahi pahunch paa rahe"],
 "Sync problem":["Sync problem","सिंक में दिक्कत","Sync mein dikkat"],"Sync not available":["Sync not available","सिंक उपलब्ध नहीं","Sync available nahi hai"],
@@ -2195,8 +2285,8 @@ Object.assign(D,{
 "Address (bill par)":["Address (on the bill)","पता (बिल पर)","Address (bill par)"],
 "Phone":["Phone","फ़ोन","Phone"],"GSTIN (agar hai)":["GSTIN (if you have one)","GSTIN (अगर है)","GSTIN (agar hai)"],
 "Save":["Save","सेव करें","Save"],"Save ho gaya":["Saved","सेव हो गया","Save ho gaya"],
-"Cashier ka code banao":["Create cashier code","कैशियर का कोड बनाएँ","Cashier ka code banao"],
-"Cashier bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte.":["A cashier can make bills, record purchases, add new items and count stock. They cannot see buying rates, stock value, profit or reports.","कैशियर बिल बना सकता है, खरीद लिख सकता है, नया आइटम जोड़ सकता है और स्टॉक गिन सकता है। उसे खरीद दर, स्टॉक की कीमत, मुनाफ़ा और रिपोर्ट नहीं दिखते।","Cashier bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte."],
+"Staff ka code banao":["Create staff code","स्टाफ का कोड बनाएँ","Staff ka code banao"],
+"Staff bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte.":["A staff member can make bills, record purchases, add new items and count stock. They cannot see buying rates, stock value, profit or reports.","स्टाफ बिल बना सकता है, खरीद लिख सकता है, नया आइटम जोड़ सकता है और स्टॉक गिन सकता है। उसे खरीद दर, स्टॉक की कीमत, मुनाफ़ा और रिपोर्ट नहीं दिखते।","Staff bill bana sakta hai, kharidi (purchase) likh sakta hai, naya item jod sakta hai aur stock gin sakta hai. Use kharid rate, stock ki keemat, profit aur reports nahi dikhte."],
 "Naya vendor (sirf aapke liye)":["New vendor (only for you)","नया वेंडर (सिर्फ़ आपके लिए)","Naya vendor (sirf aapke liye)"],
 "Vendor ka naam (apni yaad ke liye)":["Vendor name (for your own memory)","वेंडर का नाम (अपनी याद के लिए)","Vendor ka naam (apni yaad ke liye)"],
 "Vendor ka code banao":["Create vendor code","वेंडर का कोड बनाएँ","Vendor ka code banao"],
@@ -2204,7 +2294,7 @@ Object.assign(D,{
 "Saare vendors":["All vendors","सभी वेंडर","Saare vendors"],
 "Koi pending code nahi.":["No pending code.","कोई बाकी कोड नहीं।","Koi pending code nahi."],
 "Abhi koi vendor nahi.":["No vendor yet.","अभी कोई वेंडर नहीं।","Abhi koi vendor nahi."],
-"Abhi koi cashier nahi hai.":["There is no cashier yet.","अभी कोई कैशियर नहीं है।","Abhi koi cashier nahi hai."],
+"Abhi koi staff nahi hai.":["There are no staff members yet.","अभी कोई स्टाफ नहीं है।","Abhi koi staff nahi hai."],
 "Chalu":["Active","चालू","Chalu"],"Band":["Off","बंद","Band"],"Chalu karo":["Switch on","चालू करें","Chalu karo"],"Band karo":["Close","बंद करें","Band karo"],
 "Code (ek hi baar chalega)":["Code (works only once)","कोड (सिर्फ़ एक बार चलेगा)","Code (ek hi baar chalega)"],
 "Copy":["Copy","कॉपी","Copy"],"WhatsApp pe bhejo":["Send on WhatsApp","WhatsApp पर भेजें","WhatsApp pe bhejo"],
@@ -2244,6 +2334,13 @@ Object.assign(D,{
 Object.assign(D,{
 "Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega.":["Fill the screen with the barcode. Tilted or upside down also works.","बारकोड को स्क्रीन में भरकर पकड़ें। टेढ़ा या उल्टा भी चलेगा।","Barcode ko screen mein bhar ke pakdo. Tedha ya ulta bhi chalega."],
 "Your unsaved bill was restored":["Your unsaved bill was restored","आपका बिना सेव किया बिल वापस आ गया","Aapka bina save kiya bill wapas aa gaya"],
+"Update required":["Update required","अपडेट ज़रूरी है","Update zaroori hai"],
+"A new version is ready. Please update to continue. The bill you were making is saved and will be here after the update.":["A new version is ready. Please update to continue. The bill you were making is saved and will be here after the update.","नया वर्ज़न तैयार है। आगे चलने के लिए अपडेट करें। जो बिल आप बना रहे थे वह सेव है और अपडेट के बाद यहीं मिलेगा।","Naya version taiyar hai. Aage chalne ke liye update karo. Jo bill aap bana rahe the wo save hai aur update ke baad yahin milega."],
+"Update now":["Update now","अभी अपडेट करें","Abhi update karo"],
+"Still the old version? Wait two minutes and tap Update now again.":["Still the old version? Wait two minutes and tap Update now again.","अब भी पुराना वर्ज़न? दो मिनट रुकें और फिर से अभी अपडेट करें दबाएँ।","Ab bhi purana version? Do minute ruko aur phir se Abhi update karo dabao."],
+"Switch camera":["Switch camera","कैमरा बदलें","Camera badlo"],"Zoom":["Zoom","ज़ूम","Zoom"],
+"Barcode par tap karo, camera focus karega. Blur ho to phone thoda peeche karo ya Switch camera dabao.":["Tap on the barcode to focus. If it is blurry, move the phone slightly back or tap Switch camera.","बारकोड पर टैप करें, कैमरा फ़ोकस करेगा। धुंधला हो तो फ़ोन थोड़ा पीछे करें या कैमरा बदलें दबाएँ।","Barcode par tap karo, camera focus karega. Blur ho to phone thoda peeche karo ya Switch camera dabao."],
+"Barcode galat padha gaya. Dobara photo lo, barcode ko saaf aur bada rakho.":["The barcode was read wrongly. Take the photo again, keep the barcode clear and large.","बारकोड ग़लत पढ़ा गया। फिर से फ़ोटो लें, बारकोड को साफ़ और बड़ा रखें।","Barcode galat padha gaya. Dobara photo lo, barcode ko saaf aur bada rakho."],
 "Show password":["Show password","पासवर्ड दिखाएँ","Password dikhao"],"Show":["Show","दिखाएँ","Dikhao"],"Hide":["Hide","छिपाएँ","Chhupao"],
 "Email verify karo":["Verify your email","ईमेल सत्यापित करें","Email verify karo"],"Email ka code":["Code from your email","ईमेल वाला कोड","Email ka code"],
 "Verify karo":["Verify","सत्यापित करें","Verify karo"],"Code dobara bhejo":["Send the code again","कोड दोबारा भेजें","Code dobara bhejo"],"Wapas":["Back","वापस","Wapas"],
@@ -2267,7 +2364,7 @@ Object.assign(D,{
 "Customer ka purana baaki jo app se pehle ka hai.":["Customer's old balance from before the app.","ग्राहक का ऐप से पहले का पुराना बाकी।","Customer ka purana baaki jo app se pehle ka hai."],
 "Supplier ko dena baaki jo app se pehle ka hai.":["Amount you owe a supplier from before the app.","ऐप से पहले का सप्लायर को देना बाकी।","Supplier ko dena baaki jo app se pehle ka hai."],
 "Amount daalo":["Enter the amount","राशि डालें","Amount daalo"],"Naam daalo":["Enter the name","नाम डालें","Naam daalo"],"Saved":["Saved","सेव हो गया","Saved"],
-"Opening balance":["Opening balance","शुरुआती बाकी","Opening balance"],"Purchase":["Purchase","खरीद","Purchase"],"Settings (business, cashier)":["Settings (business, cashier)","सेटिंग्स (बिज़नेस, कैशियर)","Settings (business, cashier)"],"Theme":["Theme","थीम","Theme"],
+"Opening balance":["Opening balance","शुरुआती बाकी","Opening balance"],"Purchase":["Purchase","खरीद","Purchase"],"Settings (business, staff)":["Settings (business, staff)","सेटिंग्स (बिज़नेस, स्टाफ)","Settings (business, staff)"],"Theme":["Theme","थीम","Theme"],
 "Barcode catalogue (sab vendors ke liye)":["Barcode catalogue (for all vendors)","बारकोड कैटलॉग (सभी वेंडर के लिए)","Barcode catalogue (sab vendors ke liye)"],
 "Kisi barcode ka galat naam yahan theek karo. Wo sab vendors ke naye scan par aur naam-sudhar suggestion mein dikhega.":["Fix a wrong name for any barcode here. It shows on every vendor's new scans and in their name-fix suggestion.","किसी बारकोड का ग़लत नाम यहाँ ठीक करें। वह सभी वेंडर के नए स्कैन और नाम-सुधार सुझाव में दिखेगा।","Kisi barcode ka galat naam yahan theek karo. Wo sab vendors ke naye scan par aur naam-sudhar suggestion mein dikhega."],
 "Barcode ya naam":["Barcode or name","बारकोड या नाम","Barcode ya naam"],"Dhoondo":["Search","खोजें","Dhoondo"],"Vendors ki reports":["Vendor reports","वेंडर की रिपोर्टें","Vendors ki reports"],"Koi report nahi.":["No reports.","कोई रिपोर्ट नहीं।","Koi report nahi."],
@@ -2281,6 +2378,15 @@ Object.assign(D,{
 "Ye naam sabke catalogue mein theek kiye gaye hain. Update karne se aapke item ka naam badal jayega. Stock aur bikri par asar nahi padega.":["These names were corrected in the shared catalogue. Updating changes your item's name. Stock and sales are not affected.","ये नाम सबकी कैटलॉग में ठीक किए गए हैं। अपडेट करने से आपके आइटम का नाम बदल जाएगा। स्टॉक और बिक्री पर असर नहीं पड़ेगा।","Ye naam sabke catalogue mein theek kiye gaye hain. Update karne se aapke item ka naam badal jayega. Stock aur bikri par asar nahi padega."],
 "Sab update karo":["Update all","सब अपडेट करें","Sab update karo"],"Mere naam rakho":["Keep my names","मेरे नाम रखें","Mere naam rakho"],"Naam update ho gaye":["Names updated","नाम अपडेट हो गए","Naam update ho gaye"],
 "Is barcode ka naam galat hai?":["Is this barcode's name wrong?","इस बारकोड का नाम ग़लत है?","Is barcode ka naam galat hai?"]
+});
+Object.assign(D,{
+"Support":["Support","सहायता","Support"],"Madad":["Help","मदद","Madad"],"Inbox":["Inbox","इनबॉक्स","Inbox"],"Chats":["Chats","चैट","Chats"],
+"Customer Support":["Customer Support","कस्टमर सपोर्ट","Customer Support"],
+"Messages, photos, voice notes and files in this chat are deleted from the server automatically after 24 hours.":["Messages, photos, voice notes and files in this chat are deleted from the server automatically after 24 hours.","इस चैट के मैसेज, फ़ोटो, वॉइस नोट और फ़ाइलें 24 घंटे बाद सर्वर से अपने-आप हट जाती हैं।","Is chat ke message, photo, voice note aur files 24 ghante baad server se apne-aap hat jati hain."],
+"Write your problem here, or tap Speak":["Write your problem here, or tap Speak","अपनी समस्या यहाँ लिखें, या 'बोलें' दबाएँ","Apni problem yahan likho, ya 'Bolo' dabao"],
+"Attach":["Attach","जोड़ें","Attach"],"Speak":["Speak","बोलें","Bolo"],"Voice note":["Voice note","वॉइस नोट","Voice note"],"Speaking language":["Speaking language","बोलने की भाषा","Bolne ki bhasha"],
+"Send to support":["Send to support","सपोर्ट को भेजें","Support ko bhejo"],
+"Replies from our team appear here. Photo, video, voice note and file can be up to 25 MB.":["Replies from our team appear here. Photo, video, voice note and file can be up to 25 MB.","हमारी टीम के जवाब यहीं दिखेंगे। फ़ोटो, वीडियो, वॉइस नोट और फ़ाइल 25 MB तक हो सकती है।","Hamari team ke jawab yahin dikhenge. Photo, video, voice note aur file 25 MB tak ho sakti hai."]
 });
 const PAT=[
 [/^Sales \((\d+) bills?\)$/,["Sales ($1 bills)","बिक्री ($1 बिल)","Sales ($1 bills)"]],
@@ -2309,9 +2415,9 @@ const PAT=[
 [/^Late bills \(over (\d+) days\)$/,["Late bills (over $1 days)","देर वाले बिल ($1 दिन से ऊपर)","Late bills ($1 din se upar)"]],
 [/^(.+) · (\d+) items?$/,["$1 · $2 items","$1 · $2 आइटम","$1 · $2 items"]],
 [/^Bill (.+) · (\d+) items?$/,["Bill $1 · $2 items","बिल $1 · $2 आइटम","Bill $1 · $2 items"]],
-[/^Cashier: (\d+)$/,["Cashier: $1","कैशियर: $1","Cashier: $1"]],
-[/^cashier: (\d+)$/,["cashier: $1","कैशियर: $1","cashier: $1"]],
-[/^Cashier · (.+)$/,["Cashier · $1","कैशियर · $1","Cashier · $1"]],
+[/^Staff: (\d+)$/,["Staff: $1","स्टाफ: $1","Staff: $1"]],
+[/^staff: (\d+)$/,["staff: $1","स्टाफ: $1","staff: $1"]],
+[/^Staff · (.+)$/,["Staff · $1","स्टाफ · $1","Staff · $1"]],
 [/^Sales for the 7 days ending (.+), total (.+)$/,["Sales for the 7 days ending $1, total $2","$1 को ख़त्म 7 दिनों की बिक्री, कुल $2","$1 par khatam 7 din ki sales, total $2"]],
 ]; 
 
@@ -2335,9 +2441,9 @@ PAT.unshift(
 [/^The balance sheet does not tally\. Assets are (.+) more than capital and liabilities\. Check the capital, cash and bank, assets and loans you entered, then tap Edit details\.$/,["The balance sheet does not tally. Assets are $1 more than capital and liabilities. Check the capital, cash and bank, assets and loans you entered, then tap Edit details.","बैलेंस शीट नहीं मिल रही। संपत्तियाँ पूँजी और देनदारियों से $1 ज़्यादा हैं। डाली हुई पूँजी, नकद और बैंक, संपत्ति और लोन जाँचें, फिर Edit details दबाएँ।","Balance sheet tally nahi ho rahi. Assets, capital aur liabilities se $1 zyada hain. Daali hui capital, cash aur bank, assets aur loans check karo, phir Edit details dabao."]],
 [/^The balance sheet does not tally\. Assets are (.+) less than capital and liabilities\. Check the capital, cash and bank, assets and loans you entered, then tap Edit details\.$/,["The balance sheet does not tally. Assets are $1 less than capital and liabilities. Check the capital, cash and bank, assets and loans you entered, then tap Edit details.","बैलेंस शीट नहीं मिल रही। संपत्तियाँ पूँजी और देनदारियों से $1 कम हैं। डाली हुई पूँजी, नकद और बैंक, संपत्ति और लोन जाँचें, फिर Edit details दबाएँ।","Balance sheet tally nahi ho rahi. Assets, capital aur liabilities se $1 kam hain. Daali hui capital, cash aur bank, assets aur loans check karo, phir Edit details dabao."]],
 [/^(.+) · owner$/,["$1 · owner","$1 · मालिक","$1 · owner"]],
-[/^(.+) · cashier$/,["$1 · cashier","$1 · कैशियर","$1 · cashier"]],
+[/^(.+) · staff$/,["$1 · staff","$1 · स्टाफ","$1 · staff"]],
 [/^(.+) · admin$/,["$1 · admin","$1 · एडमिन","$1 · admin"]],
-[/^(.+) · cashier: (\d+)$/,["$1 · cashier: $2","$1 · कैशियर: $2","$1 · cashier: $2"]]
+[/^(.+) · staff: (\d+)$/,["$1 · staff: $2","$1 · स्टाफ: $2","$1 · staff: $2"]]
 );
 
 PAT.unshift(
@@ -2357,7 +2463,7 @@ function trStr(k){
 }
 const TREC=new WeakMap();
 function trNode(n){
-  const p=n.parentNode; if(!p||/^(SCRIPT|STYLE|TEXTAREA|PRE)$/.test(p.nodeName)) return;
+  const p=n.parentNode; if(!p||/^(SCRIPT|STYLE|TEXTAREA|PRE)$/.test(p.nodeName)||(p.closest&&p.closest('.nt'))) return;
   const cur=n.nodeValue, rec=TREC.get(n);
   const orig=(rec&&cur===rec.t)?rec.o:cur;
   const m=orig.match(/^(\s*)([\s\S]*?)(\s*)$/); if(!m[2]) return;
@@ -2481,12 +2587,14 @@ function startApp(){
   document.body.dataset.role=ROLE||'none'; document.body.dataset.admin=CTX.is_admin?'1':'0';
   $('#gate').hidden=true; $('#appRoot').hidden=false;
   $('#brandName').textContent=BIZ.name||'Stock Khata'; document.title=(BIZ.name?BIZ.name+' · ':'')+'Stock Khata';
-  $('#roleChip').textContent=ROLE==='owner'?'Owner':ROLE==='cashier'?'Cashier':'Admin';
+  $('#roleChip').textContent=ROLE==='owner'?'Owner':ROLE==='cashier'?'Staff':'Admin';
   $('#navBar').hidden=false;
   ['sale','purchase','stock'].forEach(t=>{ $('#navBar [data-tab='+t+']').hidden=!ROLE; });
   $('#navBar .setup-tab').hidden=!!ROLE;
+  $('#navBar .support-tab').hidden=!ROLE; $('#navBar .inbox-tab').hidden=!(CTX&&CTX.is_admin);
   $('#helpBtn').hidden=!ROLE;
   showTab(ROLE?'sale':'setup');
+  supInit();
   if(started) return; started=true;
   setSync('','Connecting');
   syncTimer=setTimeout(()=>setSync('bad','Cannot reach data yet'),10000);
@@ -2585,12 +2693,12 @@ $('#helpBtn').onclick=openHelp;
 $('#menuBtn').onclick=async()=>{
   const u=await sb.auth.getUser(); const email=(u.data&&u.data.user&&u.data.user.email)||'';
   openModal(`<h3>Account</h3>
-    <div><b>${esc(email)}</b><div class="hint">${esc(BIZ.name||'Admin')} · ${esc(ROLE||'admin')}</div></div>
+    <div><b>${esc(email)}</b><div class="hint">${esc(BIZ.name||'Admin')} · ${esc(ROLE==='cashier'?'staff':(ROLE||'admin'))}</div></div>
     <label class="f">Naya password<input id="ac_pw" type="password" autocomplete="new-password" placeholder="kam se kam 6 akshar"></label>
     <div class="row"><button type="button" class="btn" id="ac_save">Password badlo</button><button type="button" class="btn line" id="ac_out">Logout</button></div>
     <div class="f"><span class="hint">Theme</span><div class="skins" id="skinSw"><button type="button" data-skin="classic"><i style="background:linear-gradient(90deg,#1550D6,#E6EEFD)"></i>Classic</button><button type="button" data-skin="ember"><i style="background:linear-gradient(90deg,#26282C,#E8590C)"></i>Ember</button><button type="button" data-skin="emerald"><i style="background:linear-gradient(90deg,#0B6B4A,#F5EFDF)"></i>Emerald</button></div></div>
     <div class="f"><span class="hint">Language / भाषा</span><div class="langsw"><button type="button" data-lang="hi" aria-pressed="false">हिन्दी</button><button type="button" data-lang="en" aria-pressed="false">English</button><button type="button" data-lang="hl" aria-pressed="false">Hinglish</button></div></div>
-    ${ROLE==='cashier'?'':'<button type="button" class="btn line" id="ac_setup">Settings (business, cashier)</button>'}
+    ${ROLE==='cashier'?'':'<button type="button" class="btn line" id="ac_setup">Settings (business, staff)</button>'}
     <button type="button" class="btn line" id="ac_close">Band karo</button>`);
   const curSkin=document.documentElement.dataset.skin||'classic';
   $$('#skinSw [data-skin]').forEach(b=>{ b.setAttribute('aria-pressed',String(b.dataset.skin===curSkin)); b.onclick=()=>{
@@ -2633,8 +2741,8 @@ $('#bizSave').onclick=async()=>{
 async function loadStaff(){
   const r=await sb.rpc('list_staff'); if(r.error) return;
   const rows=(r.data||[]).filter(x=>x.role==='cashier');
-  $('#staffList').innerHTML=rows.length?rows.map(x=>`<div class="bill"><div><b>${esc(x.login_id||'Cashier')}</b><div class="hint">${x.active?'Chalu':'Band'}</div></div>
-    <button type="button" class="btn sm line" data-staff="${esc(x.user_id)}" data-on="${x.active?'0':'1'}">${x.active?'Band karo':'Chalu karo'}</button></div>`).join(''):'<div class="empty">Abhi koi cashier nahi hai.</div>';
+  $('#staffList').innerHTML=rows.length?rows.map(x=>`<div class="bill"><div><b>${esc(x.login_id||'Staff')}</b><div class="hint">${x.active?'Chalu':'Band'}</div></div>
+    <button type="button" class="btn sm line" data-staff="${esc(x.user_id)}" data-on="${x.active?'0':'1'}">${x.active?'Band karo':'Chalu karo'}</button></div>`).join(''):'<div class="empty">Abhi koi staff nahi hai.</div>';
 }
 $('#staffList').addEventListener('click',async e=>{
   const b=e.target.closest('[data-staff]'); if(!b) return;
@@ -2643,12 +2751,12 @@ $('#staffList').addEventListener('click',async e=>{
 });
 $('#staffInvite').onclick=async()=>{
   const r=await sb.rpc('create_staff_invite'); if(r.error){ toast(niceErr(r.error.message)); return; }
-  codeBox($('#staffCode'),r.data,`${BIZ.name} mein cashier ke roop mein judne ke liye.`);
+  codeBox($('#staffCode'),r.data,`${BIZ.name} mein staff ke roop mein judne ke liye.`);
 };
 async function loadAdmin(){
   const [b,i]=await Promise.all([sb.rpc('admin_list_businesses'),sb.rpc('admin_list_invites')]);
   if(!b.error) $('#admBiz').innerHTML=(b.data||[]).length?b.data.map(x=>`<div class="bill"><div><b>${esc(x.name)}</b> <span class="chip ${x.active?'ok':'late'}">${x.active?'Chalu':'Band'}</span>
-    <div class="hint">${esc(x.owner_login||'')} · cashier: ${x.staff}</div></div>
+    <div class="hint">${esc(x.owner_login||'')} · staff: ${x.staff}</div></div>
     <button type="button" class="btn sm line" data-biz="${esc(x.id)}" data-on="${x.active?'0':'1'}">${x.active?'Band karo':'Chalu karo'}</button></div>`).join(''):'<div class="empty">Abhi koi vendor nahi.</div>';
   loadCatReports();
   if(!i.error) $('#admInvites').innerHTML=(i.data||[]).length?i.data.map(x=>`<div class="bill"><div><b class="code">${esc(x.code)}</b><div class="hint">${esc(x.label||'')}</div></div></div>`).join(''):'<div class="empty">Koi pending code nahi.</div>';
@@ -2663,20 +2771,218 @@ $('#admInvite').onclick=async()=>{
   codeBox($('#admCode'),r.data,'Aapka Stock Khata account taiyar hai.'); $('#admLabel').value=''; loadAdmin();
 };
 
+/* ---------- customer support chat ---------- */
+const SUP_MAX=25*1024*1024;
+const SUP_CANNED=[
+  'Your problem will be solved within 5-6 hours.\nआपकी समस्या 5-6 घंटे में ठीक कर दी जाएगी।',
+  'Your problem is fixed. Please let us know if it is still not fixed.\nआपकी समस्या ठीक कर दी गई है। अगर अभी भी ठीक नहीं हुई तो हमें बताएँ।',
+  'Please send a photo or a short video of the problem.\nकृपया समस्या की फ़ोटो या छोटा वीडियो भेजें।',
+  'Please close the app, open it again and try once more.\nकृपया ऐप बंद करके दोबारा खोलें और फिर कोशिश करें।',
+  'Thank you. We are looking into it.\nधन्यवाद। हम इसे देख रहे हैं।'
+];
+let supPend=null, supSR=null, supRecr=null, supRecT=null, supTimer=null, supInited=false, supBusy=false;
+const supUrlC=new Map();
+async function supUid(){ const s=await sb.auth.getSession(); return s.data&&s.data.session?s.data.session.user.id:''; }
+async function supCleanup(){ try{ const r=await sb.rpc('support_purge'); const p=(r.data||[]).filter(Boolean); if(p.length) await sb.storage.from('support').remove(p); }catch(e){} }
+function supHrsLeft(ts){ return Math.max(1,Math.ceil((new Date(ts).getTime()+864e5-Date.now())/36e5)); }
+async function supSign(path){
+  const c=supUrlC.get(path); if(c&&c.t>Date.now()) return c.u;
+  try{ const r=await sb.storage.from('support').createSignedUrl(path,3600); if(r.error||!r.data) return ''; supUrlC.set(path,{u:r.data.signedUrl,t:Date.now()+3000e3}); return r.data.signedUrl; }catch(e){ return ''; }
+}
+async function supHydrate(root){
+  for(const el of $$('[data-att]',root)){
+    const p=el.dataset.att, ty=el.dataset.ty||'', nm=el.dataset.nm||'';
+    const u=await supSign(p);
+    if(!u){ el.textContent=T('File is no longer available','फ़ाइल अब उपलब्ध नहीं है','File ab available nahi hai'); continue; }
+    if(/^image\//.test(ty)) el.innerHTML=`<a href="${esc(u)}" target="_blank" rel="noopener"><img src="${esc(u)}" alt=""></a>`;
+    else if(/^video\//.test(ty)) el.innerHTML=`<video controls playsinline preload="metadata" src="${esc(u)}"></video>`;
+    else if(/^audio\//.test(ty)) el.innerHTML=`<audio controls preload="metadata" src="${esc(u)}"></audio>`;
+    else el.innerHTML=`<a href="${esc(u)}" target="_blank" rel="noopener">${esc(nm||'File')}</a>`;
+  }
+}
+function supBubbles(list,adminView){
+  return list.map(m=>{
+    const mine=adminView?m.from_admin:!m.from_admin;
+    const who=adminView?(m.from_admin?'Support':m.sender):(m.from_admin?'Support':'');
+    const tm=new Date(m.created_at).toLocaleTimeString(LOC(),{hour:'numeric',minute:'2-digit'});
+    const left=T('deletes in '+supHrsLeft(m.created_at)+' h',''+supHrsLeft(m.created_at)+' घंटे में हट जाएगा',''+supHrsLeft(m.created_at)+' ghante mein hat jayega');
+    return `<div class="sb ${mine?'me':'them'}">${who?`<div class="sn nt">${esc(who)}</div>`:''}`
+      +(m.body?`<div class="nt" style="white-space:pre-wrap">${esc(m.body)}</div>`:'')
+      +(m.att_path?`<div data-att="${esc(m.att_path)}" data-ty="${esc(m.att_type)}" data-nm="${esc(m.att_name)}" class="nt">…</div>`:'')
+      +`<div class="st">${tm} · ${left}</div></div>`;
+  }).join('');
+}
+function supPaint(box,list,adminView,emptyMsg){
+  const sig=LANG+'|'+list.map(m=>m.id).join(',');
+  if(box.dataset.sig===sig) return; box.dataset.sig=sig;
+  box.innerHTML=list.length?supBubbles(list,adminView):`<div class="empty">${emptyMsg}</div>`;
+  supHydrate(box); box.scrollTop=box.scrollHeight;
+}
+async function supLoad(){
+  const r=await sb.rpc('support_list'); if(r.error) return null;
+  const list=r.data||[];
+  try{ const last=list.filter(m=>m.from_admin).map(m=>m.created_at).sort().pop(); if(curTab==='support'&&last) localStorage.setItem('khata_supseen',last); }catch(e){}
+  return list;
+}
+async function renderSupport(){
+  if(!ROLE) return;
+  supCleanup();
+  const list=await supLoad(); const box=$('#supList'); if(!box||list===null) return;
+  supPaint(box,list,false,T('No messages yet. Write your problem below and send it.','अभी कोई मैसेज नहीं है। नीचे अपनी समस्या लिखकर भेजें।','Abhi koi message nahi hai. Neeche apni problem likhkar bhejo.'));
+  supBadge();
+}
+function supSetPend(f){
+  supPend=f; const el=$('#supPend');
+  if(!f){ el.hidden=true; el.innerHTML=''; return; }
+  el.hidden=false;
+  el.innerHTML=`<span class="nt">${esc(f.name)} · ${(f.size/1048576).toFixed(1)} MB</span><button type="button" class="btn sm line" id="supPendX">${T('Remove','हटाएँ','Hatao')}</button>`;
+  $('#supPendX').onclick=()=>supSetPend(null);
+}
+$('#supAtt').onclick=()=>$('#supFile').click();
+$('#supFile').onchange=e=>{
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
+  if(f.size>SUP_MAX){ toast(T('File is too big (max 25 MB)','फ़ाइल बहुत बड़ी है (अधिकतम 25 MB)','File bahut badi hai (max 25 MB)')); return; }
+  supSetPend(f);
+};
+function supBtnLabel(id,icon,en,hi,hl){ $(id).innerHTML=`<span aria-hidden="true">${icon}</span> ${T(en,hi,hl)}`; }
+/* speak -> text (browser dictation) */
+const SR_API=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR_API){ $('#supMic').hidden=true; $('#supSrL').hidden=true; }
+$('#supMic').onclick=()=>{
+  if(supSR){ try{ supSR.stop(); }catch(e){} return; }
+  const r=new SR_API(); r.lang=$('#supSrL').value; r.interimResults=true; r.continuous=true;
+  const ta=$('#supTxt'); const base=ta.value; let fin='';
+  r.onresult=e=>{ let it=''; fin=''; for(let i=0;i<e.results.length;i++){ const t=e.results[i][0].transcript; if(e.results[i].isFinal) fin+=t; else it+=t; }
+    ta.value=(base+(base&&!/\s$/.test(base)?' ':'')+fin+it).slice(0,2000); };
+  r.onerror=e=>{ if(e.error==='not-allowed'||e.error==='service-not-allowed') toast(T('Microphone is blocked. Allow it in browser settings.','माइक्रोफ़ोन बंद है। ब्राउज़र सेटिंग में अनुमति दें।','Microphone band hai. Browser settings mein allow karo.')); else if(e.error!=='no-speech'&&e.error!=='aborted') toast(T('Could not hear. Please try again or type.','सुन नहीं पाया। दोबारा कोशिश करें या टाइप करें।','Sun nahi paya. Dobara try karo ya type karo.')); };
+  r.onend=()=>{ supSR=null; $('#supMic').classList.remove('rec'); supBtnLabel('#supMic','🎤','Speak','बोलें','Bolo'); };
+  try{ r.start(); supSR=r; $('#supMic').classList.add('rec'); supBtnLabel('#supMic','⏹','Stop','रोकें','Roko'); }catch(e){}
+};
+/* voice note recording */
+if(!(navigator.mediaDevices&&window.MediaRecorder)) $('#supRec').hidden=true;
+function supRecStop(){ try{ if(supRecr&&supRecr.state!=='inactive') supRecr.stop(); }catch(e){} }
+$('#supRec').onclick=async()=>{
+  if(supRecr){ supRecStop(); return; }
+  let stream; try{ stream=await navigator.mediaDevices.getUserMedia({audio:true}); }catch(e){ toast(T('Microphone is blocked. Allow it in browser settings.','माइक्रोफ़ोन बंद है। ब्राउज़र सेटिंग में अनुमति दें।','Microphone band hai. Browser settings mein allow karo.')); return; }
+  const mt=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
+  const rec=mt?new MediaRecorder(stream,{mimeType:mt}):new MediaRecorder(stream); const chunks=[]; const t0=Date.now();
+  rec.ondataavailable=e=>{ if(e.data&&e.data.size) chunks.push(e.data); };
+  rec.onstop=()=>{
+    clearInterval(supRecT); supRecr=null; stream.getTracks().forEach(t=>t.stop());
+    $('#supRec').classList.remove('rec'); supBtnLabel('#supRec','⏺','Voice note','वॉइस नोट','Voice note');
+    const type=(rec.mimeType||mt||'audio/webm').split(';')[0]; const ext=type.includes('mp4')?'m4a':type.includes('ogg')?'ogg':'webm';
+    const blob=new Blob(chunks,{type}); if(blob.size<800){ return; }
+    supSetPend(new File([blob],'voice-note-'+Date.now()+'.'+ext,{type}));
+  };
+  supRecr=rec; rec.start(); $('#supRec').classList.add('rec');
+  const tick=()=>{ const s=Math.floor((Date.now()-t0)/1000); supBtnLabel('#supRec','⏹',T('Stop','रोकें','Roko')+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0'),T('Stop','रोकें','Roko')+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0'),T('Stop','रोकें','Roko')+' '+Math.floor(s/60)+':'+String(s%60).padStart(2,'0')); if(s>=180) supRecStop(); };
+  tick(); supRecT=setInterval(tick,500);
+};
+$('#supSend').onclick=async()=>{
+  if(supBusy) return;
+  if(supSR){ try{ supSR.stop(); }catch(e){} }
+  if(supRecr){ toast(T('Stop the recording first','पहले रिकॉर्डिंग रोकें','Pehle recording roko')); return; }
+  const txt=$('#supTxt').value.trim();
+  if(!txt&&!supPend){ toast(T('Type a message or attach something','मैसेज लिखें या कुछ जोड़ें','Message likho ya kuch attach karo')); return; }
+  supBusy=true; const btn=$('#supSend'); btn.disabled=true;
+  let path='',type='',name='';
+  try{
+    if(supPend){
+      const uid=await supUid(); const safe=supPend.name.replace(/[^\w.\-]+/g,'_').slice(-60)||'file';
+      path=CTX.member.business_id+'/'+uid+'/'+Date.now()+'_'+safe;
+      type=(supPend.type||'application/octet-stream').split(';')[0]; name=supPend.name;
+      const u=await sb.storage.from('support').upload(path,supPend,{contentType:type,upsert:false});
+      if(u.error){ toast(T('Could not upload the file. Please try again.','फ़ाइल अपलोड नहीं हुई। दोबारा कोशिश करें।','File upload nahi hui. Dobara try karo.')); return; }
+    }
+    const r=await sb.rpc('support_send',{p_body:txt,p_path:path,p_type:type,p_name:name});
+    if(r.error){ if(path) try{ await sb.storage.from('support').remove([path]); }catch(e){} toast(niceErr(r.error.message)); return; }
+    $('#supTxt').value=''; supSetPend(null); toast(T('Sent to support','सपोर्ट को भेज दिया','Support ko bhej diya'));
+    $('#supList').dataset.sig=''; await renderSupport();
+  } finally { supBusy=false; btn.disabled=false; }
+};
+/* unread badges + polling */
+function setDot(sel,n){ const b=$(sel); if(!b) return; let d=$('.dot',b); if(!n){ if(d) d.remove(); return; } if(!d){ d=document.createElement('i'); d.className='dot'; b.appendChild(d); } d.textContent=n>9?'9+':String(n); }
+async function supBadge(){
+  try{
+    if(CTX&&CTX.is_admin){
+      const r=await sb.rpc('admin_support_threads'); if(!r.error){ setDot('#navBar .inbox-tab',(r.data||[]).filter(t=>!t.last_from_admin).length); }
+    }
+    if(ROLE){
+      const r=await sb.rpc('support_list'); if(!r.error){
+        let seen=''; try{ seen=localStorage.getItem('khata_supseen')||''; }catch(e){}
+        const n=curTab==='support'?0:(r.data||[]).filter(m=>m.from_admin&&m.created_at>seen).length; setDot('#navBar .support-tab',n);
+      }
+    }
+  }catch(e){}
+}
+function supInit(){
+  if(supInited) return; supInited=true;
+  supCleanup(); supBadge();
+  setInterval(()=>{ if(document.hidden) return;
+    if(curTab==='support') renderSupport(); else if(curTab==='inbox') renderInbox(); else supBadge(); },12000);
+}
+/* admin inbox */
+let admThr=null;
+async function renderInbox(){
+  const box=$('#inboxBody'); if(!box||!(CTX&&CTX.is_admin)) return;
+  supCleanup();
+  if(admThr) return openThread(admThr.b,admThr.u,admThr.s,true);
+  const r=await sb.rpc('admin_support_threads'); if(r.error){ box.innerHTML='<div class="empty">'+esc(niceErr(r.error.message))+'</div>'; return; }
+  const th=r.data||[]; setDot('#navBar .inbox-tab',th.filter(t=>!t.last_from_admin).length);
+  const sig='L'+LANG+th.map(t=>t.business_id+t.user_id+t.last_at+t.n).join('|'); if(box.dataset.sig===sig) return; box.dataset.sig=sig;
+  box.innerHTML=`<h2>${T('Support inbox','सपोर्ट इनबॉक्स','Support inbox')}</h2><div class="hint">${T('Messages older than 24 hours are removed automatically.','24 घंटे से पुराने मैसेज अपने-आप हट जाते हैं।','24 ghante se purane message apne-aap hat jate hain.')}</div>`
+   +(th.length?th.map(t=>`<button type="button" class="thr" data-b="${esc(t.business_id)}" data-u="${esc(t.user_id)}" data-s="${esc(t.sender)}"><b class="nt">${esc(t.sender)} ${t.last_from_admin?'<span class="chip ok">'+T('Replied','जवाब दिया','Jawab diya')+'</span>':'<span class="chip late">'+T('Waiting','इंतज़ार','Intezaar')+'</span>'}</b><span class="nt">${esc(t.last_body)}</span></button>`).join(''):`<div class="empty">${T('No messages in the last 24 hours.','पिछले 24 घंटे में कोई मैसेज नहीं।','Pichle 24 ghante mein koi message nahi.')}</div>`);
+}
+$('#inboxBody').addEventListener('click',e=>{
+  const t=e.target.closest('.thr'); if(t){ admThr={b:t.dataset.b,u:t.dataset.u,s:t.dataset.s}; $('#inboxBody').dataset.sig=''; openThread(admThr.b,admThr.u,admThr.s); return; }
+  if(e.target.closest('#thrBack')){ admThr=null; $('#inboxBody').dataset.sig=''; renderInbox(); return; }
+  const c=e.target.closest('[data-canned]'); if(c){ adminReply(SUP_CANNED[+c.dataset.canned]); return; }
+  if(e.target.closest('#thrSend')){ const v=$('#thrTxt').value.trim(); if(v) adminReply(v); }
+});
+async function adminReply(text){
+  if(!admThr||supBusy) return; supBusy=true;
+  try{
+    const r=await sb.rpc('admin_support_reply',{p_business:admThr.b,p_user:admThr.u,p_body:text});
+    if(r.error){ toast(niceErr(r.error.message)); return; }
+    toast(T('Reply sent','जवाब भेज दिया','Jawab bhej diya')); const ta=$('#thrTxt'); if(ta) ta.value='';
+  } finally { supBusy=false; }
+  openThread(admThr.b,admThr.u,admThr.s,true);
+}
+async function openThread(b,u,s,keep){
+  const box=$('#inboxBody');
+  const r=await sb.rpc('admin_support_thread',{p_business:b,p_user:u}); if(r.error){ toast(niceErr(r.error.message)); return; }
+  if(!$('#thrList')||!keep){
+    box.innerHTML=`<div class="row"><button type="button" class="btn sm line" id="thrBack">${T('Back','वापस','Wapas')}</button><b class="nt">${esc(s)}</b></div>
+      <div class="suplist" id="thrList"></div>
+      <div class="canned">${SUP_CANNED.map((c,i)=>`<button type="button" class="btn sm line nt" data-canned="${i}">${esc(c.split('\n')[0])}</button>`).join('')}</div>
+      <textarea id="thrTxt" rows="2" maxlength="2000" placeholder="${T('Type your own reply','अपना जवाब लिखें','Apna jawab likho')}"></textarea>
+      <button type="button" class="btn" id="thrSend">${T('Send reply','जवाब भेजें','Jawab bhejo')}</button>`;
+  }
+  supPaint($('#thrList'),r.data||[],true,T('No messages.','कोई मैसेज नहीं।','Koi message nahi.'));
+}
+
 /* ---------- update check ---------- */
+let NEWV='';
+function showWall(){
+  try{ draftSave(); }catch(e){}
+  try{ stopCam(); }catch(e){}
+  $('#updWall').hidden=false;
+  try{ if(/[?&]v=/.test(location.search)) $('#updTry').hidden=false; }catch(e){}
+}
 async function checkVersion(){
   try{
     const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'}); if(!r.ok) return;
-    const j=await r.json(); if(j&&j.v&&j.v!==APP_V) $('#updBanner').hidden=false;
+    const j=await r.json(); if(j&&j.v&&j.v!==APP_V){ NEWV=j.v; showWall(); }
   }catch(e){}
 }
 $('#updBtn').onclick=async()=>{
+  try{ draftSave(); }catch(e){}
   try{ if('caches' in window){ const ks=await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); } }catch(e){}
-  try{ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.update())); }catch(e){}
-  location.reload();
+  try{ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister())); }catch(e){}
+  location.replace(location.pathname+'?v='+encodeURIComponent(NEWV||Date.now()));
 };
-setInterval(checkVersion,30*60*1000); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkVersion(); });
-setTimeout(checkVersion,4000);
+setInterval(checkVersion,5*60*1000); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkVersion(); });
+checkVersion();
 
 /* ---------- shared catalogue: names fixed by admin ---------- */
 let catDiffs=[], catTimer=0;
