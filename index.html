@@ -284,11 +284,11 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .canned .btn{white-space:normal;text-align:left}
 /* premium dark layer */
 html{background:var(--bg)}
-body{background-color:var(--bg);background-image:radial-gradient(640px 360px at 88% -40px,var(--glow),transparent 70%),radial-gradient(520px 380px at -12% 34%,color-mix(in srgb,var(--glow) 45%,transparent),transparent 70%);background-repeat:no-repeat;background-attachment:fixed}
-.top{background:color-mix(in srgb,var(--bg) 78%,transparent)}
+body{background-color:var(--bg);background-image:radial-gradient(640px 300px at 88% -40px,var(--glow),transparent 70%);background-repeat:no-repeat}
+.top{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
 .top .brand::before{background:linear-gradient(180deg,var(--btn-a),var(--btn-b))}
-.panel,.tile,.sheet,.gatebox,.wallbox,.fcard,.ins{background:linear-gradient(155deg,color-mix(in srgb,var(--surface) 90%,#fff 10%),var(--surface) 55%);border:1px solid color-mix(in srgb,var(--line) 85%,#fff 6%)}
-.panel,.tile,.gatebox,.fcard{box-shadow:var(--shadow)}
+.panel,.tile,.sheet,.gatebox,.wallbox,.fcard,.ins{background:var(--surface);border:1px solid var(--line)}
+.panel,.tile,.gatebox,.fcard{box-shadow:0 2px 8px rgba(0,0,0,.3)}
 .tile::before{background:linear-gradient(180deg,var(--btn-a),var(--btn-b));opacity:1}
 input:not([type=radio]):not([type=checkbox]),select,textarea{background:color-mix(in srgb,var(--bg) 78%,#000);border:1px solid var(--line)}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);outline:0}
@@ -301,10 +301,10 @@ textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:i
 .btn.ghost{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);box-shadow:none;text-shadow:none}
 .btn.danger{background:var(--bad-tint);color:var(--bad);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent);box-shadow:none;text-shadow:none}
 .btn.rec{background:var(--bad);color:#fff}
-.nav{background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid color-mix(in srgb,var(--line) 80%,#fff 5%);box-shadow:0 -10px 30px rgba(0,0,0,.4);border-radius:22px 22px 0 0}
+.nav{background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -4px 12px rgba(0,0,0,.35);border-radius:22px 22px 0 0}
 .nav button[aria-selected="true"]{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 22%,transparent),color-mix(in srgb,var(--accent) 8%,transparent));color:var(--accent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 30%,transparent)}
-.modal{background:rgba(3,2,14,.7);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-.sug{box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.modal{background:rgba(3,2,14,.72)}
+.sug{box-shadow:0 6px 14px rgba(0,0,0,.45)}
 .toast{background:var(--accent);color:var(--on-accent);font-weight:600}
 .chip.ok{background:var(--good-tint);color:var(--good)}
 .langsw{background:color-mix(in srgb,var(--bg) 70%,#000)}
@@ -691,7 +691,7 @@ textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:i
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.9';
+const APP_V='2026-11-26.11';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -2985,8 +2985,9 @@ async function supBadge(){
 function supInit(){
   if(supInited) return; supInited=true;
   supCleanup(); supBadge();
-  setInterval(()=>{ if(document.hidden) return;
-    if(curTab==='support') renderSupport(); else if(curTab==='inbox') renderInbox(); else supBadge(); },12000);
+  let tick=0;
+  setInterval(()=>{ if(document.hidden) return; tick++;
+    if(curTab==='support') renderSupport(); else if(curTab==='inbox') renderInbox(); else if(tick%4===0) supBadge(); },15000);
 }
 /* admin inbox */
 let admThr=null;
@@ -3048,7 +3049,9 @@ $('#updBtn').onclick=async()=>{
   try{ const rs=await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r=>r.unregister())); }catch(e){}
   location.replace(location.pathname+'?v='+encodeURIComponent(NEWV||Date.now()));
 };
-setInterval(checkVersion,5*60*1000); document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkVersion(); });
+setInterval(()=>{ if(!document.hidden) checkVersion(); },60*1000);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') checkVersion(); });
+window.addEventListener('focus',checkVersion); window.addEventListener('online',checkVersion); window.addEventListener('pageshow',checkVersion);
 checkVersion();
 
 /* ---------- shared catalogue: names fixed by admin ---------- */
