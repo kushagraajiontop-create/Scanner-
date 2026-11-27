@@ -717,7 +717,7 @@ main{padding-bottom:130px}
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-27.6';
+const APP_V='2026-11-27.7';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -3285,7 +3285,10 @@ async function aiRemote(kind,text){
       const dbg=' ['+(code||((r.error.name||'err')+' '+((r.error.context&&r.error.context.status)||'')+' '+(raw||String(r.error.message||'').slice(0,80))))+']';
       return {text:aiR(l,'AI advice is not switched on yet. Business Saathi and data questions still work.','AI सलाह अभी चालू नहीं है। बिज़नेस साथी और डेटा वाले सवाल चल रहे हैं।','AI salah abhi chalu nahi hai. Business Saathi aur data wale sawal chal rahe hain.')+dbg,lang:l};
     }
-    const d=r.data||{}; if(!d.text){ return {text:aiR(l,'Sorry, I could not answer that. Please try again.','माफ़ कीजिए, जवाब नहीं दे पाया। फिर कोशिश करें।','Sorry, jawab nahi de paya. Phir try karo.'),lang:l}; }
+    const d=r.data||{}; if(!d.text&&d.error&&d.error!=='limit'&&d.error!=='busy'){ return {text:aiR(l,'AI could not answer right now.','AI अभी जवाब नहीं दे पाया।','AI abhi jawab nahi de paya.')+' ['+d.error+(d.status?' '+d.status:'')+']',lang:l}; }
+    if(!d.text&&d.error==='limit') return {text:aiR(l,'Your free AI questions for today are used up. They reset tomorrow. Business Saathi still works.','आज के मुफ़्त AI सवाल पूरे हो गए। कल फिर से मिलेंगे।','Aaj ke free AI sawal poore ho gaye. Kal phir milenge. Business Saathi chalta rahega.'),lang:l};
+    if(!d.text&&d.error==='busy') return {text:aiR(l,'AI is busy right now. Please try again in a minute.','AI अभी व्यस्त है। एक मिनट बाद फिर कोशिश करें।','AI abhi busy hai. Ek minute baad phir try karo.'),lang:l};
+    if(!d.text){ return {text:aiR(l,'Sorry, I could not answer that. Please try again.','माफ़ कीजिए, जवाब नहीं दे पाया। फिर कोशिश करें।','Sorry, jawab nahi de paya. Phir try karo.'),lang:l}; }
     AIH.push({role:'user',text},{role:'assistant',text:d.text}); return {text:d.text,lang:aiLang(d.text)==='en'?l:aiLang(d.text),left:d.left,limit:d.limit,ai:true};
   }catch(e){ return {text:aiR(l,'No internet or the AI could not be reached.','इंटरनेट नहीं है या AI तक नहीं पहुँच पाया।','Internet nahi hai ya AI tak nahi pahunch paya.'),lang:l}; }
 }
