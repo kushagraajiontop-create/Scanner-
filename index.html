@@ -717,7 +717,7 @@ main{padding-bottom:130px}
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-27.7';
+const APP_V='2026-11-27.8';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -3304,7 +3304,8 @@ async function aiAnswer(text,kind){
 function aiChips(){ return aiOwner()
   ? [T("Today's sales","आज की बिक्री","Aaj ki bikri"),T('Low stock list','कम स्टॉक की लिस्ट','Kam stock ki list'),T('Who owes me money?','किसका बाकी है?','Kisko udhaar dena hai?'),T('How can I increase profit?','मुनाफ़ा कैसे बढ़ाऊँ?','Profit kaise badhaun?'),T('What is GST?','GST क्या है?','GST kya hai?')]
   : [T('Low stock list','कम स्टॉक की लिस्ट','Kam stock ki list'),T('How do I speak to the assistant?','असिस्टेंट से कैसे बात करूँ?','Assistant se kaise baat karun?')]; }
-function aiBubble(m){ return `<div class="sb ${m.role==='user'?'me':'them'}"><div class="nt" style="white-space:pre-wrap">${esc(m.text)}</div></div>`; }
+function aiBubble(m){ return `<div class="sb ${m.role==='user'?'me':'them'}"><div class="nt" style="white-space:pre-wrap">${aiFmt(m.text)}</div></div>`; }
+function aiFmt(t){ return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^[ \t]*[-*] /gm,'• ').replace(/\*/g,''); }
 function openAiChat(){
   openModal(`<h3>${T('AI Assistant','AI असिस्टेंट','AI Assistant')}</h3>
     <div class="suplist" id="aiList"></div>
