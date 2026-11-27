@@ -717,7 +717,7 @@ main{padding-bottom:130px}
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-27.4';
+const APP_V='2026-11-27.6';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -3270,17 +3270,19 @@ function aiSpeak(text,lang){
   }catch(e){}
 }
 /* ----- remote AI (free Gemini through the Supabase function) ----- */
-const AIH=[];
+const AIH=[]; let AIFN='AI-Chat';
 async function aiRemote(kind,text){
   const msgs=AIH.filter(m=>!m.err).concat([{role:'user',text}]).slice(-8);
   const l=aiLang(text);
   try{
-    const r=await sb.functions.invoke('ai-chat',{body:{kind,messages:msgs.map(m=>({role:m.role,text:m.text})),context:aiContext()}});
+    const body={kind,messages:msgs.map(m=>({role:m.role,text:m.text})),context:aiContext()};
+    let r=await sb.functions.invoke(AIFN,{body});
+    if(r.error&&AIFN==='AI-Chat'){ const r2=await sb.functions.invoke('ai-chat',{body}); if(!r2.error||(r2.error.context&&r2.error.context.status!==404)){ r=r2; AIFN='ai-chat'; } }
     if(r.error){
-      let code=''; try{ const j=await r.error.context.json(); code=j.error||''; }catch(e){}
+      let code='',raw=''; try{ const c=r.error.context; if(c&&c.clone){ raw=(await c.clone().text()).slice(0,120); try{ code=JSON.parse(raw).error||''; }catch(e){} } else if(c&&c.json){ const j=await c.json(); code=j.error||''; } }catch(e){}
       if(code==='limit') return {text:aiR(l,'Your free AI questions for today are used up. They reset tomorrow. Business Saathi still works.','आज के मुफ़्त AI सवाल पूरे हो गए। कल फिर से मिलेंगे। बिज़नेस साथी चलता रहेगा।','Aaj ke free AI sawal poore ho gaye. Kal phir milenge. Business Saathi chalta rahega.'),lang:l};
       if(code==='busy') return {text:aiR(l,'AI is busy right now. Please try again in a minute.','AI अभी व्यस्त है। एक मिनट बाद फिर कोशिश करें।','AI abhi busy hai. Ek minute baad phir try karo.'),lang:l};
-      const dbg=code?' ['+code+(r.error.context&&r.error.context.status?' '+r.error.context.status:'')+']':' [no-reply]';
+      const dbg=' ['+(code||((r.error.name||'err')+' '+((r.error.context&&r.error.context.status)||'')+' '+(raw||String(r.error.message||'').slice(0,80))))+']';
       return {text:aiR(l,'AI advice is not switched on yet. Business Saathi and data questions still work.','AI सलाह अभी चालू नहीं है। बिज़नेस साथी और डेटा वाले सवाल चल रहे हैं।','AI salah abhi chalu nahi hai. Business Saathi aur data wale sawal chal rahe hain.')+dbg,lang:l};
     }
     const d=r.data||{}; if(!d.text){ return {text:aiR(l,'Sorry, I could not answer that. Please try again.','माफ़ कीजिए, जवाब नहीं दे पाया। फिर कोशिश करें।','Sorry, jawab nahi de paya. Phir try karo.'),lang:l}; }
