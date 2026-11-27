@@ -283,6 +283,9 @@ input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{ou
 .canned{display:flex;flex-direction:column;gap:6px}
 .canned .btn{white-space:normal;text-align:left}
 /* premium dark layer */
+.bill{flex-wrap:wrap}
+.bill>div:first-child{flex:1 1 150px;min-width:0}
+.bill>div:last-child{flex:0 1 auto;flex-wrap:wrap;justify-content:flex-end}
 html{background:var(--bg)}
 body{background-color:var(--bg);background-image:radial-gradient(640px 300px at 88% -40px,var(--glow),transparent 70%);background-repeat:no-repeat}
 .top{background:var(--bg);-webkit-backdrop-filter:none;backdrop-filter:none}
@@ -328,6 +331,21 @@ textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:i
 .fcard span.d{font-size:12px;color:var(--muted);line-height:1.45}
 .gfoot{text-align:center;font-size:12px;color:var(--muted)}
 @media (min-width:520px){.fgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* AI buttons */
+.fab{position:fixed;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:60px;height:60px;border-radius:50%;padding:0;border:2px solid var(--accent);background:#fff;z-index:7;box-shadow:0 10px 22px -6px var(--glow),0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent);animation:levi 3.4s ease-in-out infinite;will-change:transform}
+.fab img{width:100%;height:100%;border-radius:50%;display:block}
+.fab-l{left:max(12px,env(safe-area-inset-left,0px))}
+.fab-r{right:max(12px,env(safe-area-inset-right,0px));animation-delay:-1.7s}
+@keyframes levi{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+@media (prefers-reduced-motion:reduce){.fab{animation:none}}
+@media (min-width:820px){.fab{bottom:24px}}
+main{padding-bottom:130px}
+#aiList{max-height:38vh;min-height:140px}
+.aichips{display:flex;flex-wrap:wrap;gap:6px}
+.vbox{display:flex;flex-direction:column;align-items:center;gap:8px;padding:6px 0;text-align:center}
+.micbig{width:84px;height:84px;border-radius:50%;border:0;font-size:34px;color:#fff;background:linear-gradient(135deg,var(--btn-a),var(--btn-b));box-shadow:0 10px 24px -8px var(--glow)}
+.micbig.on{animation:pulse 1.1s ease-in-out infinite;background:linear-gradient(135deg,#ff6b81,#e0334f)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,129,.5)}50%{box-shadow:0 0 0 16px rgba(255,107,129,0)}}
 </style>
 </head>
 <body>
@@ -434,6 +452,8 @@ textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:i
     </div>
   </header>
 
+  <button type="button" class="fab fab-l" id="fabVoice" aria-label="AI voice assistant" hidden><img src="bot-voice.png" alt="" width="60" height="60"></button>
+  <button type="button" class="fab fab-r" id="fabChat" aria-label="AI chat" hidden><img src="bot-chat.png" alt="" width="60" height="60"></button>
   <nav class="nav" id="navBar" role="tablist" aria-label="Sections">
     <button role="tab" data-tab="sale" aria-selected="true"><b>Sale</b><span>Bikri</span></button>
     <button role="tab" data-tab="purchase" aria-selected="false"><b>Buy</b><span>Kharidi</span></button>
@@ -542,7 +562,14 @@ textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:i
           <input id="stockScan" type="text" autocomplete="off" placeholder="Scan to open or add an item" aria-label="Scan barcode">
           <button type="button" class="btn ghost cam" data-cam="stock">Camera</button>
         </div>
+        <div class="subseg" id="stockSeg" role="group" aria-label="Filter items">
+          <button type="button" data-v="all" aria-pressed="true">All items</button>
+          <button type="button" data-v="low" aria-pressed="false">Low stock</button>
+          <button type="button" data-v="out" aria-pressed="false">Out of stock</button>
+        </div>
+        <div class="row" style="align-items:center"><h2 id="stockHead" style="margin:0;flex:1 1 auto"></h2><button type="button" class="btn sm ghost" id="stockXls" style="flex:0 0 auto">Download list</button></div>
         <div id="stockList"></div>
+        <button type="button" class="btn line" id="stockMore" hidden>Show more</button>
       </div>
     </section>
 
@@ -691,7 +718,7 @@ textarea{border-radius:10px;padding:10px 12px;color:var(--ink);width:100%;font:i
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-26.11';
+const APP_V='2026-11-27.2';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
 const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
@@ -707,6 +734,7 @@ const r3 = n => Math.round(n*1000)/1000;
 const r2 = n => Math.round(n*100)/100;
 const money = n => '₹' + (Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const qtyFmt = n => (Math.round(n*100)/100).toLocaleString('en-IN');
+const LIDX={en:0,hi:1,hl:2};
 const T=(en,hi,hl)=>[en,hi,hl][LIDX[LANG]];
 const todayStr = () => new Date().toLocaleDateString('en-CA');
 function daysAgo(ds){
@@ -1319,6 +1347,7 @@ document.addEventListener('click',e=>{
   confirmTap(b,'Sure?',async()=>{ try{ await db.doc(col+'/'+b.dataset.id).delete(); toast('Deleted'); }catch(err){ toast('Could not delete'); } });
 });
 
+let stockFilter='all', stockLimit=60;
 function renderStock(){
   const q=$('#stockFind').value.trim().toLowerCase();
   const rows=[...STOCK.values()].sort((a,b)=>(a.p.name||'').localeCompare(b.p.name||''));
@@ -1327,8 +1356,12 @@ function renderStock(){
   $('#tiles').innerHTML = `<div class="tile"><small>Items</small><b class="num">${rows.length}</b></div>
     <div class="tile owner-only"><small>Stock value (at cost)</small><b class="num">${money(r2(total))}</b></div>
     <div class="tile"><small>Low or out</small><b class="num" style="color:${low?'var(--warn)':'inherit'}">${low}</b></div>`;
-  const view=rows.filter(r=>!q || (r.p.name||'').toLowerCase().includes(q) || (r.p.barcode||'').includes(q));
-  $('#stockList').innerHTML = view.length ? view.map(r=>{
+  let view=rows.filter(r=>!q || (r.p.name||'').toLowerCase().includes(q) || (r.p.barcode||'').includes(q));
+  if(stockFilter==='low') view=view.filter(r=>r.qty>0&&r.qty<=(+r.p.reorder||0)); else if(stockFilter==='out') view=view.filter(r=>r.qty<=0);
+  $('#stockHead').textContent=T('Items','आइटम','Items')+' ('+view.length+')';
+  const shown=view.slice(0,stockLimit);
+  $('#stockMore').hidden=view.length<=stockLimit;
+  $('#stockList').innerHTML = shown.length ? shown.map(r=>{
     const p=r.p, cls = r.qty<=0?'out':(r.qty<=(+p.reorder||0)?'low':'');
     return `<div class="prow"><div><div class="pname">${esc(p.name)}</div>
       <div class="pmeta">${p.barcode?`<span class="code">${esc(p.barcode)}</span> · `:''}MRP ${money(p.mrp)}${ROLE==='cashier'?'':' · Avg cost '+money(r2(r.avg))}</div></div>
@@ -1336,12 +1369,23 @@ function renderStock(){
       <div class="pbtns"><button class="btn sm ghost" data-pc="${esc(p.id)}">Count stock</button><button class="btn sm line owner-only" data-pe="${esc(p.id)}">Edit</button></div></div>`;
   }).join('') : `<div class="empty">${rows.length?'No item matches.':'No items yet. Tap Add item or scan a barcode.'}</div>`;
 }
+$('#stockSeg').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return; stockFilter=b.dataset.v; stockLimit=60;
+  $$('#stockSeg [data-v]').forEach(x=>x.setAttribute('aria-pressed',String(x===b))); renderStock(); });
+$('#stockMore').onclick=()=>{ stockLimit+=60; renderStock(); };
+$('#stockXls').onclick=()=>{
+  if(!window.XLSX){ toast('Excel tool did not load. Check the internet and reload.'); return; }
+  const own=ROLE!=='cashier';
+  const rows=[['Name','Barcode','MRP','Unit','Stock'].concat(own?['Avg cost','Stock value']:[])];
+  [...STOCK.values()].sort((a,b)=>(a.p.name||'').localeCompare(b.p.name||'')).forEach(r=>rows.push([r.p.name||'',String(r.p.barcode||''),+r.p.mrp||0,r.p.unit||'pcs',r2(r.qty)].concat(own?[r2(r.avg),r2(r.value)]:[])));
+  const ws=XLSX.utils.aoa_to_sheet(rows); ws['!cols']=[{wch:34},{wch:18},{wch:9},{wch:8},{wch:9},{wch:10},{wch:12}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Items'); saveBook(wb,'items-'+todayStr()+'.xlsx');
+};
 $('#stockList').addEventListener('click',e=>{
   const c=e.target.closest('[data-pc]'), ed=e.target.closest('[data-pe]');
   if(c){ const p=S.products.find(x=>x.id===c.dataset.pc); if(p) openCount(p); }
   if(ed){ const p=S.products.find(x=>x.id===ed.dataset.pe); if(p) openProduct(p); }
 });
-$('#stockFind').addEventListener('input',renderStock);
+$('#stockFind').addEventListener('input',()=>{ stockLimit=60; renderStock(); });
 $('#addProduct').onclick=()=>openProduct(null);
 
 function waLink(phone,text){ let d=(phone||'').replace(/\D/g,''); if(d.length===10) d='91'+d; return d?('https://wa.me/'+d+'?text='+encodeURIComponent(text)):''; }
@@ -2451,6 +2495,13 @@ Object.assign(D,{
 "Your shop's data stays private to your shop.":["Your shop's data stays private to your shop.","आपकी दुकान का डेटा सिर्फ़ आपकी दुकान का रहता है।","Aapki dukaan ka data sirf aapki dukaan ka rehta hai."],
 "Violet":["Violet","वायलेट","Violet"],"Forest":["Forest","फ़ॉरेस्ट","Forest"]
 });
+Object.assign(D,{
+"All items":["All items","सभी आइटम","Saare items"],"Low stock":["Low stock","कम स्टॉक","Kam stock"],"Out of stock":["Out of stock","स्टॉक ख़त्म","Stock khatam"],
+"Download list":["Download list","लिस्ट डाउनलोड","List download"],"Show more":["Show more","और दिखाएँ","Aur dikhao"],"Filter items":["Filter items","आइटम फ़िल्टर","Items filter"]
+});
+Object.assign(D,{
+"AI voice assistant":["AI voice assistant","AI वॉइस असिस्टेंट","AI voice assistant"],"AI chat":["AI chat","AI चैट","AI chat"]
+});
 const PAT=[
 [/^Sales \((\d+) bills?\)$/,["Sales ($1 bills)","बिक्री ($1 बिल)","Sales ($1 bills)"]],
 [/^Purchases \((\d+) bills?\)$/,["Purchases ($1 bills)","खरीद ($1 बिल)","Kharidi ($1 bills)"]],
@@ -2518,7 +2569,6 @@ PAT.unshift(
 );
 
 /* ---------- language: Hindi / English / Hinglish ---------- */
-const LIDX={en:0,hi:1,hl:2};
 function trStr(k){
   const e=D[k]; if(e) return e[LIDX[LANG]];
   for(const [re,t] of PAT){ const m=k.match(re); if(m) return t[LIDX[LANG]].replace(/\$(\d)/g,(_,n)=>m[+n]===undefined?'':m[+n]); }
@@ -2660,6 +2710,7 @@ function startApp(){
   $('#navBar .setup-tab').hidden=!!ROLE;
   $('#navBar .support-tab').hidden=!ROLE; $('#navBar .inbox-tab').hidden=!(CTX&&CTX.is_admin);
   $('#helpBtn').hidden=!ROLE;
+  $('#fabVoice').hidden=!ROLE; $('#fabChat').hidden=!ROLE;
   showTab(ROLE?'sale':'setup');
   supInit();
   if(started) return; started=true;
@@ -3028,6 +3079,263 @@ async function openThread(b,u,s,keep){
   }
   supPaint($('#thrList'),r.data||[],true,T('No messages.','कोई मैसेज नहीं।','Koi message nahi.'));
 }
+
+/* ---------- AI chat + voice assistant ---------- */
+const AI_DEV=/[ऀ-ॿ]/;
+const AI_HL=/\b(kitna|kitni|kitne|hai|hain|aaj|kal|bikri|baaki|udhaar|dikhao|batao|karo|kholo|mera|meri|mujhe|ka|ki|ko|mein|me|kaise|kya|nahi|abhi|wala|wali|sab|jodo|daalo|maal|khatam|zyada|paisa|paise|hisaab|dukaan|bacha|mahine|hafte|kisko|kisne)\b/i;
+function aiLang(q){ return AI_DEV.test(q)?'hi':(AI_HL.test(q)?'hl':'en'); }
+const aiR=(l,en,hi,hl)=>l==='hi'?hi:(l==='hl'?hl:en);
+const DEV_W=[['आज','aaj'],['कल','kal'],['बिक्री','bikri'],['सेल','sale'],['मुनाफ़ा','profit'],['मुनाफा','profit'],['प्रॉफिट','profit'],['फायदा','profit'],['स्टॉक','stock'],['माल','stock'],['बाकी','udhaar'],['उधारी','udhaar'],['उधार','udhaar'],['ग्राहक','customer'],['कस्टमर','customer'],['सप्लायर','supplier'],['कितना','kitna'],['कितने','kitna'],['कितनी','kitna'],['रिपोर्ट','report'],['एक्सेल','excel'],['डाउनलोड','download'],['खोलो','kholo'],['खोलें','kholo'],['दिखाओ','kholo'],['दिखाइए','kholo'],['ख़त्म','khatam'],['खत्म','khatam'],['कम','kam'],['महीना','month'],['महीने','month'],['हफ्ते','week'],['हफ़्ते','week'],['जोड़ो','add'],['जोड़','add'],['जोडो','add'],['डालो','add'],['ऐड','add'],['बिल','bill'],['लेजर','ledger'],['खाता','ledger'],['सपोर्ट','support'],['मदद','help'],['किसको','kisko'],['लिस्ट','list'],['आइटम','item'],['खरीद','purchase'],['सलाह','saathi'],['मुफ्त','free']];
+const DEV_NUM={'०':'0','१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9'};
+const NUMW={ek:1,'एक':1,one:1,do:2,'दो':2,two:2,teen:3,'तीन':3,three:3,char:4,'चार':4,four:4,paanch:5,panch:5,'पांच':5,'पाँच':5,five:5,chhe:6,che:6,'छह':6,six:6,saat:7,'सात':7,seven:7,aath:8,'आठ':8,eight:8,nau:9,'नौ':9,nine:9,das:10,'दस':10,ten:10,dozen:12,'दर्जन':12};
+function aiNorm(q){
+  let s=String(q||'').toLowerCase().replace(/[०-९]/g,c=>DEV_NUM[c]);
+  for(const [d,l] of DEV_W) s=s.split(d).join(' '+l+' ');
+  return s.replace(/[?!.,।;:"'()]/g,' ').replace(/\s+/g,' ').trim();
+}
+const TR_C={'क':'k','ख':'k','ग':'g','घ':'g','ङ':'n','च':'c','छ':'c','ज':'j','झ':'j','ञ':'n','ट':'t','ठ':'t','ड':'d','ढ':'d','ण':'n','त':'t','थ':'t','द':'d','ध':'d','न':'n','प':'p','फ':'p','ब':'b','भ':'b','म':'m','य':'y','र':'r','ल':'l','व':'v','श':'s','ष':'s','स':'s','ह':'h','ड़':'r','ढ़':'r'};
+function aiSkel(w){
+  w=String(w||'').toLowerCase(); let o='';
+  for(const ch of w){ if(TR_C[ch]) o+=TR_C[ch]; else if(/[a-z]/.test(ch)) o+=ch; }
+  o=o.replace(/ph/g,'p').replace(/kh|gh|ck|q/g,m=>m==='gh'?'g':'k').replace(/ch|sh|jh|th|dh|bh/g,m=>({ch:'c',sh:'s',jh:'j',th:'t',dh:'d',bh:'b'})[m]).replace(/[fv]/g,m=>m==='f'?'p':'v').replace(/w/g,'v').replace(/z/g,'j').replace(/c/g,'k').replace(/x/g,'ks').replace(/h/g,'');
+  o=o.replace(/[aeiouy]/g,''); return o.replace(/(.)\1+/g,'$1');
+}
+const AI_STOP=new Set('ka ki ke ko me mein se hai hain kitna kitni kitne batao dikhao bata do de dena karo kar kholo open show add jodo daalo bill stock udhaar baaki aaj kal sale bikri profit report excel download list item items the a an of in is are what how much many my me please mujhe mera meri abhi wala wali to for and or ya aur hi bhi'.split(' '));
+function aiNum(s){
+  const t=aiNorm(s).split(' '); for(const w of t){ if(/^\d+(\.\d+)?$/.test(w)) return +w; if(NUMW[w]) return NUMW[w]; } return 0;
+}
+function aiFindProducts(q){
+  const toks=aiNorm(q).split(' ').filter(w=>w&&!AI_STOP.has(w)&&!/^\d/.test(w)&&!NUMW[w]);
+  if(!toks.length) return [];
+  const out=[];
+  for(const p of S.products){
+    const name=String(p.name||'').toLowerCase(), words=name.split(/[^a-z0-9ऀ-ॿ]+/).filter(Boolean), sk=words.map(aiSkel), skAll=aiSkel(name);
+    let sc=0;
+    for(const t of toks){
+      if(t.length>=3&&name.includes(t)) { sc+=2; continue; }
+      const ts=aiSkel(t); if(ts.length>=2&&(sk.includes(ts)||skAll.includes(ts))) sc+=1.5;
+    }
+    if(sc>0) out.push({p,sc});
+  }
+  out.sort((a,b)=>b.sc-a.sc||String(a.p.name).length-String(b.p.name).length);
+  if(!out.length) return [];
+  const top=out[0].sc; return out.filter(x=>x.sc>=top-0.01).slice(0,4).map(x=>x.p);
+}
+function aiPeriod(n){
+  const t=todayStr(); const dayMs=864e5;
+  const ago=d=>new Date(Date.now()-d*dayMs).toLocaleDateString('en-CA');
+  if(/\b(kal|yesterday)\b/.test(n)&&!/\bparso\b/.test(n)) return {k:'yesterday',f:ago(1),t:ago(1)};
+  if(/\b(week|hafte|haftे|hafta)\b/.test(n)) return {k:'week',f:ago(6),t:t};
+  if(/\b(month|mahine|mahina|mahine)\b/.test(n)) return {k:'month',f:t.slice(0,8)+'01',t:t};
+  return {k:'today',f:t,t:t};
+}
+const PER_L={today:['today','aaj','aaj'],yesterday:['yesterday','कल','kal'],week:['the last 7 days','पिछले 7 दिनों','pichle 7 din'],month:['this month','इस महीने','is mahine']};
+const perTxt=(l,k)=>aiR(l,...PER_L[k]);
+const aiOwner=()=>ROLE==='owner';
+function aiTopLow(n){
+  const low=[...STOCK.values()].filter(r=>r.qty<=(+r.p.reorder||0)).sort((a,b)=>a.qty-b.qty).slice(0,n);
+  return low.map(r=>`${r.p.name} (${qtyFmt(r.qty)} ${r.p.unit||'pcs'})`);
+}
+function aiContext(){
+  try{
+    const t=todayStr(), m0=t.slice(0,8)+'01';
+    const lines=[]; const items=[...STOCK.values()];
+    lines.push('Items in stock list: '+items.length+'. Low or out of stock: '+items.filter(r=>r.qty<=(+r.p.reorder||0)).length+'.');
+    const low=aiTopLow(6); if(low.length) lines.push('Low items: '+low.join(', ')+'.');
+    if(aiOwner()){
+      const day=S.sales.filter(s=>s.date===t), mon=S.sales.filter(s=>s.date>=m0&&s.date<=t);
+      lines.push('Sales today: Rs '+r2(sumBy(day,s=>s.total))+' in '+day.length+' bills. Sales this month: Rs '+r2(sumBy(mon,s=>s.total))+' in '+mon.length+' bills.');
+      const sm=[...soldMap(m0,t).values()]; lines.push('Estimated gross profit this month: Rs '+r2(sumBy(sm,x=>x.profit))+'.');
+      const top=sm.sort((a,b)=>b.rev-a.rev).slice(0,5).map(x=>x.name+' ('+qtyFmt(x.qty)+')'); if(top.length) lines.push('Top selling this month: '+top.join(', ')+'.');
+      const ls=ledgerStats(); lines.push('Customers owe the shop in total: Rs '+ls.recv+'. Shop owes suppliers in total: Rs '+ls.pay+'.');
+    }
+    return lines.join('\n');
+  }catch(e){ return ''; }
+}
+function aiTab(n){
+  const T2=[[/\b(sale|bikri|billing)\b/,'sale'],[/\b(purchase|kharid|buy)\b/,'purchase'],[/\b(ledger|khata|udhaar)\b/,'baaki'],[/\b(saathi|salah|advice)\b/,'saathi'],[/\b(report|reports|hisaab)\b/,'today'],[/\b(support|help|madad)\b/,'support'],[/\b(stock|items|maal)\b/,'stock']];
+  for(const [re,t] of T2) if(re.test(n)) return t; return '';
+}
+const TAB_NAME={sale:['Sale','बिक्री','Sale'],purchase:['Buy','खरीद','Buy'],baaki:['Ledger','खाता','Ledger'],saathi:['Saathi','साथी','Saathi'],today:['Reports','रिपोर्ट','Reports'],support:['Support','सपोर्ट','Support'],stock:['Stock','स्टॉक','Stock']};
+function aiOnlyOwner(l){ return {text:aiR(l,'This information is only for the owner.','यह जानकारी सिर्फ़ मालिक के लिए है।','Ye jaankari sirf owner ke liye hai.')}; }
+/* returns {text,lang} or null (null = not a shop-data question) */
+function aiLocal(q){
+  const l=aiLang(q), n=aiNorm(q); if(!n) return null;
+  const has=re=>re.test(n);
+  const done=(text,extra)=>Object.assign({text,lang:l},extra||{});
+  // help
+  if(has(/\b(help|madad)\b/)&&!has(/\b(support)\b/)||has(/what can you do|kya kar sakte|kya kya kar/)){
+    return done(aiR(l,'I can: tell today/month sales and profit, customer and supplier dues, stock of any item, low-stock list, add items to the bill ("add 2 Maggi"), download Excel (stock list, sales report) and open any screen. For business advice, just ask me in the chat.','मैं बता सकता हूँ: आज/महीने की बिक्री और मुनाफ़ा, ग्राहक और सप्लायर का बाकी, किसी भी आइटम का स्टॉक, कम स्टॉक की लिस्ट, बिल में आइटम जोड़ना ("2 मैगी जोड़ो"), Excel डाउनलोड और कोई भी स्क्रीन खोलना। बिज़नेस सलाह के लिए चैट में पूछें।','Main bata sakta hoon: aaj/mahine ki bikri aur profit, customer aur supplier ka baaki, kisi bhi item ka stock, kam stock ki list, bill mein item jodna ("2 Maggi jodo"), Excel download aur koi bhi screen kholna. Business salah ke liye chat mein pucho.'));
+  }
+  // add to bill
+  if(has(/\b(add|jodo|daalo|bill)\b/)&&!has(/\b(report|excel|download|kholo|open)\b/)&&!has(/\b(kitna|kitne)\b/)){
+    const ps=aiFindProducts(q);
+    if(ps.length===1){
+      const p=ps[0], qn=aiNum(q)||1; const ex=saleCart.items.find(i=>i.pid===p.id);
+      saleCart.add(p); const it=saleCart.items.find(i=>i.pid===p.id); if(it&&qn>1){ it.qty=r3((ex?ex.qty:0)+qn); saleCart.render(); }
+      showTab('sale');
+      return done(aiR(l,`Added ${qn} ${p.name} to the bill. Check it on the Sale screen.`,`बिल में ${qn} ${p.name} जोड़ दिया। बिक्री स्क्रीन पर देख लें।`,`Bill mein ${qn} ${p.name} jod diya. Sale screen par dekh lo.`),{close:true});
+    }
+    if(ps.length>1) return done(aiR(l,'Which one? '+ps.map(p=>p.name).join(', ')+'. Say the full name.','कौन सा? '+ps.map(p=>p.name).join(', ')+'। पूरा नाम बोलें।','Kaun sa? '+ps.map(p=>p.name).join(', ')+'. Poora naam bolo.'));
+    if(has(/\badd|jodo|daalo\b/)) return done(aiR(l,'I could not find that item. Say the item name as saved in your stock list.','यह आइटम नहीं मिला। स्टॉक लिस्ट वाला नाम बोलें।','Ye item nahi mila. Stock list wala naam bolo.'));
+  }
+  // downloads
+  if(has(/\b(excel|download|report|pdf)\b/)&&has(/\b(excel|download|pdf)\b/)){
+    if(has(/\b(stock|item|items|list)\b/)&&!has(/\b(sale|bikri|purchase)\b/)){ $('#stockXls').click(); return done(aiR(l,'Downloading the stock list in Excel.','स्टॉक की लिस्ट Excel में डाउनलोड हो रही है।','Stock list Excel mein download ho rahi hai.')); }
+    if(!aiOwner()) return aiOnlyOwner(l);
+    const pr=aiPeriod(n); $('#expFrom').value=pr.f; $('#expTo').value=pr.t; downloadReport();
+    return done(aiR(l,`Downloading the sales and purchase report for ${perTxt(l,pr.k)} in Excel.`,`${perTxt(l,pr.k)} की बिक्री और खरीद की रिपोर्ट Excel में डाउनलोड हो रही है।`,`${perTxt(l,pr.k)} ki bikri aur kharid ki report Excel mein download ho rahi hai.`));
+  }
+  if(has(/\bpdf\b/)||has(/\bbill\b/)&&has(/\b(download|send)\b/)) return done(aiR(l,'To get a PDF of a bill, open the Sale screen and tap Bill on the sale. Ledger statements are in the Ledger screen.','बिल का PDF पाने के लिए बिक्री स्क्रीन पर उस बिक्री के आगे Bill दबाएँ। खाते का स्टेटमेंट खाता स्क्रीन में है।','Bill ka PDF lene ke liye Sale screen par us sale ke aage Bill dabao. Khata ka statement Ledger screen mein hai.'));
+  // profit
+  if(has(/\b(profit|margin)\b/)&&!has(/\b(kaise|badha|increase|how to)\b/)){
+    if(!aiOwner()) return aiOnlyOwner(l);
+    const pr=aiPeriod(n), v=r2(sumBy([...soldMap(pr.f,pr.t).values()],x=>x.profit));
+    return done(aiR(l,`Estimated gross profit for ${perTxt(l,pr.k)}: ${money(v)} (sales minus item cost, before expenses).`,`${perTxt(l,pr.k)} का अनुमानित मुनाफ़ा: ${money(v)} (बिक्री में से आइटम की लागत घटाकर, ख़र्चों से पहले)।`,`${perTxt(l,pr.k)} ka anumaanit profit: ${money(v)} (bikri minus item cost, kharche se pehle).`));
+  }
+  // sales
+  if(has(/\b(bikri|sale|sales|becha|kamai|collection)\b/)&&has(/\b(kitna|total|how much|kitne|kitni|batao|today|aaj|kal|yesterday|month|mahine|mahina|week|hafte|hafta)\b/)&&!has(/\b(kholo|open)\b/)){
+    if(!aiOwner()) return aiOnlyOwner(l);
+    const pr=aiPeriod(n), list=S.sales.filter(s=>s.date>=pr.f&&s.date<=pr.t), v=r2(sumBy(list,s=>s.total));
+    return done(aiR(l,`Sales for ${perTxt(l,pr.k)}: ${money(v)} in ${list.length} bill${list.length===1?'':'s'}.`,`${perTxt(l,pr.k)} की बिक्री: ${money(v)}, ${list.length} बिल।`,`${perTxt(l,pr.k)} ki bikri: ${money(v)}, ${list.length} bill.`));
+  }
+  // dues
+  if(has(/\b(udhaar|dues|due|owe|lena|dena|payable|receivable|kisko|kisne)\b/)&&!has(/\b(kholo|open)\b/)){
+    if(!aiOwner()) return aiOnlyOwner(l);
+    const sup=has(/supplier|\bpayable\b/), ls=ledgerStats();
+    const map=sup?LED.supplier:LED.customer;
+    // a named person?
+    let named=null; const ql=String(q).toLowerCase();
+    for(const k of ['customer','supplier']) for(const p of LED[k].values()){ const nm=p.name.toLowerCase(); if(nm.length>=3&&(ql.includes(nm)||aiNorm(q).includes(nm))&&p.bal>0.004){ named=p; } }
+    if(named) return done(aiR(l,`${named.name} ${named.kind==='supplier'?': you owe':'owes you'} ${money(named.bal)}.`,`${named.name} ${named.kind==='supplier'?'को आपको देना है':'का बाकी'}: ${money(named.bal)}।`,`${named.name} ${named.kind==='supplier'?'ko aapko dena hai':'ka baaki'}: ${money(named.bal)}.`));
+    const top=[...map.values()].filter(p=>p.bal>0.004).sort((a,b)=>b.bal-a.bal).slice(0,5).map(p=>`${p.name} ${money(p.bal)}`);
+    const tot=sup?ls.pay:ls.recv;
+    return done(sup
+      ? aiR(l,`You owe suppliers ${money(tot)} in total.${top.length?' Biggest: '+top.join(', ')+'.':''}`,`सप्लायर को कुल ${money(tot)} देना है।${top.length?' सबसे ज़्यादा: '+top.join(', ')+'।':''}`,`Suppliers ko kul ${money(tot)} dena hai.${top.length?' Sabse zyada: '+top.join(', ')+'.':''}`)
+      : aiR(l,`Customers owe you ${money(tot)} in total (${ls.late} late).${top.length?' Biggest: '+top.join(', ')+'.':''}`,`ग्राहकों का कुल बाकी ${money(tot)} है (${ls.late} लेट)।${top.length?' सबसे ज़्यादा: '+top.join(', ')+'।':''}`,`Customers ka kul baaki ${money(tot)} hai (${ls.late} late).${top.length?' Sabse zyada: '+top.join(', ')+'.':''}`));
+  }
+  // low stock
+  if(has(/\b(low|kam|khatam|finish|order)\b/)&&has(/\b(stock|maal|item|items|list)\b/)||has(/\bkhatam\b/)||has(/out of stock/)){
+    const low=aiTopLow(8);
+    return done(low.length?aiR(l,'Low or out of stock: '+low.join(', ')+'.','कम या ख़त्म स्टॉक: '+low.join(', ')+'।','Kam ya khatam stock: '+low.join(', ')+'.'):aiR(l,'No item is low right now.','अभी कोई आइटम कम नहीं है।','Abhi koi item kam nahi hai.'));
+  }
+  // item count
+  if(has(/\b(kitne|how many|total)\b/)&&has(/\b(items|item)\b/)&&!aiFindProducts(q).length){
+    const c=STOCK.size; return done(aiR(l,`You have ${c} items in your stock list.`,`आपकी स्टॉक लिस्ट में ${c} आइटम हैं।`,`Aapki stock list mein ${c} item hain.`));
+  }
+  // stock of an item
+  if(has(/\b(stock|bacha|available|kitna|kitne|quantity|hai)\b/)){
+    const ps=aiFindProducts(q);
+    if(ps.length){
+      const rows=ps.map(p=>{ const r=STOCK.get(p.id); return `${p.name}: ${r?qtyFmt(r.qty):0} ${p.unit||'pcs'}`; });
+      return done(aiR(l,'Stock — '+rows.join('; ')+'.','स्टॉक — '+rows.join('; ')+'।','Stock — '+rows.join('; ')+'.'));
+    }
+  }
+  // open a screen
+  if(has(/\b(kholo|open|show|go|jao|dikhao)\b/)){
+    const t=aiTab(n);
+    if(t){ if(ROLE==='cashier'&&!['sale','purchase','stock','support'].includes(t)) return aiOnlyOwner(l); showTab(t); const nm=aiR(l,...TAB_NAME[t]); return done(aiR(l,`Opened ${nm}.`,`${nm} खुल गया।`,`${nm} khul gaya.`),{close:true}); }
+  }
+  return null;
+}
+/* ----- speech out ----- */
+function aiSpeak(text,lang){
+  try{
+    if(!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text).replace(/[*_#]/g,'').replace(/₹\s?/g,'rupees ').slice(0,500));
+    u.lang=lang==='en'?'en-IN':'hi-IN'; u.rate=1; speechSynthesis.speak(u);
+  }catch(e){}
+}
+/* ----- remote AI (free Gemini through the Supabase function) ----- */
+const AIH=[];
+async function aiRemote(kind,text){
+  const msgs=AIH.filter(m=>!m.err).concat([{role:'user',text}]).slice(-8);
+  const l=aiLang(text);
+  try{
+    const r=await sb.functions.invoke('ai-chat',{body:{kind,messages:msgs.map(m=>({role:m.role,text:m.text})),context:aiContext()}});
+    if(r.error){
+      let code=''; try{ const j=await r.error.context.json(); code=j.error||''; }catch(e){}
+      if(code==='limit') return {text:aiR(l,'Your free AI questions for today are used up. They reset tomorrow. Business Saathi still works.','आज के मुफ़्त AI सवाल पूरे हो गए। कल फिर से मिलेंगे। बिज़नेस साथी चलता रहेगा।','Aaj ke free AI sawal poore ho gaye. Kal phir milenge. Business Saathi chalta rahega.'),lang:l};
+      if(code==='busy') return {text:aiR(l,'AI is busy right now. Please try again in a minute.','AI अभी व्यस्त है। एक मिनट बाद फिर कोशिश करें।','AI abhi busy hai. Ek minute baad phir try karo.'),lang:l};
+      return {text:aiR(l,'AI advice is not switched on yet. Business Saathi and data questions still work.','AI सलाह अभी चालू नहीं है। बिज़नेस साथी और डेटा वाले सवाल चल रहे हैं।','AI salah abhi chalu nahi hai. Business Saathi aur data wale sawal chal rahe hain.'),lang:l};
+    }
+    const d=r.data||{}; if(!d.text){ return {text:aiR(l,'Sorry, I could not answer that. Please try again.','माफ़ कीजिए, जवाब नहीं दे पाया। फिर कोशिश करें।','Sorry, jawab nahi de paya. Phir try karo.'),lang:l}; }
+    AIH.push({role:'user',text},{role:'assistant',text:d.text}); return {text:d.text,lang:aiLang(d.text)==='en'?l:aiLang(d.text),left:d.left,limit:d.limit,ai:true};
+  }catch(e){ return {text:aiR(l,'No internet or the AI could not be reached.','इंटरनेट नहीं है या AI तक नहीं पहुँच पाया।','Internet nahi hai ya AI tak nahi pahunch paya.'),lang:l}; }
+}
+async function aiAnswer(text,kind){
+  let loc=null;
+  try{ loc=aiLocal(text); }catch(e){ const l=aiLang(text); loc={text:aiR(l,'Sorry, I could not do that. Please try again.','माफ़ कीजिए, यह नहीं हो पाया। फिर कोशिश करें।','Sorry, ye nahi ho paya. Phir try karo.'),lang:l}; }
+  if(loc){ AIH.push({role:'user',text}); AIH.push({role:'assistant',text:loc.text}); return loc; }
+  const rr=await aiRemote(kind,text);
+  if(!rr.ai){ AIH.push({role:'user',text,err:1},{role:'assistant',text:rr.text,err:1}); }
+  return rr;
+}
+/* ----- chat panel ----- */
+function aiChips(){ return aiOwner()
+  ? [T("Today's sales","आज की बिक्री","Aaj ki bikri"),T('Low stock list','कम स्टॉक की लिस्ट','Kam stock ki list'),T('Who owes me money?','किसका बाकी है?','Kisko udhaar dena hai?'),T('How can I increase profit?','मुनाफ़ा कैसे बढ़ाऊँ?','Profit kaise badhaun?'),T('What is GST?','GST क्या है?','GST kya hai?')]
+  : [T('Low stock list','कम स्टॉक की लिस्ट','Kam stock ki list'),T('How do I speak to the assistant?','असिस्टेंट से कैसे बात करूँ?','Assistant se kaise baat karun?')]; }
+function aiBubble(m){ return `<div class="sb ${m.role==='user'?'me':'them'}"><div class="nt" style="white-space:pre-wrap">${esc(m.text)}</div></div>`; }
+function openAiChat(){
+  openModal(`<h3>${T('AI Chat','AI चैट','AI Chat')}</h3>
+    <div class="suplist" id="aiList"></div>
+    <div class="aichips" id="aiChips"></div>
+    <div class="scanbar"><input id="aiIn" type="text" autocomplete="off" maxlength="500" placeholder="${esc(T('Ask about sales, stock, GST, profit...','बिक्री, स्टॉक, GST, मुनाफ़ा पूछें...','Bikri, stock, GST, profit pucho...'))}"><button type="button" class="btn" id="aiSend">${T('Send','भेजें','Bhejo')}</button></div>
+    <div class="hint" id="aiNote">${T('Questions about your own sales, stock and dues are answered on your phone. For general business advice, only a short summary of your shop (no customer names or numbers) is sent to Google Gemini. Free limit: 10 AI answers per shop per day.','आपकी अपनी बिक्री, स्टॉक और बाकी के सवालों के जवाब आपके फ़ोन पर ही बनते हैं। सामान्य बिज़नेस सलाह के लिए आपकी दुकान का सिर्फ़ छोटा सारांश (बिना ग्राहक के नाम या नंबर के) Google Gemini को जाता है। मुफ़्त सीमा: हर दुकान को रोज़ 10 AI जवाब।','Aapke apne bikri, stock aur baaki ke sawal ka jawab aapke phone par hi banta hai. General business salah ke liye aapki dukaan ka sirf chhota summary (bina customer ke naam ya number ke) Google Gemini ko jaata hai. Free limit: har dukaan ko roz 10 AI jawab.')}</div>
+    <button type="button" class="btn line" id="aiClose">${T('Close','बंद करें','Band karo')}</button>`);
+  const list=$('#aiList');
+  const paint=()=>{ list.innerHTML=(AIH.length?AIH:[{role:'assistant',text:T('Hello! Ask me about your shop: sales, stock, dues, profit, GST or how to grow.','नमस्ते! अपनी दुकान के बारे में पूछिए: बिक्री, स्टॉक, बाकी, मुनाफ़ा, GST या दुकान कैसे बढ़ाएँ।','Namaste! Apni dukaan ke baare mein pucho: bikri, stock, baaki, profit, GST ya dukaan kaise badhaye.')}]).map(aiBubble).join(''); list.scrollTop=list.scrollHeight; };
+  paint();
+  $('#aiChips').innerHTML=aiChips().map(c=>`<button type="button" class="chipbtn nt">${esc(c)}</button>`).join('');
+  let busy=false;
+  const send=async(t)=>{
+    t=String(t||'').trim(); if(!t||busy) return; busy=true; $('#aiIn').value='';
+    list.insertAdjacentHTML('beforeend',aiBubble({role:'user',text:t})+'<div class="sb them" id="aiTyping"><div class="nt">…</div></div>'); list.scrollTop=list.scrollHeight;
+    let r=null; try{ r=await aiAnswer(t,'chat'); }catch(e){} busy=false; paint();
+    if(r&&r.ai&&r.left!=null) $('#aiNote').insertAdjacentHTML('afterbegin',''); 
+    if(r&&r.close) closeModal();
+  };
+  $('#aiSend').onclick=()=>send($('#aiIn').value);
+  $('#aiIn').addEventListener('keydown',e=>{ if(e.key==='Enter') send($('#aiIn').value); });
+  $('#aiChips').addEventListener('click',e=>{ const b=e.target.closest('.chipbtn'); if(b) send(b.textContent); });
+  $('#aiClose').onclick=closeModal;
+}
+/* ----- voice panel ----- */
+let aiSR=null;
+function openAiVoice(){
+  let vl='hi-IN'; try{ vl=localStorage.getItem('khata_vlang')||(LANG==='en'?'en-IN':'hi-IN'); }catch(e){}
+  openModal(`<h3>${T('AI Voice Assistant','AI वॉइस असिस्टेंट','AI Voice Assistant')}</h3>
+    <div class="vbox"><button type="button" class="micbig" id="vMic" aria-label="${esc(T('Tap to speak','बोलने के लिए दबाएँ','Bolne ke liye dabao'))}">🎤</button>
+    <div class="hint" id="vState">${T('Tap the mic and speak. Hindi, English or Hinglish.','माइक दबाएँ और बोलें। हिन्दी, English या Hinglish।','Mic dabao aur bolo. Hindi, English ya Hinglish.')}</div></div>
+    <div class="sb me nt" id="vHeard" hidden></div><div class="sb them nt" id="vReply" hidden style="white-space:pre-wrap"></div>
+    <div class="f"><span class="hint">${T('Speaking language','बोलने की भाषा','Bolne ki bhasha')}</span><select id="vLang"><option value="hi-IN">हिन्दी / Hinglish</option><option value="en-IN">English</option></select></div>
+    <div class="aichips" id="vChips"></div>
+    <button type="button" class="btn line" id="vClose">${T('Close','बंद करें','Band karo')}</button>`);
+  $('#vLang').value=vl; $('#vLang').onchange=()=>{ try{ localStorage.setItem('khata_vlang',$('#vLang').value); }catch(e){} };
+  const ex=aiOwner()?[T("Today's sales","आज की बिक्री","Aaj ki bikri"),T('Stock of Maggi','मैगी का स्टॉक','Maggi ka stock'),T('Who owes me money','किसका बाकी है','Kisko udhaar dena hai'),T('Add 2 Maggi to bill','बिल में 2 मैगी जोड़ो','Bill mein 2 Maggi jodo'),T('Download stock list','स्टॉक की लिस्ट डाउनलोड करो','Stock list download karo')]:[T('Low stock list','कम स्टॉक की लिस्ट','Kam stock ki list'),T('Add 2 Maggi to bill','बिल में 2 मैगी जोड़ो','Bill mein 2 Maggi jodo')];
+  $('#vChips').innerHTML=ex.map(c=>`<button type="button" class="chipbtn nt">${esc(c)}</button>`).join('');
+  const heard=$('#vHeard'), reply=$('#vReply'), st=$('#vState'), mic=$('#vMic');
+  const handle=async(t)=>{
+    heard.hidden=false; heard.textContent=t; reply.hidden=false; reply.textContent='…'; st.textContent=T('Thinking...','सोच रहा हूँ...','Soch raha hoon...');
+    const r=await aiAnswer(t,'voice'); reply.textContent=r.text; st.textContent=T('Tap the mic to ask again.','फिर पूछने के लिए माइक दबाएँ।','Phir poochne ke liye mic dabao.');
+    aiSpeak(r.text,r.lang); if(r.close) setTimeout(()=>{ try{ closeModal(); }catch(e){} },1800);
+  };
+  $('#vChips').addEventListener('click',e=>{ const b=e.target.closest('.chipbtn'); if(b) handle(b.textContent); });
+  const SRA=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SRA){ st.textContent=T('Voice input is not supported in this browser. Use Chrome, or tap an example below.','इस ब्राउज़र में आवाज़ से बोलना नहीं चलता। Chrome इस्तेमाल करें, या नीचे का कोई उदाहरण दबाएँ।','Is browser mein voice input nahi chalta. Chrome use karo, ya neeche ka koi example dabao.'); mic.disabled=true; }
+  mic.onclick=()=>{
+    if(aiSR){ try{ aiSR.stop(); }catch(e){} return; }
+    try{ speechSynthesis.cancel(); }catch(e){}
+    const r=new SRA(); r.lang=$('#vLang').value; r.interimResults=true; r.continuous=false; let fin='',got=false;
+    r.onresult=e=>{ let it=''; fin=''; for(let i=0;i<e.results.length;i++){ const t=e.results[i][0].transcript; if(e.results[i].isFinal) fin+=t; else it+=t; } heard.hidden=false; heard.textContent=(fin+it).trim(); got=true; };
+    r.onerror=e=>{ if(e.error==='not-allowed'||e.error==='service-not-allowed') st.textContent=T('Microphone is blocked. Allow it in browser settings.','माइक्रोफ़ोन बंद है। ब्राउज़र सेटिंग में अनुमति दें।','Microphone band hai. Browser settings mein allow karo.'); else if(e.error!=='aborted') st.textContent=T('Could not hear. Please try again.','सुन नहीं पाया। फिर कोशिश करें।','Sun nahi paya. Phir try karo.'); };
+    r.onend=()=>{ aiSR=null; mic.classList.remove('on'); if(fin.trim()) handle(fin.trim()); else if(got&&heard.textContent.trim()) handle(heard.textContent.trim()); };
+    try{ r.start(); aiSR=r; mic.classList.add('on'); st.textContent=T('Listening...','सुन रहा हूँ...','Sun raha hoon...'); }catch(e){}
+  };
+  $('#vClose').onclick=()=>{ try{ aiSR&&aiSR.stop(); speechSynthesis.cancel(); }catch(e){} closeModal(); };
+}
+$('#fabChat').onclick=openAiChat; $('#fabVoice').onclick=openAiVoice;
 
 /* ---------- update check ---------- */
 let NEWV='';
