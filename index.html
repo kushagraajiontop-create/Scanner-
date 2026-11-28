@@ -136,6 +136,8 @@ a.btn{text-decoration:none;display:inline-block}
 .banner{background:var(--warn-tint);color:var(--warn);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 
 .subseg{display:flex;gap:6px}
+.subseg.wrap{flex-wrap:wrap}.subseg.wrap button{flex:1 1 30%}
+h3.sub,.sheet h3.sub{margin:14px 0 4px;font:600 12px var(--f-body,inherit);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
 .subseg button{flex:1 1 0;padding:9px 6px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:500;color:var(--muted)}
 .subseg button[aria-pressed="true"]{background:var(--tint);border-color:var(--accent);color:var(--accent);font-weight:600}
 .stmt{width:100%;border-collapse:collapse;font-size:14px}
@@ -509,6 +511,10 @@ main{padding-bottom:130px}
           <label><input type="radio" name="salepay" value="paid" checked><span>Paid now</span></label>
           <label><input type="radio" name="salepay" value="credit"><span>Udhaar (credit)</span></label>
         </div>
+        <div class="seg" id="saleModeSeg" role="group" aria-label="Paid by">
+          <label><input type="radio" name="salemode" value="cash" checked><span>Cash</span></label>
+          <label><input type="radio" name="salemode" value="upi"><span>UPI</span></label>
+        </div>
         <button class="btn" id="saveSale">Save and make bill</button>
       </div>
       <div class="panel"><h2>Recent sales</h2><div id="recentSales"></div></div>
@@ -591,8 +597,11 @@ main{padding-bottom:130px}
 
     <!-- TODAY -->
     <section class="tab" id="tab-today" hidden>
-      <div class="subseg" id="repSeg" role="group" aria-label="Report type">
+      <div class="subseg wrap" id="repSeg" role="group" aria-label="Report type">
         <button type="button" data-v="daily" aria-pressed="true">Daily</button>
+        <button type="button" data-v="profit" aria-pressed="false">Item profit</button>
+        <button type="button" data-v="pay" aria-pressed="false">Payments</button>
+        <button type="button" data-v="stk" aria-pressed="false">Stock check</button>
         <button type="button" data-v="export" aria-pressed="false">Excel report</button>
         <button type="button" data-v="fin" aria-pressed="false">Financials</button>
       </div>
@@ -614,6 +623,51 @@ main{padding-bottom:130px}
       <div class="panel"><h2>Needs attention</h2><div id="sumAttn"></div>
         <div class="row"><button class="btn sm" id="copySum" style="flex:0 0 auto">Copy summary</button><a class="btn sm ghost" id="waSum" target="_blank" rel="noopener" style="flex:0 0 auto">Send on WhatsApp</a></div>
       </div>
+      </div>
+
+      <div class="tab" id="rep-profit" hidden>
+        <div class="panel">
+          <h2>Item-wise profit</h2>
+          <div class="hint">Shows which items earn you the most. Profit is an estimate: selling rate (after discount, without GST) minus average buying cost.</div>
+          <div class="subseg wrap" id="ipSeg" role="group" aria-label="Period">
+            <button type="button" data-v="today" aria-pressed="false">Today</button><button type="button" data-v="7" aria-pressed="false">7 days</button><button type="button" data-v="30" aria-pressed="false">30 days</button><button type="button" data-v="month" aria-pressed="true">This month</button>
+          </div>
+          <div class="row"><label class="f">From<input id="ipFrom" type="date"></label><label class="f">To<input id="ipTo" type="date"></label></div>
+          <div class="tiles" id="ipTiles"></div>
+          <div class="subseg" id="ipSort" role="group" aria-label="Sort"><button type="button" data-v="profit" aria-pressed="true">Most profit</button><button type="button" data-v="margin" aria-pressed="false">Best margin</button><button type="button" data-v="loss" aria-pressed="false">Least profit</button></div>
+        </div>
+        <div class="panel"><div id="ipList"></div><button type="button" class="btn line" id="ipMore" hidden>Show more</button><button type="button" class="btn sm ghost" id="ipXls">Download Excel</button></div>
+      </div>
+
+      <div class="tab" id="rep-pay" hidden>
+        <div class="panel">
+          <h2>Payment-wise report</h2>
+          <div class="hint">How much came in as Cash, UPI and Udhaar. New bills record Cash or UPI. Older bills are counted as Cash.</div>
+          <div class="subseg wrap" id="pySeg" role="group" aria-label="Period">
+            <button type="button" data-v="today" aria-pressed="true">Today</button><button type="button" data-v="7" aria-pressed="false">7 days</button><button type="button" data-v="30" aria-pressed="false">30 days</button><button type="button" data-v="month" aria-pressed="false">This month</button>
+          </div>
+          <div class="row"><label class="f">From<input id="pyFrom" type="date"></label><label class="f">To<input id="pyTo" type="date"></label></div>
+          <div class="tiles" id="pyTiles"></div>
+          <div id="pyList"></div>
+          <div class="row"><button type="button" class="btn sm" id="pyCopy" style="flex:0 0 auto">Copy summary</button><a class="btn sm ghost" id="pyWa" target="_blank" rel="noopener" style="flex:0 0 auto">Send on WhatsApp</a></div>
+        </div>
+      </div>
+
+      <div class="tab" id="rep-stk" hidden>
+        <div class="panel">
+          <h2>Reorder suggestions</h2>
+          <div class="hint" id="roNote"></div>
+          <label class="f">Keep stock for<select id="roDays"><option value="7">7 days</option><option value="15" selected>15 days</option><option value="30">30 days</option></select></label>
+          <div id="roList"></div>
+          <div class="row" id="roBtns" hidden><button type="button" class="btn sm" id="roCopy" style="flex:0 0 auto">Copy order list</button><a class="btn sm ghost" id="roWa" target="_blank" rel="noopener" style="flex:0 0 auto">Send on WhatsApp</a></div>
+        </div>
+        <div class="panel">
+          <h2>Dead stock</h2>
+          <div class="hint">Items lying on the shelf that have not sold for a long time. Your money is stuck in them.</div>
+          <div class="subseg wrap" id="dsSeg" role="group" aria-label="Days"><button type="button" data-v="30" aria-pressed="true">30 days</button><button type="button" data-v="60" aria-pressed="false">60 days</button><button type="button" data-v="90" aria-pressed="false">90 days</button><button type="button" data-v="never" aria-pressed="false">Never sold</button></div>
+          <div class="tiles" id="dsTiles"></div>
+          <div id="dsList"></div><button type="button" class="btn line" id="dsMore" hidden>Show more</button>
+        </div>
       </div>
 
       <div class="tab" id="rep-export" hidden>
@@ -717,10 +771,10 @@ main{padding-bottom:130px}
 <script>
 (function(){
 'use strict';
-const APP_V='2026-11-27.8';
+const APP_V='2026-11-28.1';
 const LATE_AFTER = 3;
 const UNITS = ['pcs','pkt','kg','box','ltr','dozen'];
-const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],fin:{}};
+const S = {products:[],sales:[],purchases:[],adjustments:[],expenses:[],payments:[],opening:[],returns:[],fin:{}};
 let db = null, STOCK = new Map();
 let BIZ={name:'',address:'',phone:'',gstin:''}, ROLE='', CTX=null;
 let LANG='en'; try{ const l=localStorage.getItem('khata_lang2'); if(l==='en'||l==='hi'||l==='hl') LANG=l; }catch(e){}
@@ -1030,6 +1084,7 @@ function Cart(kind,listEl,totalEl){
   const lineHtml=(it,i)=>{
     let sub = `MRP ${money(it.mrp)} · ${esc(it.unit)}`, warn=false;
     if(kind==='sale'){ const st=STOCK.get(it.pid); if(st && it.qty>st.qty){ sub=`Only ${qtyFmt(st.qty)} ${esc(it.unit)} in stock`; warn=true; } }
+    else { const h=buyHint(it); if(h){ sub+=' · '+esc(h.txt); warn=h.up; } }
     return `<div class="line" data-i="${i}">
       <div><div class="line-name">${esc(it.name)}</div><div class="line-sub${warn?' warn':''}" data-sub>${sub}</div></div>
       <button class="x" data-act="del" aria-label="Remove ${esc(it.name)}">×</button>
@@ -1069,6 +1124,8 @@ function Cart(kind,listEl,totalEl){
     if(kind==='sale'){
       const st=STOCK.get(it.pid), sub=$('[data-sub]',line); const warn=st&&it.qty>st.qty;
       sub.className='line-sub'+(warn?' warn':''); sub.textContent = warn?`Only ${qtyFmt(st.qty)} ${it.unit} in stock`:`MRP ${money(it.mrp)} · ${it.unit}`;
+    } else {
+      const sub=$('[data-sub]',line), h=buyHint(it); sub.className='line-sub'+(h&&h.up?' warn':''); sub.textContent=`MRP ${money(it.mrp)} · ${it.unit}`+(h?' · '+h.txt:'');
     }
     totalEl.textContent=money(c.total()); if(c.onChange) c.onChange();
   });
@@ -1113,7 +1170,8 @@ function openProduct(p,opts){
     if(code && S.products.some(x=>x.barcode&&bkey(x.barcode)===bkey(code) && (!edit || x.id!==p.id))){ toast('Another item already has this barcode'); return; }
     let id = edit ? p.id : (code.replace(/[^A-Za-z0-9_\-.~:@+]/g,'') || 'p'+Date.now().toString(36));
     if(!edit && S.products.some(x=>x.id===id)) id = 'p'+Date.now().toString(36);
-    const doc={name,barcode:code,mrp,unit:$('#pm_unit').value,buyRate:parseFloat(($('#pm_buy')||{}).value)||0,openQty:parseFloat($('#pm_open').value)||0,reorder:parseFloat($('#pm_reorder').value)||0};
+    const base=edit?(()=>{ const {id:_i,...rest}=p; return rest; })():{created:Date.now()};
+    const doc={...base,name,barcode:code,mrp,unit:$('#pm_unit').value,buyRate:parseFloat(($('#pm_buy')||{}).value)||0,openQty:parseFloat($('#pm_open').value)||0,reorder:parseFloat($('#pm_reorder').value)||0};
     doc.openRate = edit ? (p.openRate!=null ? p.openRate : (+p.buyRate||0)) : doc.buyRate;
     if(edit && p.demo) doc.demo=true;
     const btn=$('#pm_save'); btn.disabled=true;
@@ -1173,7 +1231,8 @@ const DF={sale:['salPhone','salParty','saleGst','saleGstRate','saleDisc'],pur:['
 function draftState(){
   const f={}; [...DF.sale,...DF.pur].forEach(id=>{ const e=$('#'+id); if(e) f[id]=e.value; });
   const rs=$('input[name=salepay]:checked'), rp=$('input[name=purpay]:checked');
-  return {sale:saleCart.items,pur:purCart.items,f,sp:rs?rs.value:'paid',pp:rp?rp.value:'unpaid'};
+  const rm=$('input[name=salemode]:checked');
+  return {sale:saleCart.items,pur:purCart.items,f,sp:rs?rs.value:'paid',pp:rp?rp.value:'unpaid',sm:rm?rm.value:'cash'};
 }
 function draftSave(){
   if(!DKEY) return;
@@ -1188,6 +1247,7 @@ function draftLoad(){
   Object.keys(d.f||{}).forEach(id=>{ const e=$('#'+id); if(e&&d.f[id]!=null) e.value=d.f[id]; });
   const rs=$('input[name=salepay][value='+(d.sp==='credit'?'credit':'paid')+']'), rp=$('input[name=purpay][value='+(d.pp==='paid'?'paid':'unpaid')+']');
   if(rs) rs.checked=true; if(rp) rp.checked=true;
+  const rmm=$('input[name=salemode][value='+(d.sm==='upi'?'upi':'cash')+']'); if(rmm) rmm.checked=true; saleModeShow();
   saleCart.render(); purCart.render(); renderSaleTotals(); lastDraft=JSON.stringify(draftState());
   if(saleCart.items.length||purCart.items.length) toast('Your unsaved bill was restored');
 }
@@ -1293,12 +1353,13 @@ document.addEventListener('click',e=>{
   const s=S.sales.find(x=>x.id===b.dataset.bill); if(s) showBill(s);
 });
 
-$$('input[name=salepay]').forEach(r=>r.addEventListener('change',()=>{}));
+const saleModeShow=()=>{ const c=$('input[name=salepay]:checked'); $('#saleModeSeg').hidden=!!(c&&c.value==='credit'); };
+$$('input[name=salepay]').forEach(r=>r.addEventListener('change',saleModeShow));
 $('#saveSale').onclick=async function(){
   if(!db){ toast('Sync not available'); return; }
   const items=saleCart.items.filter(i=>i.qty>0);
   if(!items.length){ toast('Add at least one item'); return; }
-  const credit=$('input[name=salepay]:checked').value==='credit';
+  const credit=$('input[name=salepay]:checked').value==='credit', payMode=credit?'credit':($('input[name=salemode]:checked').value==='upi'?'upi':'cash');
   const party=$('#salParty').value.trim(), rawPhone=$('#salPhone').value.trim();
   if(credit && !party){ toast('Udhaar ke liye customer ka naam daalo'); return; }
   if(rawPhone && !phone10(rawPhone)){ toast('WhatsApp number 10 digit ka hona chahiye'); return; }
@@ -1312,7 +1373,7 @@ $('#saveSale').onclick=async function(){
     const billUrl=sb.storage.from('bills').getPublicUrl(path).data.publicUrl;
     const doc={billNo,date:todayStr(),ts:Date.now(),items:items.map(({pid,name,unit,qty,rate})=>({pid,name,unit,qty,rate})),
       subtotal:c.sub,discount:c.disc,gstMode:c.mode,gstRate:c.mode==='none'?0:c.rate,gstAmt:c.gst,taxable:c.taxable,total:c.total,
-      paid:!credit,credit,party,phone:phone10(rawPhone),billPath:path,billUrl,by:CTX.member.login_id||''};
+      paid:!credit,credit,payMode,party,phone:phone10(rawPhone),billPath:path,billUrl,by:CTX.member.login_id||''};
     const ref=db.collection('sales').doc(); await ref.set(doc);
     saleCart.clear(); $('#salParty').value=''; $('#salPhone').value=''; $('#saleDisc').value=''; $('#saleGst').value='none';
     renderSaleTotals();
@@ -1343,7 +1404,7 @@ $('#savePur').onclick=async function(){
 /* ---------- renderers for data-driven parts ---------- */
 function billRow(kind,b){
   const who = kind==='sale' ? ((b.billNo?billLabel(b.billNo)+' · ':'')+(b.party||'Walk-in')) : b.supplier;
-  let tag = b.paid ? '<span class="chip ok">Paid</span>' : '<span class="chip late">Not paid</span>';
+  let tag = b.paid ? '<span class="chip ok">Paid'+(b.payMode==='upi'?' · UPI':'')+'</span>' : '<span class="chip late">Not paid</span>';
   if(isCr(b)&&ROLE==='owner'&&BILLOUT.has(b.id)){ const o=BILLOUT.get(b.id); tag = o<=0.005?'<span class="chip ok">Settled</span>':(o<(+b.total||0)-0.005?'<span class="chip late">Baaki '+money(r2(o))+'</span>':'<span class="chip late">Not paid</span>'); }
   return `<div class="bill"><div><div><b>${esc(who)}</b> ${tag}</div><div class="hint">${shortDate(b.date)} · ${(b.items||[]).length} item${(b.items||[]).length===1?'':'s'}</div></div>
     <div style="display:flex;align-items:center;gap:8px"><b class="num">${money(b.total)}</b>${kind==='sale'?`<button class="btn sm" data-bill="${esc(b.id)}">Bill</button>`:''}<button class="btn sm line owner-only" data-del="${kind}" data-id="${esc(b.id)}">Delete</button></div></div>`;
@@ -1379,7 +1440,7 @@ function renderStock(){
     return `<div class="prow"><div><div class="pname">${esc(p.name)}</div>
       <div class="pmeta">${p.barcode?`<span class="code">${esc(p.barcode)}</span> · `:''}MRP ${money(p.mrp)}${ROLE==='cashier'?'':' · Avg cost '+money(r2(r.avg))}</div></div>
       <div><div class="pqty num ${cls}">${qtyFmt(r.qty)} <small>${esc(p.unit||'pcs')}</small></div><div class="pval num owner-only">${money(r2(r.value))}</div></div>
-      <div class="pbtns"><button class="btn sm ghost" data-pc="${esc(p.id)}">Count stock</button><button class="btn sm line owner-only" data-pe="${esc(p.id)}">Edit</button></div></div>`;
+      <div class="pbtns"><button class="btn sm ghost" data-pc="${esc(p.id)}">Count stock</button><button class="btn sm line owner-only" data-pe="${esc(p.id)}">Edit</button><button class="btn sm line owner-only" data-pp="${esc(p.id)}">Prices</button></div></div>`;
   }).join('') : `<div class="empty">${rows.length?'No item matches.':'No items yet. Tap Add item or scan a barcode.'}</div>`;
 }
 $('#stockSeg').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return; stockFilter=b.dataset.v; stockLimit=60;
@@ -1394,7 +1455,8 @@ $('#stockXls').onclick=()=>{
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Items'); saveBook(wb,'items-'+todayStr()+'.xlsx');
 };
 $('#stockList').addEventListener('click',e=>{
-  const c=e.target.closest('[data-pc]'), ed=e.target.closest('[data-pe]');
+  const c=e.target.closest('[data-pc]'), ed=e.target.closest('[data-pe]'), pp=e.target.closest('[data-pp]');
+  if(pp){ const p=S.products.find(x=>x.id===pp.dataset.pp); if(p) openPriceHistory(p); }
   if(c){ const p=S.products.find(x=>x.id===c.dataset.pc); if(p) openCount(p); }
   if(ed){ const p=S.products.find(x=>x.id===ed.dataset.pe); if(p) openProduct(p); }
 });
@@ -1690,8 +1752,8 @@ let repView='daily';
 function setRep(v){
   repView=v;
   $$('#repSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)));
-  for(const k of ['daily','export','fin']) $('#rep-'+k).hidden = k!==v;
-  if(v==='daily') renderToday(); else if(v==='export') renderExpPreview(); else renderFin();
+  for(const k of ['daily','profit','pay','stk','export','fin']) $('#rep-'+k).hidden = k!==v;
+  if(v==='daily') renderToday(); else if(v==='profit') renderItemProfit(); else if(v==='pay') renderPayRep(); else if(v==='stk') renderStockCheck(); else if(v==='export') renderExpPreview(); else renderFin();
 }
 $$('#repSeg button').forEach(b=>b.addEventListener('click',()=>setRep(b.dataset.v)));
 
@@ -2071,7 +2133,231 @@ function renderSaathi(){
 }
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-topic]'); if(b){ saathiTopic=b.dataset.topic; renderSaathi(); } });
 
-function renderAll(){ compute(); renderSaathi(); renderRecent(); renderStock(); renderLow(); renderDue(); renderToday(); if(repView==='export') renderExpPreview(); renderFin(); renderDemo(); }
+function renderAll(){ compute(); renderSaathi(); renderRecent(); renderStock(); renderLow(); renderDue(); renderToday(); if(repView==='export') renderExpPreview(); else if(repView==='profit') renderItemProfit(); else if(repView==='pay') renderPayRep(); else if(repView==='stk') renderStockCheck(); renderFin(); renderDemo(); }
+
+/* ---------- phase 1: item profit, stock check, payment report, price history ---------- */
+const periodBounds=k=>{ const t=todayStr(); if(k==='today') return [t,t]; if(k==='7') return [addDays(t,-6),t]; if(k==='30') return [addDays(t,-29),t]; return [t.slice(0,8)+'01',t]; };
+const setSeg=(sel,v)=>$$(sel+' [data-v]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===v)));
+const unitOf=u=>u||'pcs';
+
+/* ----- item-wise profit ----- */
+let ipSort='profit', ipLimit=40, ipPeriod='month';
+function itemProfit(from,to){
+  const by=new Map();
+  const get=(pid,name,unit)=>{ let e=by.get(pid); if(!e){ e={pid,name,unit:unitOf(unit),qty:0,gross:0,rev:0,cost:0,nocost:false}; by.set(pid,e); } return e; };
+  for(const s of S.sales){ if(!inRange(s.date,from,to)) continue;
+    const ratio=(s.taxable!=null&&+s.subtotal>0)?s.taxable/s.subtotal:1;
+    for(const it of (s.items||[])){
+      const q=+it.qty||0, rt=+it.rate||0, st=STOCK.get(it.pid), cost=st?st.avg:0, e=get(it.pid,it.name,it.unit);
+      e.qty+=q; e.gross+=q*rt; e.rev+=q*rt*ratio; e.cost+=q*cost; if(!(cost>0)) e.nocost=true;
+    } }
+  for(const x of S.returns) if(x.kind==='sale'&&inRange(x.date,from,to)) for(const it of (x.items||[])){
+    const q=+it.qty||0, st=STOCK.get(it.pid), cost=st?st.avg:0, e=get(it.pid,it.name,it.unit), rt=+it.rate||0, ratio=+x.ratio>0?+x.ratio:1;
+    e.qty-=q; e.gross-=q*rt; e.rev-=q*rt*ratio; e.cost-=q*cost;
+  }
+  return [...by.values()].filter(e=>Math.abs(e.qty)>1e-9||Math.abs(e.rev)>1e-9).map(e=>({...e,profit:e.rev-e.cost,margin:e.rev>0?(e.rev-e.cost)/e.rev*100:0,avgSell:e.qty?e.gross/e.qty:0,avgCost:e.qty?e.cost/e.qty:0}));
+}
+function ipRows(){
+  const rows=itemProfit($('#ipFrom').value||'0000-00-00',$('#ipTo').value||'9999-12-31');
+  if(ipSort==='margin') rows.sort((a,b)=>b.margin-a.margin||b.profit-a.profit);
+  else if(ipSort==='loss') rows.sort((a,b)=>a.profit-b.profit);
+  else rows.sort((a,b)=>b.profit-a.profit);
+  return rows;
+}
+function renderItemProfit(){
+  if(ROLE!=='owner') return;
+  const rows=ipRows(); const rev=sumBy(rows,x=>x.rev), cost=sumBy(rows,x=>x.cost), pr=rev-cost;
+  $('#ipTiles').innerHTML=`<div class="tile"><small>${T('Sales (without GST)','बिक्री (GST के बिना)','Bikri (GST ke bina)')}</small><b class="num">${money(r2(rev))}</b></div>
+    <div class="tile"><small>${T('Buying cost','खरीद लागत','Kharid lagat')}</small><b class="num">${money(r2(cost))}</b></div>
+    <div class="tile"><small>${T('Profit','मुनाफ़ा','Munafa')}</small><b class="num" style="color:${pr<0?'var(--bad)':'inherit'}">${money(r2(pr))}</b></div>
+    <div class="tile"><small>${T('Margin','मार्जिन','Margin')}</small><b class="num">${rev>0?(Math.round(pr/rev*1000)/10)+'%':'-'}</b></div>`;
+  const shown=rows.slice(0,ipLimit); $('#ipMore').hidden=rows.length<=ipLimit;
+  $('#ipList').innerHTML=shown.length?shown.map(x=>`<div class="bill"><div style="min-width:0"><div><b>${esc(x.name)}</b>${x.profit<0?` <span class="chip late">${T('Loss','घाटा','Ghata')}</span>`:''}${x.nocost?` <span class="chip">${T('Cost missing','लागत नहीं','Cost nahi')}</span>`:''}</div>
+      <div class="hint">${T('Sold','बिका','Bika')} ${qtyFmt(x.qty)} ${esc(x.unit)} · ${T('Sell','बिक्री','Bikri')} ${money(r2(x.avgSell))} · ${T('Cost','लागत','Cost')} ${money(r2(x.avgCost))}</div></div>
+      <div style="text-align:right"><b class="num" style="color:${x.profit<0?'var(--bad)':'inherit'}">${money(r2(x.profit))}</b><div class="hint">${Math.round(x.margin*10)/10}%</div></div></div>`).join('')
+    :`<div class="empty">${T('No sales in these dates.','इन तारीख़ों में कोई बिक्री नहीं।','In dates mein koi bikri nahi.')}</div>`;
+}
+function ipSetPeriod(k){
+  ipPeriod=k; ipLimit=40;
+  if(k!=='custom'){ const [f,t]=periodBounds(k); $('#ipFrom').value=f; $('#ipTo').value=t; }
+  setSeg('#ipSeg',k); renderItemProfit();
+}
+$('#ipSeg').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(b) ipSetPeriod(b.dataset.v); });
+['#ipFrom','#ipTo'].forEach(s=>$(s).addEventListener('change',()=>{ ipPeriod='custom'; setSeg('#ipSeg','custom'); ipLimit=40; renderItemProfit(); }));
+$('#ipSort').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return; ipSort=b.dataset.v; ipLimit=40; setSeg('#ipSort',ipSort); renderItemProfit(); });
+$('#ipMore').onclick=()=>{ ipLimit+=40; renderItemProfit(); };
+$('#ipXls').onclick=()=>{
+  if(!window.XLSX){ toast('Excel tool did not load. Check the internet and reload.'); return; }
+  const rows=ipRows(), from=$('#ipFrom').value, to=$('#ipTo').value;
+  const data=[['Item','Unit','Qty sold','Avg selling rate (Rs)','Avg buying cost (Rs)','Sales without GST (Rs)','Cost (Rs)','Profit (Rs)','Margin %']];
+  rows.forEach(x=>data.push([x.name,x.unit,r3(x.qty),r2(x.avgSell),r2(x.avgCost),r2(x.rev),r2(x.cost),r2(x.profit),Math.round(x.margin*10)/10]));
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,sheetFrom([[shopLabel()||'Shop'],['Item-wise profit '+from+' to '+to],[]].concat(data),[34,8,10,14,14,16,12,12,10],[3,4,5,6,7]),'Item profit');
+  saveBook(wb,'item-profit_'+from+'_to_'+to+'.xlsx');
+};
+
+/* ----- stock check: reorder suggestions and dead stock ----- */
+let dsDays='30', dsLimit=40;
+function soldQtyMap(from){
+  const m=new Map();
+  for(const s of S.sales) if(s.date>=from) for(const it of (s.items||[])) m.set(it.pid,(m.get(it.pid)||0)+(+it.qty||0));
+  for(const x of S.returns) if(x.kind==='sale'&&x.date>=from) for(const it of (x.items||[])) m.set(it.pid,(m.get(it.pid)||0)-(+it.qty||0));
+  return m;
+}
+function reorderCalc(cover){
+  if(!S.sales.length) return {list:[],win:0};
+  let first=todayStr(); for(const s of S.sales) if(s.date<first) first=s.date;
+  const win=Math.min(30,Math.max(7,daysAgo(first)+1)), sold=soldQtyMap(addDays(todayStr(),-(win-1))), list=[];
+  for(const r of STOCK.values()){
+    const q=sold.get(r.p.id)||0; if(q<=0) continue;
+    const v=q/win, have=Math.max(r.qty,0), need=Math.ceil(v*cover-have-1e-9);
+    if(need>0) list.push({r,v,left:have/v,need});
+  }
+  list.sort((a,b)=>a.left-b.left); return {list,win};
+}
+function roText(list,cover){
+  const shop=shopLabel();
+  return (shop?shop+' - ':'')+'Order list ('+shortDate(todayStr())+'):\n'+list.map(x=>`- ${x.r.p.name}: ${x.need} ${unitOf(x.r.p.unit)}`).join('\n');
+}
+function deadCalc(){
+  const last=new Map(), firstIn=new Map();
+  for(const s of S.sales) for(const it of (s.items||[])) if(!last.has(it.pid)||s.date>last.get(it.pid)) last.set(it.pid,s.date);
+  for(const b of S.purchases) for(const it of (b.items||[])) if(!firstIn.has(it.pid)||b.date<firstIn.get(it.pid)) firstIn.set(it.pid,b.date);
+  const rows=[];
+  for(const r of STOCK.values()){
+    if(r.qty<=0) continue;
+    let ref=last.get(r.p.id), kind='sold';
+    if(!ref){ ref=firstIn.get(r.p.id)||(r.p.created?dkey(r.p.created):''); kind=ref?'bought':'never'; }
+    rows.push({r,kind,ref,days:ref?daysAgo(ref):null});
+  }
+  return rows;
+}
+function renderStockCheck(){
+  if(ROLE!=='owner') return;
+  const cover=+$('#roDays').value||15, ro=reorderCalc(cover);
+  $('#roNote').textContent=ro.win?T(`Based on sales of the last ${ro.win} days. Shows items that will run out before ${cover} days.`,`पिछले ${ro.win} दिनों की बिक्री के हिसाब से। वे आइटम जो ${cover} दिन से पहले ख़त्म हो जाएँगे।`,`Pichle ${ro.win} din ki bikri ke hisaab se. Jo items ${cover} din se pehle khatam ho jayenge.`):T('Make some sales first. Suggestions appear after a few days of sales.','पहले कुछ बिक्री करें। कुछ दिन की बिक्री के बाद सुझाव दिखेंगे।','Pehle kuch bikri karo. Kuch din ki bikri ke baad suggestion dikhenge.');
+  $('#roList').innerHTML=ro.list.length?ro.list.slice(0,60).map(x=>{
+    const lt=x.left<1?T('less than 1 day','1 दिन से कम','1 din se kam'):T(`about ${Math.round(x.left)} days`,`लगभग ${Math.round(x.left)} दिन`,`lagbhag ${Math.round(x.left)} din`);
+    return `<div class="bill"><div style="min-width:0"><div><b>${esc(x.r.p.name)}</b></div>
+      <div class="hint">${T('Sells','बिकता है','Bikta hai')} ~${qtyFmt(Math.round(x.v*10)/10)}/${T('day','दिन','din')} · ${T('Have','है','Hai')} ${qtyFmt(Math.max(x.r.qty,0))} (${lt})</div></div>
+      <div style="text-align:right"><div class="hint">${T('Order','मँगाएँ','Mangao')}</div><b class="num">${qtyFmt(x.need)} ${esc(unitOf(x.r.p.unit))}</b></div></div>`; }).join('')
+    :`<div class="empty">${ro.win?T('Nothing to order right now.','अभी कुछ मँगाने की ज़रूरत नहीं।','Abhi kuch mangane ki zaroorat nahi.'):''}</div>`;
+  $('#roBtns').hidden=!ro.list.length;
+  $('#roWa').href='https://wa.me/?text='+encodeURIComponent(roText(ro.list,cover));
+  // dead stock
+  const all=deadCalc(); let rows;
+  if(dsDays==='never') rows=all.filter(x=>x.kind!=='sold'); else rows=all.filter(x=>x.days!=null&&x.days>=+dsDays);
+  rows.sort((a,b)=>b.r.value-a.r.value);
+  $('#dsTiles').innerHTML=`<div class="tile"><small>${T('Items','आइटम','Items')}</small><b class="num">${rows.length}</b></div><div class="tile"><small>${T('Money stuck (at cost)','अटका पैसा (लागत पर)','Atka paisa (cost par)')}</small><b class="num">${money(r2(sumBy(rows,x=>x.r.value)))}</b></div>`;
+  const shown=rows.slice(0,dsLimit); $('#dsMore').hidden=rows.length<=dsLimit;
+  $('#dsList').innerHTML=shown.length?shown.map(x=>{
+    const when=x.kind==='sold'?T(`Last sold ${x.days} days ago`,`आख़िरी बिक्री ${x.days} दिन पहले`,`Aakhri bikri ${x.days} din pehle`)
+      :x.kind==='bought'?T(`Never sold. Bought ${x.days} days ago`,`कभी नहीं बिका। ${x.days} दिन पहले आया`,`Kabhi nahi bika. ${x.days} din pehle aaya`):T('Never sold','कभी नहीं बिका','Kabhi nahi bika');
+    return `<div class="bill"><div style="min-width:0"><div><b>${esc(x.r.p.name)}</b></div><div class="hint">${when}</div></div>
+      <div style="text-align:right"><b class="num">${money(r2(x.r.value))}</b><div class="hint">${qtyFmt(x.r.qty)} ${esc(unitOf(x.r.p.unit))}</div></div></div>`; }).join('')
+    :`<div class="empty">${T('No items found. Good.','कोई आइटम नहीं मिला। बढ़िया।','Koi item nahi mila. Badhiya.')}</div>`;
+}
+$('#roDays').addEventListener('change',renderStockCheck);
+$('#dsSeg').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(!b) return; dsDays=b.dataset.v; dsLimit=40; setSeg('#dsSeg',dsDays); renderStockCheck(); });
+$('#dsMore').onclick=()=>{ dsLimit+=40; renderStockCheck(); };
+$('#roCopy').onclick=async()=>{ const ro=reorderCalc(+$('#roDays').value||15); if(!ro.list.length) return; try{ await navigator.clipboard.writeText(roText(ro.list)); toast('Order list copied'); }catch(e){ toast('Could not copy. Use Send on WhatsApp.'); } };
+
+/* ----- payment-wise report ----- */
+let payPeriod='today';
+function payCalc(from,to){
+  const R={cash:0,upi:0,bank:0,credit:0,sales:0,cashS:0,upiS:0,cashC:0,upiC:0,bankC:0,refCash:0,refUpi:0,refCredit:0,
+    pCash:0,pUpi:0,pBank:0,pAtBuy:0,buyCredit:0,refSupCash:0,nSales:0,nCredit:0};
+  for(const s of S.sales){
+    const t=+s.total||0;
+    const legacy=!!(s.paid&&s.paidAt&&!s.credit);
+    if(inRange(s.date,from,to)){
+      R.sales+=t; R.nSales++;
+      if(s.credit===true||!s.paid||legacy){ R.credit+=t; R.nCredit++; }
+      else if(s.payMode==='upi'){ R.upiS+=t; } else { R.cashS+=t; }
+    }
+    if(legacy&&inRange(dkey(s.paidAt),from,to)) R.cashC+=t;
+  }
+  for(const x of S.payments){ const d=x.date||dkey(x.ts||Date.now()); if(!inRange(d,from,to)) continue; const a=+x.amount||0, m=String(x.mode||'Cash').toLowerCase();
+    if(x.kind==='supplier'){ if(m==='upi') R.pUpi+=a; else if(m==='bank') R.pBank+=a; else R.pCash+=a; }
+    else { if(m==='upi') R.upiC+=a; else if(m==='bank') R.bankC+=a; else R.cashC+=a; } }
+  for(const b of S.purchases){ if(!inRange(b.date,from,to)) continue; const t=+b.total||0; if(b.paid&&!b.credit) R.pAtBuy+=t; else R.buyCredit+=t; }
+  for(const x of S.returns){ if(!inRange(x.date,from,to)) continue; const a=+x.amount||0;
+    if(x.kind==='sale'){ if(x.refund==='upi') R.refUpi+=a; else if(x.refund==='udhaar') R.refCredit+=a; else R.refCash+=a; }
+    else if(x.refund!=='adjust') R.refSupCash+=a; }
+  R.cash=R.cashS+R.cashC-R.refCash; R.upi=R.upiS+R.upiC-R.refUpi; R.bank=R.bankC;
+  return R;
+}
+function payText(R,from,to){
+  const l=[ (shopLabel()||'Shop')+' - payments '+(from===to?shortDate(from):shortDate(from)+' to '+shortDate(to)),
+    'Cash in: '+money(r2(R.cash)),'UPI in: '+money(r2(R.upi)),'Bank in: '+money(r2(R.bank)),'Udhaar given: '+money(r2(R.credit-R.refCredit)),'Total sales: '+money(r2(R.sales))];
+  return l.join('\n');
+}
+function renderPayRep(){
+  if(ROLE!=='owner') return;
+  const from=$('#pyFrom').value||todayStr(), to=$('#pyTo').value||todayStr(); const R=payCalc(from,to);
+  $('#pyTiles').innerHTML=`<div class="tile"><small>${T('Cash received','कैश मिला','Cash mila')}</small><b class="num">${money(r2(R.cash))}</b></div>
+    <div class="tile"><small>${T('UPI received','UPI से मिला','UPI se mila')}</small><b class="num">${money(r2(R.upi))}</b></div>
+    <div class="tile"><small>${T('Bank received','बैंक में मिला','Bank mein mila')}</small><b class="num">${money(r2(R.bank))}</b></div>
+    <div class="tile"><small>${T('Udhaar given','उधार दिया','Udhaar diya')}</small><b class="num">${money(r2(R.credit-R.refCredit))}</b></div>`;
+  const row=(a,b)=>`<div class="bill"><span>${a}</span><b class="num">${b}</b></div>`;
+  $('#pyList').innerHTML=[
+    `<h3 class="sub">${T('Money in','पैसा आया','Paisa aaya')}</h3>`,
+    row(T('Cash sales','कैश बिक्री','Cash bikri'),money(r2(R.cashS))), row(T('UPI sales','UPI बिक्री','UPI bikri'),money(r2(R.upiS))),
+    row(T('Udhaar collected: Cash','उधार वसूली: कैश','Udhaar vasooli: Cash'),money(r2(R.cashC))), row(T('Udhaar collected: UPI','उधार वसूली: UPI','Udhaar vasooli: UPI'),money(r2(R.upiC))), row(T('Udhaar collected: Bank','उधार वसूली: बैंक','Udhaar vasooli: Bank'),money(r2(R.bankC))),
+    (R.refCash+R.refUpi>0?row(T('Refunded to customers','ग्राहकों को लौटाया','Customers ko wapas diya'),'-'+money(r2(R.refCash+R.refUpi))):''),
+    `<h3 class="sub">${T('Sales','बिक्री','Bikri')}</h3>`,
+    row(T(`Total sales (${R.nSales} bills)`,`कुल बिक्री (${R.nSales} बिल)`,`Kul bikri (${R.nSales} bill)`),money(r2(R.sales))),
+    row(T('On udhaar (credit)','उधार पर','Udhaar par'),money(r2(R.credit))),
+    (R.refCredit>0?row(T('Returns adjusted in udhaar','उधार में घटाया','Udhaar mein ghataya'),'-'+money(r2(R.refCredit))):''),
+    `<h3 class="sub">${T('Paid out','पैसा गया','Paisa gaya')}</h3>`,
+    row(T('Paid at purchase','माल लेते समय दिया','Maal lete samay diya'),money(r2(R.pAtBuy))),
+    row(T('Paid to suppliers: Cash','सप्लायर को: कैश','Supplier ko: Cash'),money(r2(R.pCash))), row(T('Paid to suppliers: UPI','सप्लायर को: UPI','Supplier ko: UPI'),money(r2(R.pUpi))), row(T('Paid to suppliers: Bank','सप्लायर को: बैंक','Supplier ko: Bank'),money(r2(R.pBank))),
+    row(T('Bought on credit','उधार में ख़रीदा','Udhaar mein kharida'),money(r2(R.buyCredit))),
+    (R.refSupCash>0?row(T('Refund from suppliers','सप्लायर से वापस मिला','Supplier se wapas mila'),money(r2(R.refSupCash))):''),
+  ].join('');
+  $('#pyWa').href='https://wa.me/?text='+encodeURIComponent(payText(R,from,to));
+}
+function pySetPeriod(k){
+  payPeriod=k; if(k!=='custom'){ const [f,t]=periodBounds(k); $('#pyFrom').value=f; $('#pyTo').value=t; }
+  setSeg('#pySeg',k); renderPayRep();
+}
+$('#pySeg').addEventListener('click',e=>{ const b=e.target.closest('[data-v]'); if(b) pySetPeriod(b.dataset.v); });
+['#pyFrom','#pyTo'].forEach(s=>$(s).addEventListener('change',()=>{ payPeriod='custom'; setSeg('#pySeg','custom'); renderPayRep(); }));
+$('#pyCopy').onclick=async()=>{ try{ await navigator.clipboard.writeText(payText(payCalc($('#pyFrom').value,$('#pyTo').value),$('#pyFrom').value,$('#pyTo').value)); toast('Summary copied'); }catch(e){ toast('Could not copy. Use Send on WhatsApp.'); } };
+
+/* ----- purchase price history ----- */
+function buyHistory(pid){
+  const out=[];
+  for(const b of S.purchases) for(const it of (b.items||[])) if(it.pid===pid&&(+it.rate>0)) out.push({d:b.date,ts:b.ts||0,sup:b.supplier||'',rate:+it.rate,qty:+it.qty||0,bill:b.bill||''});
+  out.sort((a,b)=>String(b.d).localeCompare(String(a.d))||(b.ts-a.ts)); return out;
+}
+function buyHint(it){
+  if(ROLE==='cashier') return null;
+  const h=buyHistory(it.pid)[0]; if(!h) return null;
+  const f=+it.uf||1, last=r2(h.rate*f), cur=+it.rate||0;
+  let txt=T('Last','पिछली','Pichli')+' '+money(last)+' ('+shortDate(h.d)+(h.sup?', '+h.sup:'')+')', up=false;
+  if(cur>0&&Math.abs(cur-last)>0.004){ const d=r2(cur-last); up=d>0; txt+=' · '+(d>0?'▲ +':'▼ -')+money(Math.abs(d)); }
+  return {txt,up};
+}
+function openPriceHistory(p){
+  const h=buyHistory(p.id), st=STOCK.get(p.id);
+  if(!h.length){ openModal(`<h3>${esc(p.name)}</h3><div class="empty">${T('No purchase has been recorded for this item yet.','इस आइटम की कोई ख़रीद अभी दर्ज नहीं है।','Is item ki koi kharid abhi darj nahi hai.')}</div><button class="btn line" id="ph_close">${T('Close','बंद करें','Band karo')}</button>`); $('#ph_close').onclick=closeModal; return; }
+  const rates=h.map(x=>x.rate), min=Math.min(...rates), max=Math.max(...rates), tq=sumBy(h,x=>x.qty), avg=tq>0?sumBy(h,x=>x.qty*x.rate)/tq:sumBy(h,x=>x.rate)/h.length;
+  const last=h[0], prev=h[1], diff=prev?r2(last.rate-prev.rate):0;
+  const sup=new Map(); for(const x of h){ const k=pkey(x.sup)||'~'; if(!sup.has(k)) sup.set(k,{name:x.sup||T('Unknown','अज्ञात','Pata nahi'),rate:x.rate,d:x.d,n:0}); sup.get(k).n++; }
+  const sl=[...sup.values()].sort((a,b)=>a.rate-b.rate), best=sl.length>1?sl[0].rate:null;
+  openModal(`<h3>${esc(p.name)}</h3><div class="hint">${T('Buying price history','ख़रीद भाव का इतिहास','Kharid bhav ka itihaas')} (${esc(unitOf(p.unit))})</div>
+    <div class="tiles"><div class="tile"><small>${T('Last price','पिछला भाव','Pichla bhav')}</small><b class="num">${money(last.rate)}</b></div>
+      <div class="tile"><small>${T('Change from before','पहले से बदलाव','Pehle se badlaav')}</small><b class="num" style="color:${diff>0?'var(--bad)':diff<0?'var(--ok)':'inherit'}">${prev?(diff>0?'▲ +':diff<0?'▼ -':'')+money(Math.abs(diff)):'-'}</b></div>
+      <div class="tile"><small>${T('Lowest','सबसे कम','Sabse kam')}</small><b class="num">${money(min)}</b></div>
+      <div class="tile"><small>${T('Highest','सबसे ज़्यादा','Sabse zyada')}</small><b class="num">${money(max)}</b></div>
+      <div class="tile"><small>${T('Average','औसत','Average')}</small><b class="num">${money(r2(avg))}</b></div>
+      <div class="tile"><small>MRP</small><b class="num">${money(p.mrp)}</b></div></div>
+    ${sl.length>1?`<h3 class="sub">${T('Supplier rates (latest)','सप्लायर के भाव (ताज़ा)','Supplier ke bhav (taaza)')}</h3>`+sl.map(x=>`<div class="bill"><div><b>${esc(x.name)}</b>${x.rate===best?` <span class="chip ok">${T('Cheapest','सबसे सस्ता','Sabse sasta')}</span>`:''}<div class="hint">${shortDate(x.d)} · ${x.n}x</div></div><b class="num">${money(x.rate)}</b></div>`).join(''):''}
+    <h3 class="sub">${T('All purchases','सारी ख़रीद','Saari kharid')}</h3>
+    ${h.slice(0,25).map(x=>`<div class="bill"><div><b>${shortDate(x.d)}</b><div class="hint">${esc(x.sup||'-')}${x.bill?' · '+esc(x.bill):''} · ${qtyFmt(x.qty)} ${esc(unitOf(p.unit))}</div></div><b class="num">${money(x.rate)}</b></div>`).join('')}
+    <button class="btn line" id="ph_close">${T('Close','बंद करें','Band karo')}</button>`);
+  $('#ph_close').onclick=closeModal;
+}
 
 /* ---------- tabs ---------- */
 let curTab='sale';
@@ -2092,6 +2378,7 @@ bindScan('sale',$('#saleScan'),$('#saleSug'));
 bindScan('purchase',$('#purScan'),$('#purSug'));
 bindScan('stock',$('#stockScan'),null);
 $('#purDate').value=todayStr(); $('#sumDate').value=todayStr();
+{ const m=periodBounds('month'); $('#ipFrom').value=m[0]; $('#ipTo').value=m[1]; $('#pyFrom').value=todayStr(); $('#pyTo').value=todayStr(); }
 $('#expFrom').value=todayStr().slice(0,8)+'01'; $('#expTo').value=todayStr(); $('#finMonth').value=todayStr().slice(0,7);
 $('#expFrom').addEventListener('change',renderExpPreview); $('#expTo').addEventListener('change',renderExpPreview);
 $('#expDownload').onclick=downloadReport;
@@ -2514,6 +2801,20 @@ Object.assign(D,{
 });
 Object.assign(D,{
 "AI voice assistant":["AI voice assistant","AI वॉइस असिस्टेंट","AI voice assistant"],"AI chat":["AI chat","AI चैट","AI chat"]
+});
+
+Object.assign(D,{
+"Item profit":["Item profit","आइटम मुनाफ़ा","Item munafa"],"Payments":["Payments","भुगतान","Payments"],"Stock check":["Stock check","स्टॉक जाँच","Stock check"],
+"Item-wise profit":["Item-wise profit","आइटम के हिसाब से मुनाफ़ा","Item ke hisaab se munafa"],
+"Shows which items earn you the most. Profit is an estimate: selling rate (after discount, without GST) minus average buying cost.":["Shows which items earn you the most. Profit is an estimate: selling rate (after discount, without GST) minus average buying cost.","कौन से आइटम से सबसे ज़्यादा कमाई होती है। मुनाफ़ा अंदाज़ा है: बिक्री भाव (छूट के बाद, GST के बिना) घटा औसत ख़रीद लागत।","Kaun se item se sabse zyada kamai hoti hai. Munafa andaza hai: bikri bhav (discount ke baad, GST ke bina) minus average kharid lagat."],
+"Today":["Today","आज","Aaj"],"7 days":["7 days","7 दिन","7 din"],"30 days":["30 days","30 दिन","30 din"],"60 days":["60 days","60 दिन","60 din"],"90 days":["90 days","90 दिन","90 din"],"15 days":["15 days","15 दिन","15 din"],
+"This month":["This month","इस महीने","Is mahine"],"Most profit":["Most profit","सबसे ज़्यादा मुनाफ़ा","Sabse zyada munafa"],"Best margin":["Best margin","सबसे अच्छा मार्जिन","Sabse achha margin"],"Least profit":["Least profit","सबसे कम मुनाफ़ा","Sabse kam munafa"],
+"Payment-wise report":["Payment-wise report","भुगतान के हिसाब से रिपोर्ट","Payment ke hisaab se report"],
+"How much came in as Cash, UPI and Udhaar. New bills record Cash or UPI. Older bills are counted as Cash.":["How much came in as Cash, UPI and Udhaar. New bills record Cash or UPI. Older bills are counted as Cash.","कैश, UPI और उधार में कितना आया। नए बिल में कैश या UPI दर्ज होता है। पुराने बिल कैश गिने जाते हैं।","Cash, UPI aur udhaar mein kitna aaya. Naye bill mein Cash ya UPI darj hota hai. Purane bill Cash gine jaate hain."],
+"Reorder suggestions":["Reorder suggestions","दोबारा मँगाने के सुझाव","Dobara mangane ke suggestion"],"Keep stock for":["Keep stock for","स्टॉक कितने दिन का रखें","Stock kitne din ka rakhna hai"],
+"Dead stock":["Dead stock","रुका हुआ माल","Atka hua maal"],"Never sold":["Never sold","कभी नहीं बिका","Kabhi nahi bika"],
+"Items lying on the shelf that have not sold for a long time. Your money is stuck in them.":["Items lying on the shelf that have not sold for a long time. Your money is stuck in them.","शेल्फ़ पर पड़े वे आइटम जो बहुत समय से नहीं बिके। आपका पैसा इनमें अटका है।","Shelf par pade woh items jo bahut samay se nahi bike. Aapka paisa inmein atka hai."],
+"Prices":["Prices","भाव","Bhav"]
 });
 const PAT=[
 [/^Sales \((\d+) bills?\)$/,["Sales ($1 bills)","बिक्री ($1 बिल)","Sales ($1 bills)"]],
